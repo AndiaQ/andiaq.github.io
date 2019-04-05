@@ -152,18 +152,20 @@ $ virsh qemu-agent-command instance-0003abaf &lt;span class="s1"&gt;&amp;#39;{&a
 3. live_snapshot不会对虚拟机执行suspend。但在创建在线快照之前会终止根磁盘上所有任务（同时确认虚拟机处于RUNNING状态）。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;联系：&lt;/strong&gt;
 1. live_snapshot与cold_snapshot创建快照的流程相同。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;live_snapshot/cold_snapshot (rbd-backend)的创建流程：&lt;/strong&gt;
-1. 由于nova并不知glance是如何配置来存储image的，所以会获取虚拟机镜像所在的pool；
-2. 对虚拟机根磁盘进行打快照(即创建rbd快照)并设置该快照为保护状态；&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;compute&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;bj&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;withlvm&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;rbd&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="n"&gt;openstack&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="n"&gt;a1e1b85&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;eacb&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;401&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="n"&gt;b5c&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;93f&lt;/span&gt;&lt;span class="mi"&gt;59&lt;/span&gt;&lt;span class="n"&gt;c12c8d0_disk&lt;/span&gt;&lt;span class="mf"&gt;@47e07&lt;/span&gt;&lt;span class="n"&gt;a6c6f4d42b3817cae614493992d&lt;/span&gt;
-&lt;span class="n"&gt;rbd&lt;/span&gt; &lt;span class="n"&gt;image&lt;/span&gt; &lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="n"&gt;a1e1b85&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;eacb&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;401&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="n"&gt;b5c&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;93f&lt;/span&gt;&lt;span class="mi"&gt;59&lt;/span&gt;&lt;span class="n"&gt;c12c8d0_disk&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
-    &lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="mi"&gt;20480&lt;/span&gt; &lt;span class="n"&gt;MB&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="mi"&gt;5120&lt;/span&gt; &lt;span class="n"&gt;objects&lt;/span&gt;
-    &lt;span class="n"&gt;order&lt;/span&gt; &lt;span class="mi"&gt;22&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4096&lt;/span&gt; &lt;span class="n"&gt;kB&lt;/span&gt; &lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="nl"&gt;block_name_prefix&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;rbd_data&lt;/span&gt;&lt;span class="mf"&gt;.12&lt;/span&gt;&lt;span class="n"&gt;ea72ae8944a&lt;/span&gt;
-    &lt;span class="nl"&gt;format&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
-    &lt;span class="nl"&gt;features&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;layering&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;exclusive&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;lock&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;object&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;map&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;fast&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;diff&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;deep&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;flatten&lt;/span&gt;
-    &lt;span class="nl"&gt;flags&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; 
-    &lt;span class="nl"&gt;protected&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;True&lt;/span&gt;
+&lt;p&gt;&lt;strong&gt;live_snapshot/cold_snapshot (rbd-backend)的创建流程：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;由于nova并不知glance是如何配置来存储image的，所以会获取虚拟机镜像所在的pool；&lt;/li&gt;
+&lt;li&gt;对虚拟机根磁盘进行打快照(即创建rbd快照)并设置该快照为保护状态；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@compute-bj-2-withlvm ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# rbd info openstack-00/6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk@47e07a6c6f4d42b3817cae614493992d&lt;/span&gt;
+rbd image &lt;span class="s1"&gt;&amp;#39;6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk&amp;#39;&lt;/span&gt;:
+    size &lt;span class="m"&gt;20480&lt;/span&gt; MB in &lt;span class="m"&gt;5120&lt;/span&gt; objects
+    order &lt;span class="m"&gt;22&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;4096&lt;/span&gt; kB objects&lt;span class="o"&gt;)&lt;/span&gt;
+    block_name_prefix: rbd_data.12ea72ae8944a
+    format: &lt;span class="m"&gt;2&lt;/span&gt;
+    features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+    flags: 
+    protected: True
 &lt;/pre&gt;&lt;/div&gt;
 
 

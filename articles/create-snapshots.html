@@ -252,18 +252,20 @@ $ virsh qemu-agent-command instance-0003abaf <span class="s1">&#39;{&quot;execut
 3. live_snapshot不会对虚拟机执行suspend。但在创建在线快照之前会终止根磁盘上所有任务（同时确认虚拟机处于RUNNING状态）。</p>
 <p><strong>联系：</strong>
 1. live_snapshot与cold_snapshot创建快照的流程相同。</p>
-<p><strong>live_snapshot/cold_snapshot (rbd-backend)的创建流程：</strong>
-1. 由于nova并不知glance是如何配置来存储image的，所以会获取虚拟机镜像所在的pool；
-2. 对虚拟机根磁盘进行打快照(即创建rbd快照)并设置该快照为保护状态；</p>
-<div class="highlight"><pre><span></span><span class="p">[</span><span class="n">root</span><span class="p">@</span><span class="n">compute</span><span class="o">-</span><span class="n">bj</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">withlvm</span> <span class="o">~</span><span class="p">]</span><span class="err">#</span> <span class="n">rbd</span> <span class="n">info</span> <span class="n">openstack</span><span class="o">-</span><span class="mo">00</span><span class="o">/</span><span class="mi">6</span><span class="n">a1e1b85</span><span class="o">-</span><span class="n">eacb</span><span class="o">-</span><span class="mi">401</span><span class="n">b</span><span class="o">-</span><span class="mi">9</span><span class="n">b5c</span><span class="o">-</span><span class="mf">93f</span><span class="mi">59</span><span class="n">c12c8d0_disk</span><span class="mf">@47e07</span><span class="n">a6c6f4d42b3817cae614493992d</span>
-<span class="n">rbd</span> <span class="n">image</span> <span class="err">&#39;</span><span class="mi">6</span><span class="n">a1e1b85</span><span class="o">-</span><span class="n">eacb</span><span class="o">-</span><span class="mi">401</span><span class="n">b</span><span class="o">-</span><span class="mi">9</span><span class="n">b5c</span><span class="o">-</span><span class="mf">93f</span><span class="mi">59</span><span class="n">c12c8d0_disk</span><span class="err">&#39;</span><span class="o">:</span>
-    <span class="n">size</span> <span class="mi">20480</span> <span class="n">MB</span> <span class="k">in</span> <span class="mi">5120</span> <span class="n">objects</span>
-    <span class="n">order</span> <span class="mi">22</span> <span class="p">(</span><span class="mi">4096</span> <span class="n">kB</span> <span class="n">objects</span><span class="p">)</span>
-    <span class="nl">block_name_prefix</span><span class="p">:</span> <span class="n">rbd_data</span><span class="mf">.12</span><span class="n">ea72ae8944a</span>
-    <span class="nl">format</span><span class="p">:</span> <span class="mi">2</span>
-    <span class="nl">features</span><span class="p">:</span> <span class="n">layering</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">-</span><span class="n">lock</span><span class="p">,</span> <span class="n">object</span><span class="o">-</span><span class="n">map</span><span class="p">,</span> <span class="n">fast</span><span class="o">-</span><span class="n">diff</span><span class="p">,</span> <span class="n">deep</span><span class="o">-</span><span class="n">flatten</span>
-    <span class="nl">flags</span><span class="p">:</span> 
-    <span class="nl">protected</span><span class="p">:</span> <span class="n">True</span>
+<p><strong>live_snapshot/cold_snapshot (rbd-backend)的创建流程：</strong></p>
+<ol>
+<li>由于nova并不知glance是如何配置来存储image的，所以会获取虚拟机镜像所在的pool；</li>
+<li>对虚拟机根磁盘进行打快照(即创建rbd快照)并设置该快照为保护状态；</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@compute-bj-2-withlvm ~<span class="o">]</span><span class="c1"># rbd info openstack-00/6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk@47e07a6c6f4d42b3817cae614493992d</span>
+rbd image <span class="s1">&#39;6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk&#39;</span>:
+    size <span class="m">20480</span> MB in <span class="m">5120</span> objects
+    order <span class="m">22</span> <span class="o">(</span><span class="m">4096</span> kB objects<span class="o">)</span>
+    block_name_prefix: rbd_data.12ea72ae8944a
+    format: <span class="m">2</span>
+    features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+    flags: 
+    protected: True
 </pre></div>
 
 
