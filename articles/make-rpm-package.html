@@ -1,0 +1,422 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#DCDCDC">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#DCDCDC">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。 一、简介 RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。 二、RPM常用命令 常用命令组合： -ivh # 安装显示安装进度 --install--verbose--hash -Uvh # 升级软件包 --Update; -qpl # 列出RPM软件包内的文件信息 [Query Package list]; -qpi # 列出RPM软件包的描述信息 [Query Package install package(s)]; -qf # 查找指定文件属于哪个RPM软件包 [Query File]; -Va # 校验所有的RPM软件包 …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="make rpm package"/>
+<meta property="og:description" content="近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。 一、简介 RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。 二、RPM常用命令 常用命令组合： -ivh # 安装显示安装进度 --install--verbose--hash -Uvh # 升级软件包 --Update; -qpl # 列出RPM软件包内的文件信息 [Query Package list]; -qpi # 列出RPM软件包的描述信息 [Query Package install package(s)]; -qf # 查找指定文件属于哪个RPM软件包 [Query File]; -Va # 校验所有的RPM软件包 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/articles/make-rpm-package.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-10-07 14:48:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="OpenStack"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; make rpm package</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="make-rpm-package">make rpm package</h1>
+    <p>
+          Posted on 2016-10-07(星期五) 14:48 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。</p>
+<h3>一、简介</h3>
+<p>RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。</p>
+<h3>二、RPM常用命令</h3>
+<p>常用命令组合：</p>
+<div class="highlight"><pre><span></span><span class="p">-</span><span class="nf">ivh</span>  <span class="err">#</span> <span class="err">安装显示安装进度</span> <span class="o">--</span><span class="n">install</span><span class="o">--</span><span class="n">verbose</span><span class="o">--</span><span class="n">hash</span>
+<span class="o">-</span><span class="n">Uvh</span>  <span class="err">#</span> <span class="err">升级软件包</span> <span class="o">--</span><span class="n">Update</span><span class="p">;</span>
+<span class="p">-</span><span class="nf">qpl</span>  <span class="err">#</span> <span class="err">列出</span><span class="n">RPM软件包内的文件信息</span> <span class="p">[</span><span class="n">Query</span> <span class="n">Package</span> <span class="n">list</span><span class="p">];</span>
+<span class="p">-</span><span class="nf">qpi</span>  <span class="err">#</span> <span class="err">列出</span><span class="n">RPM软件包的描述信息</span> <span class="p">[</span><span class="n">Query</span> <span class="n">Package</span> <span class="n">install</span> <span class="n">package</span><span class="p">(</span><span class="n">s</span><span class="p">)];</span>
+<span class="p">-</span><span class="nf">qf</span>   <span class="err">#</span> <span class="err">查找指定文件属于哪个</span><span class="n">RPM软件包</span> <span class="p">[</span><span class="n">Query</span> <span class="n">File</span><span class="p">];</span>
+<span class="p">-</span><span class="nf">Va</span>   <span class="err">#</span> <span class="err">校验所有的</span><span class="n">RPM软件包</span><span class="err">，查找丢失的文件</span> <span class="p">[</span><span class="n">View</span> <span class="n">Lost</span><span class="p">];</span>
+<span class="p">-</span><span class="nf">e</span>    <span class="err">#</span> <span class="err">删除包</span>  
+</pre></div>
+
+
+<p>更多命令可以通过man rpm查询。</p>
+<h3>三、打包过程</h3>
+<h4>3.1 准备操作</h4>
+<p>在创建RPM包之前，需要先安装一些必须的开发工具：</p>
+<p>安装打包套件：</p>
+<div class="highlight"><pre><span></span>$ yum install rpmdevtools
+</pre></div>
+
+
+<p>建议使用临时用户来创建RPM包，若打包发生了错误，构建程序不会破坏系统。</p>
+<p>使用临时用户登陆，在家目录下，创建标准的打包目录结构：</p>
+<div class="highlight"><pre><span></span>$ rpmdev-setuptree
+</pre></div>
+
+
+<p>该操作会在家目录下生成rpmbuild目录，同时该目录下存在如下目录：
+- BUILT
+- RPMS
+- SOURCES
+- SPECS
+- SRAMS</p>
+<p>其中，SOURCES目录中存放的是源文件的压缩包（一般是tar.gz格式）以及其所需要的配置文件和patch等。BUILD目录存放build阶段解压的源文件压缩包。SPECS目录存放的是spec文件，打包的关键就是对该spec文件的编写。之后通过对该spec文件执行rpmbuild操作进行打包，最终生成的二进制RPM包存放于RPMS，源文件RPM包存放于SRAMS。</p>
+<p>同时在install阶段，为保证非root用户能打包，引入了BuildRoot，整个安装过程会在该目录发生。再根据spec文件中的%files指定打包需要哪些文件（从BUILDROOT的相应路径找到文件）。</p>
+<p>以上准备工作完成。现在需要编写spec文件。</p>
+<h4>3.2 编写spec文件</h4>
+<div class="highlight"><pre><span></span>$ <span class="nb">cd</span> rpmbuild/SPECS
+$ vim test.spec
+</pre></div>
+
+
+<p>也可以通过以下命令快速生成一个模板：</p>
+<div class="highlight"><pre><span></span>$ rpmdev-newspec test.spec
+</pre></div>
+
+
+<p>以下通过test.spec模板进行解释：</p>
+<div class="highlight"><pre><span></span>    <span class="nl">Name</span><span class="p">:</span>                                   <span class="err">#</span> <span class="err">该软件包的名称，如</span><span class="o">:</span><span class="n">rock</span><span class="p">,</span><span class="err">可通过宏</span><span class="p">{</span><span class="nf">%name</span><span class="p">}</span><span class="err">来引用</span>
+    <span class="nl">Version</span><span class="p">:</span>                                <span class="err">#</span> <span class="err">版本信息</span>
+    <span class="nl">Release</span><span class="p">:</span>    <span class="mi">1</span><span class="o">%</span><span class="p">{</span><span class="o">?</span><span class="n">dist</span><span class="p">}</span>                   <span class="err">#</span> <span class="n">rpm包的发行号</span>
+    <span class="nl">Summary</span><span class="p">:</span>                                <span class="err">#</span> <span class="err">软件包简介</span>
+    <span class="nl">Group</span><span class="p">:</span>                                  <span class="err">#</span> <span class="err">软件类型</span>
+    <span class="nl">License</span><span class="p">:</span>                                <span class="err">#</span> <span class="err">软件包的版权规则</span>
+    <span class="nl">URL</span><span class="p">:</span>                                    <span class="err">#</span> <span class="err">软件地址</span>
+    <span class="nl">Source0</span><span class="p">:</span>                                <span class="err">#</span> <span class="err">源文件包，通常为</span><span class="n">tar</span><span class="p">.</span><span class="n">gz</span>
+    <span class="nl">BuildRoot</span><span class="p">:</span>  <span class="o">%</span><span class="p">{</span><span class="n">_tmppath</span><span class="p">}</span><span class="o">/%</span><span class="p">{</span><span class="n">name</span><span class="p">}</span><span class="o">-%</span><span class="p">{</span><span class="n">version</span><span class="p">}</span><span class="o">-%</span><span class="p">{</span><span class="n">release</span><span class="p">}</span><span class="o">-</span><span class="n">root</span><span class="o">-%</span><span class="p">(</span><span class="o">%</span><span class="p">{</span><span class="n">__id_u</span><span class="p">}</span> <span class="o">-</span><span class="n">n</span><span class="p">)</span> 
+
+    <span class="n">BuildRequires</span>
+    <span class="nl">Requires</span><span class="p">:</span>
+
+    <span class="nf">%description</span>                            <span class="err">#</span> <span class="err">软件包的详细描述信息</span>
+
+    <span class="nf">%prep</span>                                   <span class="err">#</span> <span class="err">打包前的准备操作</span>
+    <span class="nf">%setup</span> <span class="o">-</span><span class="n">q</span> <span class="o">-</span><span class="n">n</span> <span class="o">%</span><span class="p">{</span><span class="n">name</span><span class="p">}</span><span class="o">-%</span><span class="p">{</span><span class="n">version</span><span class="p">}</span>         <span class="err">#</span> <span class="err">解压源码包到</span><span class="n">BUILD目录下</span>
+
+    <span class="nf">%build</span>                                  <span class="err">#</span> <span class="err">构建阶段</span>
+    <span class="nf">%configure</span>
+    <span class="n">make</span> <span class="o">%</span><span class="p">{</span><span class="o">?</span><span class="n">_smp_mflags</span><span class="p">}</span>
+
+    <span class="nf">%install</span>                                <span class="err">#</span> <span class="err">安装阶段</span>
+    <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span>
+    <span class="n">make</span> <span class="n">install</span> <span class="n">DESTDIR</span><span class="o">=%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span>
+
+    <span class="nf">%clean</span>                                  <span class="err">#</span> <span class="err">清理临时文件</span>
+    <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span>
+
+    <span class="nf">%files</span>                                  <span class="err">#</span> <span class="err">定义放入</span><span class="n">rpm包中的文件和目录</span>
+    <span class="nf">%defattr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span><span class="n">root</span><span class="p">,</span><span class="n">root</span><span class="p">,</span><span class="o">-</span><span class="p">)</span>
+    <span class="nf">%doc</span>
+
+    <span class="nf">%changelog</span>                              <span class="err">#</span> <span class="err">日志变更信息</span>
+</pre></div>
+
+
+<p>部分具体说明如下：</p>
+<ul>
+<li>%group：可在/usr/share/doc/rpm-x.x.x/GROUPS中查看Group的一个列表。</li>
+<li>%BuildRoot：构建包时的安装目录。BUILD目录即%{_builddir}，编译是在BUILD目录中进行的，当编译完成后，将打包需要的文件从BUILD目录复制到BuildRoot目录，然后在BuildRoot目录进行安装，若设置BuildRoot为/usr/local，可用$RPM_BUILD_ROOT或%{buildroot}访问它，值为rpmbuild/BUILDROOT/usr/local。除了在spec文件中设置BuildRoot外，还可以在rpmrc文件或在rpmbuild命令使用--buildroot来设置BuildRoot。</li>
+<li>%BuildRequires：编译该软件包所需的依赖包列表，以逗号分隔。编译依赖不会自动判断，所以需要列出编译所需的所有依赖包。常见的软件包可省略，例如 gcc。</li>
+<li>%Requires：安装该软件所需的依赖包列表。BuildRequires 标签是编译所需的依赖，而 Requires 标签是安装/运行程序所需的依赖。大多数情况下，rpmbuild 会自动探测依赖，所以可能不需要 Requires 标签。然而，你也可以明确标明需要哪些软件包，或由于未自动探测所需依赖而需要手动标明。</li>
+</ul>
+<p>更多详细信息可以<a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn#SPEC_.E6.96.87.E4.BB.B6.E7.BB.BC.E8.BF.B0">这里</a>查看。</p>
+<h4>3.3 打包时的具体问题</h4>
+<p>一、在编写spec文件时，使用到很多RPM宏命令，这些宏命令的定义可在<code>/usr/lib/rpm/macros</code>中查看。以下列出我所用到的宏命令：</p>
+<table>
+<thead>
+<tr>
+<th>宏命令</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td __python>%</td>
+<td>/usr/bin/python</td>
+</tr>
+<tr>
+<td _prefix>%</td>
+<td>/usr</td>
+</tr>
+<tr>
+<td _sysconfdir>%</td>
+<td>/etc/</td>
+</tr>
+<tr>
+<td _unitdir>%</td>
+<td>/usr/lib/systemd/system</td>
+</tr>
+<tr>
+<td _python_sitelib>%</td>
+<td>/usr/lib/python2.7/site-packages</td>
+</tr>
+<tr>
+<td _localstatedir>%</td>
+<td>/var</td>
+</tr>
+<tr>
+<td _bindir>%</td>
+<td>/usr/bin</td>
+</tr>
+</tbody>
+</table>
+<p>以上宏命令所对应的路径都可以通过<code>rpm --eval %{macro}</code>查看。</p>
+<p>二、下面以rock.spec为例，分步解释。</p>
+<ol>
+<li><code>%prep</code>字段，对源文件压缩包解压。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="nf">%prep</span>
+<span class="nf">%setup</span> <span class="o">-</span><span class="n">q</span> <span class="o">-</span><span class="n">n</span> <span class="o">%</span><span class="p">{</span><span class="n">name</span><span class="p">}</span><span class="o">-%</span><span class="p">{</span><span class="n">version</span><span class="p">}</span>
+</pre></div>
+
+
+<ol>
+<li><code>%build</code>字段，构建压缩包。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="nf">%build</span>
+<span class="o">%</span><span class="p">{</span><span class="n">__python</span><span class="p">}</span> <span class="n">setup</span><span class="p">.</span><span class="n">py</span> <span class="n">build</span>
+</pre></div>
+
+
+<ol>
+<li>%install字段，安装软件包到BUILDROOT目录。需注意的是，这里rock依赖了keeplived，需修改keepalived.conf文件，但是keepalived同样可能会被其他软件所使用，所以我们只管安装自己项目所需的文件，这里在安装之前，先把编译到BUILDROOT下的keeplived.conf删除后再进行下面的操作的。其次，在安装下面的配置文件时，注意赋予的权限。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="nf">%install</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span>
+<span class="o">%</span><span class="p">{</span><span class="n">__python</span><span class="p">}</span> <span class="n">setup</span><span class="p">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">skip</span><span class="o">-</span><span class="n">build</span> <span class="o">--</span><span class="n">root</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span>
+
+<span class="cp"># Remove keepalived dependency</span>
+<span class="n">rm</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">keepalived</span><span class="o">/</span><span class="n">keepalived</span><span class="p">.</span><span class="n">conf</span>
+
+<span class="cp"># Setup directories</span>
+<span class="n">install</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">m</span> <span class="mi">755</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_localstatedir</span><span class="p">}</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">rock</span>
+
+<span class="cp"># Install config files</span>
+
+<span class="n">install</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">D</span> <span class="o">-</span><span class="n">m</span> <span class="mi">640</span> <span class="o">%</span><span class="p">{</span><span class="n">SOURCE1</span><span class="p">}</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">/</span><span class="n">alembic</span><span class="p">.</span><span class="n">ini</span>
+<span class="n">install</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">D</span> <span class="o">-</span><span class="n">m</span> <span class="mi">640</span> <span class="o">%</span><span class="p">{</span><span class="n">SOURCE2</span><span class="p">}</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">/</span><span class="n">rock</span><span class="p">.</span><span class="n">ini</span>
+<span class="n">install</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">D</span> <span class="o">-</span><span class="n">m</span> <span class="mi">640</span> <span class="o">%</span><span class="p">{</span><span class="n">SOURCE3</span><span class="p">}</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">/</span><span class="n">target</span><span class="p">.</span><span class="n">json</span>
+<span class="n">install</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">D</span> <span class="o">-</span><span class="n">m</span> <span class="mi">640</span> <span class="o">%</span><span class="p">{</span><span class="n">SOURCE4</span><span class="p">}</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">/</span><span class="n">cases</span><span class="o">/</span><span class="n">host_down</span><span class="p">.</span><span class="n">json</span>
+
+<span class="cp"># Install systemd units</span>
+<span class="n">install</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">D</span> <span class="o">-</span><span class="n">m</span> <span class="mi">644</span> <span class="o">%</span><span class="p">{</span><span class="n">SOURCE5</span><span class="p">}</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_unitdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">-</span><span class="n">engine</span><span class="p">.</span><span class="n">service</span>
+<span class="n">install</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">D</span> <span class="o">-</span><span class="n">m</span> <span class="mi">644</span> <span class="o">%</span><span class="p">{</span><span class="n">SOURCE6</span><span class="p">}</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_unitdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">-</span><span class="n">mon</span><span class="p">.</span><span class="n">service</span>
+
+<span class="cp"># Install init scripts</span>
+<span class="n">install</span> <span class="o">-</span><span class="n">p</span> <span class="o">-</span><span class="n">D</span> <span class="o">-</span><span class="n">m</span> <span class="mi">544</span> <span class="o">%</span><span class="p">{</span><span class="n">SOURCE7</span><span class="p">}</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span><span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">backup</span><span class="p">.</span><span class="n">sh</span>
+<span class="p">...</span>
+</pre></div>
+
+
+<ol>
+<li>%files字段。起初我不是那么明白该字段该如何填写，所以故意编译让其报错，根据提示的错误在这里一一添加的内容，包括需创建的目录。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="nf">%files</span>
+<span class="nf">%defattr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span><span class="n">root</span><span class="p">,</span><span class="n">root</span><span class="p">)</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_bindir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">-</span><span class="n">engine</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_bindir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">-</span><span class="n">db</span><span class="o">-</span><span class="n">manage</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_bindir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">-</span><span class="n">mon</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">backup</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">clear</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">ha_status</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">is_normal</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">kill</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">kill_engine</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">kill_mon</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">notify</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">start</span><span class="p">.</span><span class="n">sh</span>
+<span class="o">%</span><span class="p">{</span><span class="n">_prefix</span><span class="p">}</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">tables</span><span class="p">.</span><span class="n">sh</span>
+
+<span class="o">%</span><span class="p">{</span><span class="n">python_sitelib</span><span class="p">}</span><span class="o">/%</span><span class="p">{</span><span class="n">name</span><span class="p">}</span><span class="o">-%</span><span class="p">{</span><span class="n">version</span><span class="p">}.</span><span class="o">*</span><span class="p">.</span><span class="n">egg</span><span class="o">-</span><span class="n">info</span>
+<span class="o">%</span><span class="p">{</span><span class="n">python_sitelib</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span>
+
+<span class="nf">%config</span><span class="p">(</span><span class="n">noreplace</span><span class="p">)</span> <span class="nf">%attr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">/</span><span class="n">rock</span><span class="p">.</span><span class="n">ini</span>
+<span class="nf">%config</span> <span class="nf">%attr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">/</span><span class="n">target</span><span class="p">.</span><span class="n">json</span>
+<span class="nf">%config</span> <span class="nf">%attr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">/</span><span class="n">alembic</span><span class="p">.</span><span class="n">ini</span>
+<span class="nf">%config</span> <span class="nf">%attr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="o">%</span><span class="p">{</span><span class="n">_sysconfdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">/</span><span class="n">cases</span><span class="o">/</span><span class="n">host_down</span><span class="p">.</span><span class="n">json</span>
+<span class="nf">%config</span> <span class="nf">%attr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="o">%</span><span class="p">{</span><span class="n">_unitdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">-</span><span class="n">engine</span><span class="p">.</span><span class="n">service</span>
+<span class="nf">%config</span> <span class="nf">%attr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="o">%</span><span class="p">{</span><span class="n">_unitdir</span><span class="p">}</span><span class="o">/</span><span class="n">rock</span><span class="o">-</span><span class="n">mon</span><span class="p">.</span><span class="n">service</span>
+
+<span class="nf">%dir</span> <span class="nf">%attr</span><span class="p">(</span><span class="mo">0755</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span> <span class="o">%</span><span class="p">{</span><span class="n">_localstatedir</span><span class="p">}</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">rock</span>
+</pre></div>
+
+
+<ol>
+<li>%changelog字段，填写变更的日志信息。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="nf">%changelog</span>
+<span class="o">*</span> <span class="n">Tue</span> <span class="n">Sep</span> <span class="mi">27</span> <span class="mi">2016</span> <span class="n">Yuwei</span> <span class="n">Wang</span> <span class="o">&lt;</span><span class="n">wangyuwei</span><span class="err">@</span><span class="n">unitedstack</span><span class="p">.</span><span class="n">com</span><span class="o">&gt;</span> <span class="o">-</span> <span class="mf">0.0.1</span>
+<span class="o">-</span> <span class="n">Package</span> <span class="n">rock</span> <span class="k">for</span> <span class="n">deployment</span>
+</pre></div>
+
+
+<p>三、编写完rock.spec后，开始打包。rpm命令可以指定不同的参数，分步进行打包，可以检测在打包过程中遇到的具体问题。以下是从spec文档打包时rpmbuild相关的命令。</p>
+<p>命令格式：</p>
+<div class="highlight"><pre><span></span>rpmbuild [options] [spec文档]
+命令options:
+
+-bp  #只执行spec的%pre 段(解开源码包并打补丁，即只做准备)
+-bc  #执行spec的%pre和%build 段(准备并编译)
+-bi  #执行spec中%pre，%build与%install(准备，编译并安装)
+-bl  #检查spec中的%file段(查看文件是否齐全)
+-ba  #建立源码与二进制包(常用)
+-bb  #只建立二进制包(常用)
+-bs  #只建立源码包
+</pre></div>
+
+
+<p>若执行<code>rpmbuild -ba test.spec</code>没有报错，则大体算是打包成功，具体是否可用还需进行检查，遇到问题再修改其中的小细节。打包完后可去rpmbuild/RPMS目录中查看二进制包。</p>
+<h3>四、创建本地仓库</h3>
+<p>这里将rock所依赖的所有rpm包包括rock本身的rpm包放置一块创建一个本地仓库，就可以直接通过yum install rock命令安装rock包括其所有的依赖，这样通过yum安装起来会更加方便。以下简单说明创建本地仓库的步骤。</p>
+<h4>4.1 创建本地yum仓库</h4>
+<p>依赖的相关软件包可通过yum install *** --downloadonly --downloaddir=/yum/local命令下载到/yum/local下而不安装。也可以通过其他方式比如cp。</p>
+<div class="highlight"><pre><span></span>$ mkdir -p /yum/local <span class="c1">#可以有N级目录  </span>
+$ cp ... <span class="c1">#复制RPM包到上述目录</span>
+</pre></div>
+
+
+<h4>4.2 创建repo文件</h4>
+<div class="highlight"><pre><span></span>$ cat&gt;&gt;/etc/yum.repos.d/CentOS-Local.repo<span class="s">&lt;&lt;-EOF  </span>
+<span class="s">[Local]  </span>
+<span class="s">name=Local Yum  </span>
+<span class="s">baseurl=file:///yum/  </span>
+<span class="s">gpgcheck=1  </span>
+<span class="s">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KE</span>Y-CentOS-7  
+<span class="nv">enabled</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+
+
+<h4>4.3 安装createrepo</h4>
+<p>以下是两种安装方式。</p>
+<div class="highlight"><pre><span></span>$ yum install createrepo <span class="c1">#使用yum安装createrepo  </span>
+$ rpm -ivh http://mirror.centos.org/centos/7/os/x86_64/Packages/createrepo-0.9.9-23.el7.noarch.rpm
+</pre></div>
+
+
+<h4>4.4 创建索引</h4>
+<div class="highlight"><pre><span></span>$ createrepo /yum   
+$ yum makecache <span class="c1">#更新缓存</span>
+</pre></div>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

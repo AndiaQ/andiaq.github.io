@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="商用服务器的系统架构大致可以分为三类： SMP NUMA MMP SMP SMP即Symmetric Multi-Processor，对称多处理器架构。 所谓对称多处理器架构，是指服务器中的多个CPU对称工作，无主次和从属关系。各CPU共享相同的物理内存，每个CPU访问内存中的任何地址所需的时间都是相同的，因此SMP也被称为一致存储器访问结构。对SMP服务器进行扩展的方式包括：增加内存； 使用更快的CPU；增加CPU数量；扩充I/O(槽口数和总线数)；以及添加更多的外部设备(通常是磁盘存储)。 SMP服务器的主要特征是共享，系统中的所有资源(CPU、内存、I/O等)都是共享的。也正是由于这种特征，导致了SMP服务器的主要问题，那就是它得扩展能力非常有限。 对于SMP服务器而言，每一个共享的环节都可能造成SMP服务器扩展时的瓶颈，而最受限制的则是内存。由于每个CPU必须通过相同的内存总线访问相同的内存资源，因此随着CPU数量的增加，内存访问冲突将迅速增加，最终会造成CPU资源的浪费，使 CPU性能的有效性大大降低。实验证明，SMP服务器CPU利用率最好的情况是2至4个CPU。 NUMA NUMA即Non-Uniform Memory Access …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="linux 服务器架构"/>
+<meta property="og:description" content="商用服务器的系统架构大致可以分为三类： SMP NUMA MMP SMP SMP即Symmetric Multi-Processor，对称多处理器架构。 所谓对称多处理器架构，是指服务器中的多个CPU对称工作，无主次和从属关系。各CPU共享相同的物理内存，每个CPU访问内存中的任何地址所需的时间都是相同的，因此SMP也被称为一致存储器访问结构。对SMP服务器进行扩展的方式包括：增加内存； 使用更快的CPU；增加CPU数量；扩充I/O(槽口数和总线数)；以及添加更多的外部设备(通常是磁盘存储)。 SMP服务器的主要特征是共享，系统中的所有资源(CPU、内存、I/O等)都是共享的。也正是由于这种特征，导致了SMP服务器的主要问题，那就是它得扩展能力非常有限。 对于SMP服务器而言，每一个共享的环节都可能造成SMP服务器扩展时的瓶颈，而最受限制的则是内存。由于每个CPU必须通过相同的内存总线访问相同的内存资源，因此随着CPU数量的增加，内存访问冲突将迅速增加，最终会造成CPU资源的浪费，使 CPU性能的有效性大大降低。实验证明，SMP服务器CPU利用率最好的情况是2至4个CPU。 NUMA NUMA即Non-Uniform Memory Access …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/articles/linux-server.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2017-03-13 18:00:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="Linux"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; linux 服务器架构</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="linux-server">linux 服务器架构</h1>
+    <p>
+          Posted on 2017-03-13(星期一) 18:00 in <a href="https://andiaq.github.io/category/linux.html">Linux</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p><strong>商用服务器的系统架构大致可以分为三类：</strong>
+<code>SMP</code> <code>NUMA</code> <code>MMP</code></p>
+<h2>SMP</h2>
+<p>SMP即<code>Symmetric Multi-Processor</code>，对称多处理器架构。
+所谓对称多处理器架构，是指服务器中的多个CPU对称工作，无主次和从属关系。各CPU共享相同的物理内存，每个CPU访问内存中的任何地址所需的时间都是相同的，因此SMP也被称为一致存储器访问结构。对SMP服务器进行扩展的方式包括：增加内存； 使用更快的CPU；增加CPU数量；扩充I/O(槽口数和总线数)；以及添加更多的外部设备(通常是磁盘存储)。</p>
+<p>SMP服务器的主要特征是共享，系统中的所有资源(CPU、内存、I/O等)都是共享的。也正是由于这种特征，导致了SMP服务器的主要问题，那就是它得扩展能力非常有限。</p>
+<p>对于SMP服务器而言，每一个共享的环节都可能造成SMP服务器扩展时的瓶颈，而最受限制的则是内存。由于每个CPU必须通过相同的内存总线访问相同的内存资源，因此随着CPU数量的增加，内存访问冲突将迅速增加，最终会造成CPU资源的浪费，使 CPU性能的有效性大大降低。实验证明，SMP服务器CPU利用率最好的情况是2至4个CPU。 </p>
+<h2>NUMA</h2>
+<p>NUMA即<code>Non-Uniform Memory Access</code>，非一致性内存架构。
+NUMA架构产生的原因之一，就是为了解决SMP在扩展能力上的限制。利用NUMA技术，可以把几十个CPU(甚至上百个CPU)组合在一个服务器内。其CPU模块结构如下图所示：</p>
+<p><img alt="image" src="../images/numa_cpu.png"></p>
+<p>NUMA服务器的基本特征是具有多个CPU模块，每个CPU模块由多个CPU(如4个)组成，并且具有独立的本地内存、I/O槽口等。由于其节点之间可以通过互联模块(如称为Crossbar Switch)进行连接和信息交互，因此每个CPU可以访问整个系统的内存(这是NUMA系统与MPP系统的重要差别)。显然，访问本地内存的速度将远远高于访问远地内存(系统内其它节点的内存)的速度，这也是非一致存储访问NUMA的由来。由于这个特点，为了更好地发挥系统性能，开发应用程序时需要尽量减少不同CPU模块之间的信息交互。利用NUMA技术，可以较好地解决原来SMP系统的扩展问题，在一个物理服务器内可以支持上百个CPU。比较典型的NUMA服务器的例子包括HP的Superdome、SUN15K、IBMp690等。</p>
+<p>但NUMA技术同样有一定缺陷，由于访问远地内存的延时远远超过本地内存，因此当CPU数量增加时，系统性能无法线性增加。如HP公司发布Superdome服务器时，曾公布了它与HP其它UNIX服务器的相对性能值，结果发现，64路CPU的Superdome(NUMA结构)的相对性能值是20，而8路N4000(共享的SMP结构)的相对性能值是6.3。从这个结果可以看到，8倍数量的CPU换来的只是3倍性能的提升。 </p>
+<h2>MPP</h2>
+<p>MPP即<code>Massive Parallel Processing</code>，海量并行处理架构。
+和NUMA不同，MPP提供了另外一种进行系统扩展的方式，它由多个SMP服务器通过一定的节点互联网络进行连接，协同工作，完成相同的任务，从用户的角度来看是一个服务器系统。其基本特征是由多个SMP服务器(每个SMP服务器称节点)通过节点互联网络连接而成，每个节点只访问自己的本地资源(内存、存储等)，是一种完全无共享(Share Nothing)结构，因而扩展能力最好，理论上其扩展无限制，目前的技术可实现512个节点互联，数千个CPU。目前业界对节点互联网络暂无标准，如 NCR的Bynet，IBM的SPSwitch，它们都采用了不同的内部实现机制。但节点互联网仅供MPP服务器内部使用，对用户而言是透明的。</p>
+<p>在MPP系统中，每个SMP节点也可以运行自己的操作系统、数据库等。但和NUMA不同的是，它不存在异地内存访问的问题。换言之，每个节点内的CPU不能访问另一个节点的内存。节点之间的信息交互是通过节点互联网络实现的，这个过程一般称为数据重分配(Data Redistribution)。</p>
+<p>但是MPP服务器需要一种复杂的机制来调度和平衡各个节点的负载和并行处理过程。目前一些基于MPP技术的服务器往往通过系统级软件(如数据库)来屏蔽这种复杂性。举例来说，NCR的Teradata就是基于MPP技术的一个关系数据库软件，基于此数据库来开发应用时，不管后台服务器由多少个节点组成，开发人员所面对的都是同一个数据库系统，而不需要考虑如何调度其中某几个节点的负载。</p>
+<h2>NUMA与MPP的区别</h2>
+<p>从架构来看，NUMA与MPP具有许多相似之处：它们都由多个节点组成，每个节点都具有自己的CPU、内存、I/O，节点之间都可以通过节点互联机制进行信息交互。那么它们的区别在哪里？通过分析下面NUMA和MPP服务器的内部架构和工作原理不难发现其差异所在。</p>
+<p>首先是节点互联机制不同，NUMA的节点互联机制是在同一个物理服务器内部实现的，当某个CPU需要进行远地内存访问时，它必须等待，这也是NUMA服务器无法实现CPU增加时性能线性扩展的主要原因。而MPP的节点互联机制是在不同的SMP服务器外部通过I/O 实现的，每个节点只访问本地内存和存储，节点之间的信息交互与节点本身的处理是并行进行的。因此MPP在增加节点时性能基本上可以实现线性扩展。</p>
+<p>其次是内存访问机制不同。在NUMA服务器内部，任何一个CPU可以访问整个系统的内存，但远地访问的性能远远低于本地内存访问，因此在开发应用程序时应该尽量避免远地内存访问。在MPP服务器中，每个节点只访问本地内存，不存在远地内存访问的问题。</p>
+<h2>数据仓库的选择</h2>
+<p>哪种服务器更加适应数据仓库环境？这需要从数据仓库环境本身的负载特征入手。众所周知，典型的数据仓库环境具有大量复杂的数据处理和综合分析，要求系统具有很高的I/O处理能力，并且存储系统需要提供足够的I/O带宽与之匹配。而一个典型的OLTP系统则以联机事务处理为主，每个交易所涉及的数据不多，要求系统具有很高的事务处理能力，能够在单位时间里处理尽量多的交易。显然这两种应用环境的负载特征完全不同。</p>
+<p>从NUMA架构来看，它可以在一个物理服务器内集成许多CPU，使系统具有较高的事务处理能力，由于远地内存访问时延远长于本地内存访问，因此需要尽量减少不同CPU模块之间的数据交互。显然，NUMA架构更适用于OLTP事务处理环境，当用于数据仓库环境时，由于大量复杂的数据处理必然导致大量的数据交互，将使CPU的利用率大大降低。</p>
+<p>相对而言，MPP服务器架构的并行处理能力更优越，更适合于复杂的数据综合分析与处理环境。当然，它需要借助于支持MPP技术的关系数据库系统来屏蔽节点之间负载平衡与调度的复杂性。另外，这种并行处理能力也与节点互联网络有很大的关系。显然，适应于数据仓库环境的MPP服务器，其节点互联网络的I/O性能应该非常突出，才能充分发挥整个系统的性能。</p>
+<h2>参考资料</h2>
+<p>1.http://blog.csdn.net/chengleisheng/article/details/43454515</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

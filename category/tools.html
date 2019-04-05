@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#DCDCDC">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#DCDCDC">
+
+    <meta name="author" content="Yuwei Wang" />
+    <meta name="description" content="" />
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:type" content="blog"/>
+<meta property="og:title" content="Andia"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash;     Category Tools
+</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+
+
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/git-usages.html#git-usages">Git常用操作</a></h2>
+    <p>
+          Posted on 2016-12-11(星期日) 20:24 in <a href="https://andiaq.github.io/category/tools.html">Tools</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。</p>
+<h2>git log</h2>
+<ul>
+<li>显示所有历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log</span>
+</pre></div>
+
+
+<ul>
+<li>显示最近N条历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log -N </span>
+</pre></div>
+
+
+<ul>
+<li>显示详细历史记录，包括代码改动内容</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log -p </span>
+</pre></div>
+
+
+<ul>
+<li>只显示一行，哈希值和提交说明</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=oneline</span>
+</pre></div>
+
+
+<ul>
+<li>显示提交历史记录的简单图形</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># glog</span>
+<span class="c1"># git log --pretty=format:&quot;%H %s&quot; --graph</span>
+</pre></div>
+
+
+<ul>
+<li>自定义格式显示历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=format:&quot; &quot;</span>
+</pre></div>
+
+
+<p>常用的格式占位符写法及其代表的意义如下：</p>
+<div class="highlight"><pre><span></span><span class="err">选项</span>   <span class="err">说明</span>
+<span class="o">%</span><span class="n">H</span>  <span class="err">提交对象（</span><span class="n">commit</span><span class="err">）的完整哈希字串</span>
+<span class="nf">%h</span>  <span class="err">提交对象的简短哈希字串</span>
+<span class="o">%</span><span class="n">T</span>  <span class="err">树对象（</span><span class="n">tree</span><span class="err">）的完整哈希字串 …</span></pre></div>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/git-usages.html#git-usages">    Continue reading
+</a>
+  </div>
+</article>
+
+  <div class="pagination">
+  </div>
+
+
+
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

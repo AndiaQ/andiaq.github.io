@@ -1,0 +1,351 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。 用法： usage: nova image-create [--metadata &lt;key=value&gt;] [--show] [--poll] &lt;server&gt; &lt;name&gt; 从volume启动的虚拟机，可以对[ACTIVE, STOPPED, SUSPEND]虚拟机进行快照操作。 nova-api接收到请求之后，首先会从nova数据库中获取instance_system_metadata表中image metadata properties.删除不能被继承的properties(通过non_inheritable_image_properties参数配置)。在获取虚拟机的image properties之后，nova-api只会先生成一个类似只有image properties（比如block device mapping, kernel and ramdisk IDs)）的bucket,实际大小设置为0。 如果虚拟机处于ACTIVE状态，会通过发送异步RPC调用nova-compute，然后调用libvirt对虚拟机执行quiesce操作来静默文件系统，禁止磁盘继续读写，从而保证磁盘快照的一致性（执行该操作需要安装qemu-guest-agent）。在quiesce之后，获取虚拟机上挂载的所有磁盘，包括根磁盘，调用cinder-api依次对这些volume卷进行打快照 …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="OpenStack环境虚拟机打快照分析"/>
+<meta property="og:description" content="本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。 用法： usage: nova image-create [--metadata &lt;key=value&gt;] [--show] [--poll] &lt;server&gt; &lt;name&gt; 从volume启动的虚拟机，可以对[ACTIVE, STOPPED, SUSPEND]虚拟机进行快照操作。 nova-api接收到请求之后，首先会从nova数据库中获取instance_system_metadata表中image metadata properties.删除不能被继承的properties(通过non_inheritable_image_properties参数配置)。在获取虚拟机的image properties之后，nova-api只会先生成一个类似只有image properties（比如block device mapping, kernel and ramdisk IDs)）的bucket,实际大小设置为0。 如果虚拟机处于ACTIVE状态，会通过发送异步RPC调用nova-compute，然后调用libvirt对虚拟机执行quiesce操作来静默文件系统，禁止磁盘继续读写，从而保证磁盘快照的一致性（执行该操作需要安装qemu-guest-agent）。在quiesce之后，获取虚拟机上挂载的所有磁盘，包括根磁盘，调用cinder-api依次对这些volume卷进行打快照 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/articles/openstackhuan-jing-xu-ni-ji-da-kuai-zhao-fen-xi.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2017-03-17 10:29:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="OpenStack"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; OpenStack环境虚拟机打快照分析</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="openstackhuan-jing-xu-ni-ji-da-kuai-zhao-fen-xi">OpenStack环境虚拟机打快照分析</h1>
+    <p>
+          Posted on 2017-03-17(星期五) 10:29 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。</p>
+<p>用法：</p>
+<div class="highlight"><pre><span></span>usage: nova image-create <span class="o">[</span>--metadata &lt;<span class="nv">key</span><span class="o">=</span>value&gt;<span class="o">]</span>
+                         <span class="o">[</span>--show<span class="o">]</span> <span class="o">[</span>--poll<span class="o">]</span>
+                         &lt;server&gt; &lt;name&gt;
+</pre></div>
+
+
+<p><strong>从volume启动的虚拟机，可以对[ACTIVE, STOPPED, SUSPEND]虚拟机进行快照操作。</strong></p>
+<ol>
+<li>
+<p>nova-api接收到请求之后，首先会从nova数据库中获取instance_system_metadata表中image metadata properties.删除不能被继承的properties(通过<code>non_inheritable_image_properties</code>参数配置)。在获取虚拟机的image properties之后，nova-api只会先生成一个类似只有image properties（比如block device mapping, kernel and ramdisk IDs)）的bucket,实际大小设置为0。</p>
+</li>
+<li>
+<p>如果虚拟机处于ACTIVE状态，会通过发送异步RPC调用nova-compute，然后调用libvirt对虚拟机执行quiesce操作来静默文件系统，禁止磁盘继续读写，从而保证磁盘快照的一致性（执行该操作需要安装qemu-guest-agent）。在quiesce之后，获取虚拟机上挂载的所有磁盘，包括根磁盘，调用cinder-api依次对这些volume卷进行打快照（但是nova-api只会获取这些volume snapshot的id信息，然后更新到meta）。对磁盘打完快照之后，执行unquiesce进行解冻。并将卷快照的信息更新保存到instance_system_metadata表的<code>block_device_mapping</code>参数中。</p>
+</li>
+</ol>
+<p>总的来说，nova-api所做的操作都是为了最后能获取虚拟机更新后的新image-meta数据，并没有执行创建工作。</p>
+<p>对虚拟机执行quiesce操作的测试如下：</p>
+<p>1）对虚拟机注入循环执行程序，该程序实现向另外一个文件持续写入时间戳。
+   <code>[root@jenkins test]# tailf quiesce.log
+   1489632992.9
+   1489632993.91
+   1489632994.91</code>
+   2）在虚拟机所在的宿主机上执行以下命令：
+   <code>$ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-freeze"}'
+   {"return":2}
+   查看quiesce状态：
+   $ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-status"}'
+   {"return":"frozen"}</code>
+   3）等待一会儿之后，将虚拟机解冻，查看日志。
+   <code>$ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-thaw"}'
+   {"return":2}
+   $ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-status"}'
+   {"return":"thawed"}
+   [root@jenkins test]# tailf quiesce.log
+   1489632991.9
+   1489632992.9
+   1489632993.91
+   1489632994.91
+   1489633427.07
+   1489633428.07
+   1489633429.07
+   1489633430.07
+   1489633431.07
+   1489633432.07
+   1489633433.08</code>
+   通过以上结果可以发现，在对虚拟机执行quiesce之后，虚拟机确实不再写入文件，thaw之后，虚拟机继续写入文件。达到预期结果。</p>
+<ol>
+<li>nova-api在获取新image-meta元数据之后，会向glance-api发送create信息。glance-api根据传过来的instance和image-meta信息创建快照镜像。所以glance创建的快照镜像中只会保存volume snapshot信息到<code>block_device_mapping</code>，镜像中不会存在磁盘数据。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@controller ~<span class="o">]</span><span class="c1"># nova image-create f0d1455f-5079-4ffd-b954-0762159e9793 wei-v1-snap</span>
+<span class="o">[</span>root@controller ~<span class="o">]</span><span class="c1"># cinder snapshot-list</span>
++--------------------------------------+--------------------------------------+-----------+--------------------------+------+
+<span class="p">|</span> ID                                   <span class="p">|</span> Volume ID                            <span class="p">|</span> Status    <span class="p">|</span> Name                     <span class="p">|</span> Size <span class="p">|</span>
++--------------------------------------+--------------------------------------+-----------+--------------------------+------+
+<span class="p">|</span> 5e33cc09-01d8-423f-be26-ad1f44b6689e <span class="p">|</span> 2495add5-969b-4b4c-97c2-f7a2c378431e <span class="p">|</span> available <span class="p">|</span> snapshot <span class="k">for</span> wei-v1-snap <span class="p">|</span> <span class="m">1</span>    <span class="p">|</span>
+<span class="p">|</span> fd284012-7771-42af-92a0-949569ad527b <span class="p">|</span> 174495f0-bf09-49c9-ba8a-b1603f75db68 <span class="p">|</span> available <span class="p">|</span> snapshot <span class="k">for</span> wei-v1-snap <span class="p">|</span> <span class="m">20</span>   <span class="p">|</span>
++--------------------------------------+--------------------------------------+-----------+--------------------------+------+
+
+<span class="o">[</span>root@controller ~<span class="o">]</span><span class="c1"># glance image-show 9d1c6596-4b5c-49a9-87a6-51603460aeed</span>
++----------------------+----------------------------------------------------------------------------------+
+<span class="p">|</span> Property             <span class="p">|</span> Value                                                                            <span class="p">|</span>
++----------------------+----------------------------------------------------------------------------------+
+<span class="p">|</span> base_image_ref       <span class="p">|</span>                                                                                  <span class="p">|</span>
+<span class="p">|</span> bdm_v2               <span class="p">|</span> True                                                                             <span class="p">|</span>
+<span class="p">|</span> block_device_mapping <span class="p">|</span> <span class="o">[{</span><span class="s2">&quot;guest_format&quot;</span>: null, <span class="s2">&quot;boot_index&quot;</span>: <span class="m">0</span>, <span class="s2">&quot;delete_on_termination&quot;</span>: false,         <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> <span class="s2">&quot;no_device&quot;</span>: null, <span class="s2">&quot;snapshot_id&quot;</span>: <span class="s2">&quot;fd284012-7771-42af-92a0-949569ad527b&quot;</span>,        <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> <span class="s2">&quot;device_name&quot;</span>: <span class="s2">&quot;/dev/vda&quot;</span>, <span class="s2">&quot;disk_bus&quot;</span>: <span class="s2">&quot;virtio&quot;</span>, <span class="s2">&quot;image_id&quot;</span>: null,               <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> <span class="s2">&quot;source_type&quot;</span>: <span class="s2">&quot;snapshot&quot;</span>, <span class="s2">&quot;tag&quot;</span>: null, <span class="s2">&quot;device_type&quot;</span>: <span class="s2">&quot;disk&quot;</span>, <span class="s2">&quot;volume_id&quot;</span>:      <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> null, <span class="s2">&quot;destination_type&quot;</span>: <span class="s2">&quot;volume&quot;</span>, <span class="s2">&quot;volume_size&quot;</span>: <span class="m">20</span><span class="o">}</span>, <span class="o">{</span><span class="s2">&quot;guest_format&quot;</span>: null,   <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> <span class="s2">&quot;boot_index&quot;</span>: null, <span class="s2">&quot;delete_on_termination&quot;</span>: false, <span class="s2">&quot;no_device&quot;</span>: null,           <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> <span class="s2">&quot;snapshot_id&quot;</span>: <span class="s2">&quot;5e33cc09-01d8-423f-be26-ad1f44b6689e&quot;</span>, <span class="s2">&quot;device_name&quot;</span>:            <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> <span class="s2">&quot;/dev/vdb&quot;</span>, <span class="s2">&quot;disk_bus&quot;</span>: null, <span class="s2">&quot;image_id&quot;</span>: null, <span class="s2">&quot;source_type&quot;</span>: <span class="s2">&quot;snapshot&quot;</span>,       <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> <span class="s2">&quot;tag&quot;</span>: null, <span class="s2">&quot;device_type&quot;</span>: null, <span class="s2">&quot;volume_id&quot;</span>: null, <span class="s2">&quot;destination_type&quot;</span>:         <span class="p">|</span>
+<span class="p">|</span>                      <span class="p">|</span> <span class="s2">&quot;volume&quot;</span>, <span class="s2">&quot;volume_size&quot;</span>: <span class="m">1</span><span class="o">}]</span>                                                     <span class="p">|</span>
+<span class="p">|</span> checksum             <span class="p">|</span> d41d8cd98f00b204e9800998ecf8427e                                                 <span class="p">|</span>
+<span class="p">|</span> container_format     <span class="p">|</span> bare                                                                             <span class="p">|</span>
+<span class="p">|</span> created_at           <span class="p">|</span> <span class="m">2017</span>-03-12T12:04:57Z                                                             <span class="p">|</span>
+<span class="p">|</span> disk_format          <span class="p">|</span> qcow2                                                                            <span class="p">|</span>
+<span class="p">|</span> id                   <span class="p">|</span> 9d1c6596-4b5c-49a9-87a6-51603460aeed                                             <span class="p">|</span>
+<span class="p">|</span> locations            <span class="p">|</span> <span class="o">[{</span><span class="s2">&quot;url&quot;</span>: <span class="s2">&quot;rbd://cdd3749c-df0d-40f6-a178-78ae91517dfa/openstack-00/9d1c6596-4b5c- |</span>
+<span class="s2">|                      | 49a9-87a6-51603460aeed/snap&quot;</span>, <span class="s2">&quot;metadata&quot;</span>: <span class="o">{}}]</span>                                   <span class="p">|</span>
+<span class="p">|</span> min_disk             <span class="p">|</span> <span class="m">20</span>                                                                               <span class="p">|</span>
+<span class="p">|</span> min_ram              <span class="p">|</span> <span class="m">256</span>                                                                              <span class="p">|</span>
+<span class="p">|</span> name                 <span class="p">|</span> wei-v1-snap                                                                      <span class="p">|</span>
+<span class="p">|</span> owner                <span class="p">|</span> 08c8707bb8134e6d8eff730fac326b87                                                 <span class="p">|</span>
+<span class="p">|</span> protected            <span class="p">|</span> False                                                                            <span class="p">|</span>
+<span class="p">|</span> root_device_name     <span class="p">|</span> /dev/vda                                                                         <span class="p">|</span>
+<span class="p">|</span> size                 <span class="p">|</span> <span class="m">0</span>                                                                                <span class="p">|</span>
+<span class="p">|</span> status               <span class="p">|</span> active                                                                           <span class="p">|</span>
+<span class="p">|</span> tags                 <span class="p">|</span> <span class="o">[]</span>                                                                               <span class="p">|</span>
+<span class="p">|</span> updated_at           <span class="p">|</span> <span class="m">2017</span>-03-12T12:04:57Z                                                             <span class="p">|</span>
+<span class="p">|</span> virtual_size         <span class="p">|</span> None                                                                             <span class="p">|</span>
+<span class="p">|</span> visibility           <span class="p">|</span> private                                                                          <span class="p">|</span>
++----------------------+----------------------------------------------------------------------------------+
+</pre></div>
+
+
+<p><strong>从镜像启动的虚拟机，可以对[ACTIVE, STOPPED, PAUSED, SUSPEND]状态的虚拟机进行快照操作。</strong></p>
+<ol>
+<li>
+<p>对于从镜像启动的虚拟机，同样会在创建快照之前，清除<code>instance_system_metadata</code>数据表中的<code>disk_format</code>和<code>container_format</code>参数，因为新创建的镜像可能会变成其他的格式，待镜像上传之后会给这些参数填充正确的值。其次删除不能被继承的properties。但依然可以通过在执行<code>nova image-create $INSTANCE_ID</code>时添加<code>--metadata &lt;key=value&gt;</code>参数来添加新的metadata。最终获取虚拟机最新的image-meta。</p>
+</li>
+<li>
+<p>nova-api在获取新image-meta元数据之后，会向glance-api发送create信息。glance-api根据传过来的instance和image-meta信息创建快照镜像。并返回镜像对象的image_meta给nova-api。</p>
+</li>
+<li>
+<p>nova-api在拿到镜像对象的image-meta之后，然后发送异步RPC调用虚拟机所在宿主机上的nova-compute服务，再由libvirt调用snapshot接口（要求qemu版本在0.14及以上）。</p>
+</li>
+</ol>
+<p><strong>Note:</strong> </p>
+<div class="highlight"><pre><span></span>1. 具有LVM encrypted 临时存储的虚拟机需要冷快照。但目前检查加密是多余的，因为LVM仅支持冷快照。
+2. 关机状态的虚拟机只能进行冷快照。
+</pre></div>
+
+
+<p>live_snapshot需满足的条件：
+1. hypervisor type一致。
+2. image source type不是lvm;
+3. nova.conf中<code>ephemeral_storage_encryption</code>中enabled=False;
+4. nova.conf中<code>workarounds</code>中disable_libvirt_livesnapshot=False;</p>
+<p>如果满足以上条件，还需要对虚拟机的磁盘guest.get_block_device(disk_path).abort_job()</p>
+<p><strong><code>live_snapshot</code>和<code>cold_snapshot</code>的区别与联系：</strong></p>
+<p><strong>区别：</strong>
+1. live_snapshot需满足一系列条件。
+2. 对cold_snapshot来说，如果virt_type不为lxc，电源状态处于[RUNNING, PAUSED]的虚拟机会被suspend，将虚拟机内存中的信息保存到磁盘上。待虚拟机快照创建完成并上传到glance之后，再根据其xml文件开启虚拟机。
+3. live_snapshot不会对虚拟机执行suspend。但在创建在线快照之前会终止根磁盘上所有任务（同时确认虚拟机处于RUNNING状态）。</p>
+<p><strong>联系：</strong>
+1. live_snapshot与cold_snapshot创建快照的流程相同。</p>
+<p><strong>live_snapshot/cold_snapshot (rbd-backend)的创建流程：</strong>
+1. 由于nova并不知glance是如何配置来存储image的，所以会获取虚拟机镜像所在的pool；
+2. 对虚拟机根磁盘进行打快照(即创建rbd快照)并设置该快照为保护状态；</p>
+<div class="highlight"><pre><span></span><span class="p">[</span><span class="n">root</span><span class="p">@</span><span class="n">compute</span><span class="o">-</span><span class="n">bj</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">withlvm</span> <span class="o">~</span><span class="p">]</span><span class="err">#</span> <span class="n">rbd</span> <span class="n">info</span> <span class="n">openstack</span><span class="o">-</span><span class="mo">00</span><span class="o">/</span><span class="mi">6</span><span class="n">a1e1b85</span><span class="o">-</span><span class="n">eacb</span><span class="o">-</span><span class="mi">401</span><span class="n">b</span><span class="o">-</span><span class="mi">9</span><span class="n">b5c</span><span class="o">-</span><span class="mf">93f</span><span class="mi">59</span><span class="n">c12c8d0_disk</span><span class="mf">@47e07</span><span class="n">a6c6f4d42b3817cae614493992d</span>
+<span class="n">rbd</span> <span class="n">image</span> <span class="err">&#39;</span><span class="mi">6</span><span class="n">a1e1b85</span><span class="o">-</span><span class="n">eacb</span><span class="o">-</span><span class="mi">401</span><span class="n">b</span><span class="o">-</span><span class="mi">9</span><span class="n">b5c</span><span class="o">-</span><span class="mf">93f</span><span class="mi">59</span><span class="n">c12c8d0_disk</span><span class="err">&#39;</span><span class="o">:</span>
+    <span class="n">size</span> <span class="mi">20480</span> <span class="n">MB</span> <span class="k">in</span> <span class="mi">5120</span> <span class="n">objects</span>
+    <span class="n">order</span> <span class="mi">22</span> <span class="p">(</span><span class="mi">4096</span> <span class="n">kB</span> <span class="n">objects</span><span class="p">)</span>
+    <span class="nl">block_name_prefix</span><span class="p">:</span> <span class="n">rbd_data</span><span class="mf">.12</span><span class="n">ea72ae8944a</span>
+    <span class="nl">format</span><span class="p">:</span> <span class="mi">2</span>
+    <span class="nl">features</span><span class="p">:</span> <span class="n">layering</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">-</span><span class="n">lock</span><span class="p">,</span> <span class="n">object</span><span class="o">-</span><span class="n">map</span><span class="p">,</span> <span class="n">fast</span><span class="o">-</span><span class="n">diff</span><span class="p">,</span> <span class="n">deep</span><span class="o">-</span><span class="n">flatten</span>
+    <span class="nl">flags</span><span class="p">:</span> 
+    <span class="nl">protected</span><span class="p">:</span> <span class="n">True</span>
+</pre></div>
+
+
+<ol>
+<li>将上面创建的快照clone到虚拟机镜像所在的pool；</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="p">[</span><span class="n">root</span><span class="p">@</span><span class="n">compute</span><span class="o">-</span><span class="n">bj</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">withlvm</span> <span class="o">~</span><span class="p">]</span><span class="err">#</span> <span class="n">rbd</span> <span class="n">info</span> <span class="n">openstack</span><span class="o">-</span><span class="mo">00</span><span class="o">/</span><span class="mi">3</span><span class="n">c4b3058</span><span class="o">-</span><span class="mf">0f</span><span class="mi">58</span><span class="o">-</span><span class="mi">483</span><span class="n">c</span><span class="o">-</span><span class="n">b7e2</span><span class="o">-</span><span class="mi">20274</span><span class="n">df984d9</span>
+<span class="n">rbd</span> <span class="n">image</span> <span class="err">&#39;</span><span class="mi">3</span><span class="n">c4b3058</span><span class="o">-</span><span class="mf">0f</span><span class="mi">58</span><span class="o">-</span><span class="mi">483</span><span class="n">c</span><span class="o">-</span><span class="n">b7e2</span><span class="o">-</span><span class="mi">20274</span><span class="n">df984d9</span><span class="err">&#39;</span><span class="o">:</span>
+    <span class="n">size</span> <span class="mi">20480</span> <span class="n">MB</span> <span class="k">in</span> <span class="mi">5120</span> <span class="n">objects</span>
+    <span class="n">order</span> <span class="mi">22</span> <span class="p">(</span><span class="mi">4096</span> <span class="n">kB</span> <span class="n">objects</span><span class="p">)</span>
+    <span class="nl">block_name_prefix</span><span class="p">:</span> <span class="n">rbd_data</span><span class="mf">.953</span><span class="n">d4e89a492</span>
+    <span class="nl">format</span><span class="p">:</span> <span class="mi">2</span>
+    <span class="nl">features</span><span class="p">:</span> <span class="n">layering</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">-</span><span class="n">lock</span><span class="p">,</span> <span class="n">object</span><span class="o">-</span><span class="n">map</span><span class="p">,</span> <span class="n">fast</span><span class="o">-</span><span class="n">diff</span><span class="p">,</span> <span class="n">deep</span><span class="o">-</span><span class="n">flatten</span>
+    <span class="nl">flags</span><span class="p">:</span> 
+    <span class="nl">parent</span><span class="p">:</span> <span class="n">openstack</span><span class="o">-</span><span class="mo">00</span><span class="o">/</span><span class="mi">6</span><span class="n">a1e1b85</span><span class="o">-</span><span class="n">eacb</span><span class="o">-</span><span class="mi">401</span><span class="n">b</span><span class="o">-</span><span class="mi">9</span><span class="n">b5c</span><span class="o">-</span><span class="mf">93f</span><span class="mi">59</span><span class="n">c12c8d0_disk</span><span class="mf">@47e07</span><span class="n">a6c6f4d42b3817cae614493992d</span>
+    <span class="nl">overlap</span><span class="p">:</span> <span class="mi">20480</span> <span class="n">MB</span>
+</pre></div>
+
+
+<ol>
+<li>对快照进行flatten操作，让其与它的parent解除关联；</li>
+</ol>
+<div class="highlight"><pre><span></span>[root@compute-bj-2-withlvm ~]# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9
+rbd image &#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;:
+    size 20480 MB in 5120 objects
+    order 22 (4096 kB objects)
+    block_name_prefix: rbd_data.953d4e89a492
+    format: 2
+    features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+    flags: 
+</pre></div>
+
+
+<ol>
+<li>将快照（此时已经成为image）的parent删除(即删除<code>openstack-00/6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk@47e07a6c6f4d42b3817cae614493992d</code>)</li>
+<li>对以上生成的image创建受保护的快照</li>
+</ol>
+<div class="highlight"><pre><span></span>[root@compute-bj-2-withlvm ~]# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9@snap
+rbd image &#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;:
+    size 20480 MB in 5120 objects
+    order 22 (4096 kB objects)
+    block_name_prefix: rbd_data.953d4e89a492
+    format: 2
+    features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+    flags: 
+    protected: True
+</pre></div>
+
+
+<ol>
+<li>更新image信息，上传到glance成功。
+<code>{'status': 'active', 'name': u'wei-image-snap', 'container_format': u'bare', 'disk_format': 'raw', 'location': u'rbd://cdd3749c-df0d-40f6-a178-78ae91517dfa/openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9/snap', 'is_public': False, '}</code></li>
+</ol>
+<h2>总结</h2>
+<ul>
+<li>
+<p>从image创建的虚拟机</p>
+<p>只会对根磁盘打快照。如果要基于该快照做rebuild操作时，需要先将源虚拟机上挂载的volume卷卸载掉，再重新挂载到rebuild之后的虚拟机上。
+根据以上分析，快照之后生成的image已经与其parent解除关联，所以源虚拟机是可以删除的。</p>
+</li>
+<li>
+<p>从volume创建的虚拟机</p>
+<p>会调用cinder对所有的volume卷（根磁盘和所有数据盘）打快照。
+源虚拟机也是可以删除的。rebuild操作会获取快照中的block_device_mapping信息，重新创建虚拟机并挂载数据盘。</p>
+</li>
+</ul>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

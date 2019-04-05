@@ -1,0 +1,548 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#DCDCDC">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#DCDCDC">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="RabbitMQ是一个支持多种通信协议的消息通信中间件，其核心原理即：接收和发送消息，是AMQP的典型应用。以下分模块列出与之相关的demo。 一、Hello World 以下实例实现了发送消息到一个已知队列中，并从该队列中接收消息。 send.py会发送一个消息到队列中，但是首先需要建立到RabbitMQ服务器的连接。 #!/usr/bin/env python import pika connection = pika.BlockingConnection(pika.ConnectionParameters( host=&#39;localhost&#39;,port=5672)) channel = connection.channel() #建立一个到RabbitMQ服务器的连接 channel.queue_declare(queue=&#39;hello&#39;) #申明一个队列，消息将被发送到这个队列中 channel.basic_publish(exchange=&#39;&#39;, #exchange=&#39;&#39;表示使用默认的交换机，由该默认交换机来指定某条消息需要投递 #到哪个队列，routing_key指定队列的名称 routing_key=&#39;hello&#39;, body=&#39;Hello …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="rabbitmq code snippets"/>
+<meta property="og:description" content="RabbitMQ是一个支持多种通信协议的消息通信中间件，其核心原理即：接收和发送消息，是AMQP的典型应用。以下分模块列出与之相关的demo。 一、Hello World 以下实例实现了发送消息到一个已知队列中，并从该队列中接收消息。 send.py会发送一个消息到队列中，但是首先需要建立到RabbitMQ服务器的连接。 #!/usr/bin/env python import pika connection = pika.BlockingConnection(pika.ConnectionParameters( host=&#39;localhost&#39;,port=5672)) channel = connection.channel() #建立一个到RabbitMQ服务器的连接 channel.queue_declare(queue=&#39;hello&#39;) #申明一个队列，消息将被发送到这个队列中 channel.basic_publish(exchange=&#39;&#39;, #exchange=&#39;&#39;表示使用默认的交换机，由该默认交换机来指定某条消息需要投递 #到哪个队列，routing_key指定队列的名称 routing_key=&#39;hello&#39;, body=&#39;Hello …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/articles/rabbitmq-code-snippets.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-10-11 12:00:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="OpenStack"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; rabbitmq code snippets</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="rabbitmq-code-snippets">rabbitmq code snippets</h1>
+    <p>
+          Posted on 2016-10-11(星期二) 12:00 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>RabbitMQ是一个支持多种通信协议的消息通信中间件，其核心原理即：接收和发送消息，是AMQP的典型应用。以下分模块列出与之相关的demo。</p>
+<h3>一、Hello World</h3>
+<p>以下实例实现了发送消息到一个已知队列中，并从该队列中接收消息。 send.py会发送一个消息到队列中，但是首先需要建立到RabbitMQ服务器的连接。</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+
+<span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span>
+        <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">5672</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>                       <span class="c1">#建立一个到RabbitMQ服务器的连接</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>                 <span class="c1">#申明一个队列，消息将被发送到这个队列中</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>                   <span class="c1">#exchange=&#39;&#39;表示使用默认的交换机，由该默认交换机来指定某条消息需要投递</span>
+<span class="c1">#到哪个队列，routing_key指定队列的名称</span>
+                      <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span>
+                      <span class="n">body</span><span class="o">=</span><span class="s1">&#39;Hello World!&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot; [x] Sent &#39;Hello World!&#39;&quot;</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>                                   <span class="c1">#在退出程序之前，我们需要确认网络缓冲已经被刷写、消息已经投递到RabbitMQ</span>
+</pre></div>
+
+
+<p>receive.py将会从队列中获取消息并将消息打印出来，前提仍然是需要先建立到RabbitMQ服务器的连接。</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+
+<span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span>
+        <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">5672</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>                 <span class="c1">#使用queue_declare创建一个队列,即使多次运行这个命令但只有一个队列会被创建。因为我们                              </span>
+                                                     <span class="c1">#并不确定哪个程序会首先运行。这种情况下，在程序中重复将队列重复声明一下是种值得推荐的做法</span>
+<span class="k">print</span> <span class="s1">&#39; [*] Waiting for messages. To exit press CTRL+C&#39;</span>
+
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>          <span class="c1">#该回调函数接收到的消息内容并输出到屏幕上</span>
+    <span class="k">print</span> <span class="s2">&quot; [x] Received </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">body</span><span class="p">,)</span>              
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_consume</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span>                      <span class="c1">#告诉RabbitMQ callback将从queue中接收消息</span>
+                      <span class="n">queue</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span>
+                      <span class="n">no_ack</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span> <span class="s1">&#39; [*] Waiting for messages. To exit press CTRL+C&#39;</span>   <span class="c1">#等待消息数据</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">start_consuming</span><span class="p">()</span>
+</pre></div>
+
+
+<h3>二、工作队列</h3>
+<p>工作队列是为了避免等待一些占用大量资源、时间的操作。后台的工作者worker进程会将任务从队列中取出并处理。若运行多个了工作者，任务会在这些工作者之间共享。默认情况下， RabbitMQ采用的是轮询机制，会按照顺序把消息发送给每一个消费者，使得平均每个消费者接收到同等数量的消息。</p>
+<h4>2.1 轮询调度</h4>
+<p>以下实例通过发送字符串并在字符串之后加点号（.）来表示任务的复杂度，一个点号（.）将会耗时1秒钟。 </p>
+<p>1）new_task.py会按照计划发送任务到工作队列。在以上send.py的基础上，主要是重新定义了消息message，通过此message来模拟。</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">message</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="ow">or</span> <span class="s2">&quot;Hello World!&quot;</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span><span class="n">body</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot; [x] Sent </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">message</span><span class="p">,)</span>
+</pre></div>
+
+
+<p>2）worker.py实现了为消息体中每一个点号（.）模拟1秒钟操作。主要在receive.py的基础上添加修改了如下代码。</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s2">&quot; [x] Received </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">body</span><span class="p">,)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span> <span class="n">body</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">print</span> <span class="s2">&quot; [x] Done&quot;</span>
+</pre></div>
+
+
+<p>可以通过在多个终端上运行worker.py脚本，同时在一个终端上不断运行new_task.py string，观察结果。</p>
+<h4>2.2 消息确认</h4>
+<p>为了防止消息丢失，RabbitMQ提供了消息确认机制，工作者可以通过ack，通知RabbitMQ已经收到并处理了某条信息；若工作者挂掉，RabbitMQ会将任务发送给其他工作者；若工作者和消息断开连接，RabbitMQ会重新发送信息。该机制通过no_ack=True设置，默认情况下开启。</p>
+<h4>2.3 消息持久化</h4>
+<p>将“队列”和“消息”设为持久化，可以防止当RabbitMQ服务器崩溃时，丢失所有的队列和信息。该机制通过durable=True设置。需要在消息发送端的代码new_task.py中如下代码：</p>
+<p>1）设置队列持久化</p>
+<div class="highlight"><pre><span></span>channel.queue_declare(queue=&#39;task_queue&#39;, durable=True)
+</pre></div>
+
+
+<p>2）设置消息持久化</p>
+<p>在new_task.py中添加如下代码实现消息</p>
+<div class="highlight"><pre><span></span>channel.basic_publish(exchange=&#39;&#39;,
+                      routing_key=&quot;task_queue&quot;,
+                      body=message,
+                      properties=pika.BasicProperties(
+                         delivery_mode = 2,                     # 设置消息持久化
+                      ))
+</pre></div>
+
+
+<h4>2.4 公平调度</h4>
+<p>公平调度实现了多个worker进程之间任务的均匀分配。 通过使用basic.qos方法，设置prefetch_count=1，告诉RabbitMQ在同一时刻，不要发送超过1条消息给某一个worker进程，直到该worker进程处理完了上一条消息并作出了响应。 在worker.py中添加如下代码实现公平调度：</p>
+<div class="highlight"><pre><span></span>channel.basic_qos(prefetch_count=1)
+</pre></div>
+
+
+<p>注意：当所有的worker处于繁忙状态时，消息队列会被填满，此时可以添加更多的worker或采用其他方式解决。</p>
+<h3>三、发布/订阅</h3>
+<p>前两部分都是将一个message发送给一个consumer，现在我们尝试将一个message发送给多个consumer（即broadcast）。每个consumer收到消息后都可以做不同的处理。例如接下来我们要做一个简单的logging system，productor发送一个log，一个receiver负责存在硬盘里，一个receiver负责显示在屏幕上。工作模型如下：</p>
+<p><img alt="image" src="../images/publish.png"></p>
+<p>send.py:</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding=utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>
+
+<span class="c1"># 声明一个exchange,类型为fanout.</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;logs&#39;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;fanout&#39;</span><span class="p">)</span>
+
+<span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="ow">or</span> <span class="s2">&quot;info: Hello World!&quot;</span>
+<span class="c1"># 这里的exchange不再为空，而是指定为‘log’</span>
+<span class="c1"># 这里的routing_key为空串，因为fanout型的exchange会忽略它</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;logs&#39;</span><span class="p">,</span>
+                      <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                      <span class="n">body</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;[x] sent </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">msg</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<p>receive.py</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python                                                      </span>
+<span class="c1"># -*- coding=utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span><span class="s1">&#39;localhost&#39;</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;logs&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;fanout&#39;</span><span class="p">)</span>
+<span class="c1"># 声明一个queue，这里不指明queue的名字，而是由系统随机生成，通常形如amq.xxx。</span>
+<span class="c1"># 而exclusive设为True的意义是： once we disconnect the consumer the queue should be deleted</span>
+<span class="c1"># 这样，无论什么时候我们需要一个空queue，都可以这样生成一个有随机名字的queue</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">exclusive</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c1"># 获取队列的名字</span>
+<span class="n">queue_name</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">queue</span>
+
+<span class="c1"># 绑定queue和exchange，告诉exchange要把message路由到哪个queue</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">queue_bind</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;logs&#39;</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="n">queue_name</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;[x] wait for logs.To exit press CTRL-c&quot;</span>
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s2">&quot;[x] receive </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">body</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_consume</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="n">queue_name</span><span class="p">,</span> <span class="n">no_ack</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">start_consuming</span><span class="p">()</span>
+</pre></div>
+
+
+<p>运行多个receiver端，可以看到它们是同时接收到message的。</p>
+<div class="highlight"><pre><span></span># 将接收到的消息日志存入文件
+python receive.py &gt; log.txt
+# 将接收到的消息日志显示在屏幕上
+python receive.py
+</pre></div>
+
+
+<h3>四、路由（直接匹配）</h3>
+<p>第三部分实现了exchange给与它绑定的所有queue广播消息，这里实现发送端指定接收的queue。原理很简单,将一个queue和一个exchange绑定时，可以指定一个路由键(binding key)。发送端发送消息时，设定相应的路由键(routing key)，这样，当message到达exchange时，就根据路由键，将message发送给相应的queue。这里继上一篇，发送端指定info、warning、error三种级别的信息，由exchange发送到不同的接收端。工作模型如下:</p>
+<p><img alt="image" src="../images/direct-exchange.png"></p>
+<h4>4.1 绑定时指定路由键</h4>
+<div class="highlight"><pre><span></span>channel.queue_bind(exchange=exchange_name,
+                   queue=queue_name,
+                   routing_key=&#39;error&#39;)
+</pre></div>
+
+
+<h4>4.2 直接交换（Direct exchange）</h4>
+<p>exchange有四种类型，分别为direct,fanout,topic,headers。第三部分声明exchange时类型是fanout，fanout exchange会忽略路由键，而将message发送给每一个绑定了的队列，继而实现了广播的功能。为了给特定队列发送message，这里指定exchange的类型设定为direct。这样，exchange会将bind key 与 routing key 进行比较，若相同，则发送给相应的队列。若没有binding key 与routing key相同，则把message丢弃。</p>
+<div class="highlight"><pre><span></span><span class="c1"># 绑定queue和exchange，指定类型为direct</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;direct_logs&#39;</span><span class="p">,</span>
+                         <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direct&#39;</span><span class="p">)</span>
+
+<span class="c1"># 发送message时，设定routing key</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;direct_logs&#39;</span><span class="p">,</span>
+                      <span class="n">routing_key</span><span class="o">=</span><span class="n">severity</span><span class="p">,</span>
+                      <span class="n">body</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+</pre></div>
+
+
+<h4>4.3 多重绑定</h4>
+<p>多个queue与exchange绑定时，可以有相同的binding key，这样，当一个routing key与这个binding key相同时，message会发送给相应的多个queue，实现类似组播的功能。效果如图:</p>
+<p><img alt="image" src="../images/direct-exchange-multiple.png"></p>
+<p>具体实现</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding=utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>
+<span class="c1"># 设定一个direct exchange</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;direct_logs&#39;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direct&#39;</span><span class="p">)</span>
+<span class="c1"># 发送三个不同routing key 的message</span>
+<span class="n">routing</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;warning&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">route</span> <span class="ow">in</span> <span class="n">routing</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: hello wordol&quot;</span> <span class="o">%</span> <span class="n">route</span>
+    <span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;direct_logs&#39;</span><span class="p">,</span>
+                          <span class="n">routing_key</span><span class="o">=</span><span class="n">route</span><span class="p">,</span>
+                          <span class="n">body</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s2">&quot;[x] sent </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">msg</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<p>相比前一节，改动主要有两点： 
+1. 设定exchange的类型为direct 
+2. 发送消息时指定routing_key</p>
+<p>receive.py:</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python                                                      </span>
+<span class="c1"># -*- coding=utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;direct_logs&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;direct&#39;</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">exclusive</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">queue_name</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">queue</span>
+<span class="c1"># 从命令行接收binding key参数，若没有，则设为error</span>
+<span class="n">routings</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">routings</span><span class="p">:</span>
+    <span class="n">routings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">route</span> <span class="ow">in</span> <span class="n">routings</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">route</span>
+    <span class="n">channel</span><span class="o">.</span><span class="n">queue_bind</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;direct_logs&#39;</span><span class="p">,</span>
+                       <span class="n">queue</span><span class="o">=</span><span class="n">queue_name</span><span class="p">,</span>
+                       <span class="n">routing_key</span><span class="o">=</span><span class="n">route</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s2">&quot;[x] wait for logs.To exit press CTRL-c&quot;</span>
+
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s2">&quot;[x] receive </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">body</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_consume</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="n">queue_name</span><span class="p">,</span> <span class="n">no_ack</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">start_consuming</span><span class="p">()</span>
+</pre></div>
+
+
+<p>相比前一节，改动主要有两点： 
+1. 设定exchange的类型为direct 
+2. 从命令行接收binding key参数，从而在绑定时使用</p>
+<h3>五、主题交换机（模糊匹配）</h3>
+<p>由上可以看出，直连交换机可以有选择性的接收日志，但是无法基于多个标准执行路由操作。主题交换机的作用就是为了该目的来实现，大大提高了灵活性。 主题交换机的路由键是一个由.分隔开的词语列表，比如“a.b.c”, "a.d.e", "e.z.c"。 以下用图来说明： </p>
+<p><img alt="image" src="../images/topic_exchange.png"></p>
+<p>这三个绑定键被可以总结为： Q1 对所有的桔黄色动物都感兴趣。 Q2 则是对所有的兔子和所有懒惰的动物感兴趣。 两个通配符： '': 匹配前一个字符一次或多次 '#': 匹配前一个字符0次或多次 例： a. ，匹配的有a., a.b等等 a.#，匹配的有a,a., a.b....</p>
+<p>emit_log_topic.py:</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span>
+            <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">5672</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;topic_logs&#39;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;topic&#39;</span><span class="p">)</span>
+<span class="n">routing_key</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39;anonymous.info&#39;</span>     <span class="c1">#设置路由键</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span> <span class="ow">or</span> <span class="s1">&#39;Hello World!&#39;</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;topic_logs&#39;</span><span class="p">,</span>
+                      <span class="n">routing_key</span><span class="o">=</span><span class="n">routing_key</span><span class="p">,</span>
+                      <span class="n">body</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot; [x] Sent </span><span class="si">%r</span><span class="s2">:</span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">routing_key</span><span class="p">,</span> <span class="n">message</span><span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<p>receive_logs_topic.py:</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span>
+            <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">5672</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;topic_logs&#39;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;topic&#39;</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">exclusive</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>                          <span class="c1">#随机生成队列</span>
+<span class="n">queue_name</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">queue</span>
+
+<span class="n">binding_keys</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">binding_keys</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Usage: </span><span class="si">%s</span><span class="s2"> [binding_key]...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">binding_key</span> <span class="ow">in</span> <span class="n">binding_keys</span><span class="p">:</span>                                       <span class="c1">#获取绑定键，将绑定键和路由键做匹配，进行选择接受的日志类型</span>
+    <span class="n">channel</span><span class="o">.</span><span class="n">queue_bind</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;topic_logs&#39;</span><span class="p">,</span><span class="n">queue</span><span class="o">=</span><span class="n">queue_name</span><span class="p">,</span><span class="n">routing_key</span><span class="o">=</span><span class="n">binding_key</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39; [*] Waiting for logs. To exit press CTRL+C&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot; [x] </span><span class="si">%r</span><span class="s2">:</span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">method</span><span class="o">.</span><span class="n">routing_key</span><span class="p">,</span> <span class="n">body</span><span class="p">))</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_consume</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span><span class="n">queue</span><span class="o">=</span><span class="n">queue_name</span><span class="p">,</span><span class="n">no_ack</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">start_consuming</span><span class="p">()</span>
+</pre></div>
+
+
+<p>观察到运行结果如下：</p>
+<div class="highlight"><pre><span></span>shell1 $ ./emit_log_topic.py &quot;kern.critical&quot; &quot;A critical kernel error&quot;
+ [x] Sent &#39;&#39;:&#39;A critical kernel error&#39;
+
+
+shell2 $ ./receive_logs_topic.py &quot;#&quot;                             #接收所有日志信息
+ [*] Waiting for logs. To exit press CTRL+C
+ [x] &#39;kern.critical&#39;:&#39;A critical kernel error&#39;
+
+
+shell3 $ ./receive_logs_topic.py &quot;kern.*&quot;                        #接收所有来自内核的日志信息
+ [*] Waiting for logs. To exit press CTRL+C
+ [x] &#39;kern.critical&#39;:&#39;A critical kernel error&#39;
+
+shell4 $ ./receive_logs_topic.py &quot;*.error&quot;                        #接收所有的错误信息
+ [*] Waiting for logs. To exit press CTRL+C
+</pre></div>
+
+
+<p>说明: 
+1. binding key 设置为'#'时，topic exchange 和 fanout exchange的效果一样，相应的queue能接收到每一个message。 
+2. binding key 里没有'*'或‘#’时， topic exchange 和 direct exchange的效果一样。</p>
+<h3>六、远程过程调用</h3>
+<p>将一个函数运行在远程计算机上并且等待从那儿获得结果，这种模式被称为远程过程调用RPC。 以下实例模拟RPC服务来返回斐波那契数列。 服务器端代码：</p>
+<p>rpc_server.py:</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">5672</span><span class="p">))</span>               <span class="c1">#建立到RabbitMQ服务器的连接</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>                                  <span class="c1">#建立通道</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s1">&#39;rpc_queue&#39;</span><span class="p">)</span>                        <span class="c1">#申明消息队列</span>
+<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>                                                     <span class="c1">#定义斐波那契函数</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">on_request</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span><span class="n">method</span><span class="p">,</span><span class="n">props</span><span class="p">,</span><span class="n">body</span><span class="p">):</span>                           <span class="c1">#为basic_consume声明一个回调函数，执行实际的操作并且做出响应</span>
+    <span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s2">&quot;[.] fib(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">,)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">ch</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="n">routing_key</span><span class="o">=</span><span class="n">props</span><span class="o">.</span><span class="n">reply_to</span><span class="p">,</span>                 <span class="c1">#reply_to（回复目标）：用来命名回调队列</span>
+                    <span class="n">properties</span><span class="o">=</span><span class="n">pika</span><span class="o">.</span><span class="n">BasicProperties</span><span class="p">(</span><span class="n">correlation_id</span><span class="o">=</span><span class="n">props</span><span class="o">.</span><span class="n">correlation_id</span><span class="p">),</span>                 <span class="c1">#correlation_id（关联标识）：将RPC的响应和请求关联起来</span>
+                    <span class="n">body</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="p">))</span>                                               
+    <span class="n">ch</span><span class="o">.</span><span class="n">basic_ack</span><span class="p">(</span><span class="n">delivery_tag</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">delivery_tag</span><span class="p">)</span>            <span class="c1">#这是上面提到过得消息确认机制</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_qos</span><span class="p">(</span><span class="n">prefetch_count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>                             <span class="c1">#实现公平调度机制</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_consume</span><span class="p">(</span><span class="n">on_request</span><span class="p">,</span><span class="n">queue</span><span class="o">=</span><span class="s1">&#39;rpc_queue&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot;[x] Awaiting RPC requests&quot;</span>
+<span class="n">channel</span><span class="o">.</span><span class="n">start_consuming</span><span class="p">()</span>
+</pre></div>
+
+
+<p>客户端代码：</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+<span class="kn">import</span> <span class="nn">uuid</span> 
+
+<span class="k">class</span> <span class="nc">FibonacciRpcClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span>
+                                        <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>  
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">exclusive</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>                    <span class="c1">#声明匿名独享的回调队列</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback_queue</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_consume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_response</span><span class="p">,</span> <span class="n">no_ack</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                   <span class="n">queue</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">callback_queue</span><span class="p">)</span>                  <span class="c1">#订阅上面声明的回调队列，以便接收RPC的响应</span>
+
+    <span class="k">def</span> <span class="nf">on_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ch</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">props</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">corr_id</span> <span class="o">==</span> <span class="n">props</span><span class="o">.</span><span class="n">correlation_id</span><span class="p">:</span>                               <span class="c1">#检查每一个响应消息的correlation_id是否与我们期待的一致</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="n">body</span>                                               <span class="c1">#若correlation_id一致，则将响应结果赋值给self.response</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>                             <span class="c1">#执行RPC请求</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corr_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>           <span class="c1">#生成一个唯一的correlation_id，并将其保存起来</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>                                <span class="c1">#将带有reply_to和correlation_id属性的消息发布出去</span>
+                                   <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;rpc_queue&#39;</span><span class="p">,</span>
+                                   <span class="n">properties</span><span class="o">=</span><span class="n">pika</span><span class="o">.</span><span class="n">BasicProperties</span><span class="p">(</span><span class="n">reply_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback_queue</span><span class="p">,</span>
+                                                                   <span class="n">correlation_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">corr_id</span><span class="p">,),</span>
+                                                                   <span class="n">body</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>        
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">process_data_events</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">)</span>        
+
+<span class="n">fibonacci_rpc</span> <span class="o">=</span> <span class="n">FibonacciRpcClient</span><span class="p">()</span>              <span class="c1">#发送RPC请求</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot; [x] Requesting fib(30)&quot;</span><span class="p">)</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">fibonacci_rpc</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>                
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot; [.] Got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">response</span><span class="p">)</span>                   <span class="c1">#接收响应的结果并打印</span>
+</pre></div>
+
+
+<h3>七、总结</h3>
+<p><img alt="image" src="../images/rpc.png"></p>
+<p>RPC的工作机制如下： </p>
+<p>客户端启动时，会创建一个匿名独享的回调队列； 在RPC请求中，客户端通过basic_publish发送带有两个属性的消息：一个是设置回调队列的 reply_to属性，另一个是设置唯一值的 correlation_id 属性； 以上请求会发送到rpc_queue队列中； RPC服务器端会等待请求发送到这个队列中。当请求出现时，服务器端执行他的工作并将带有执行结果的消息发送给reply_to字段指定的队列； 客户端等待回调队列里的数据，当消息出现时，它会检查correlation_id属性，若此属性值与请求匹配，就将其返回给应用。</p>
+<h3>八、参考文档</h3>
+<ol>
+<li>http://www.rabbitmq.com/tutorials/tutorial-one-python.html</li>
+<li>http://rabbitmq.mr-ping.com/</li>
+</ol>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>
