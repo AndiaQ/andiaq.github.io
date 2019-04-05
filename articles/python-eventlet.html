@@ -27,14 +27,14 @@
 
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#DCDCDC">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Microsoft EDGE -->
-    <meta name="msapplication-TileColor" content="#DCDCDC">
+    <meta name="msapplication-TileColor" content="#333333">
 
 <meta name="author" content="Yuwei Wang" />
 <meta name="description" content="一直迷糊于操作系统的进程线程协程等概念及其切换，本文从基础开始梳理，旨在学习python的eventlet,及其在OpenStack中的应用。 一、简介 eventlet是一个python的并发网络库，采用epoll/pool/select等异步 IO，并结合 greenlet 协程库实现并发。简单来说，eventlet是帮助实现并发的python库，不一定并行，但是也可以并行；在讲究高并发与分布式的今天，同步和阻塞就慢，异步和非阻塞就快。 协程是一种运行在线程中的执行单位，同一个线程中可以同时运行多个协程，注意：该同时运行并不是真正意义上的并行，同时拥有CPU时间片的只有一个当前协程，其它的协程处于挂起状态。不要觉得这样”协程”就没有意义，因为有另一类协程，当前需要的不是CPU而是IO。众所周知，CPU是很快的，而IO很慢，所以当一些协程都在挂起等待IO的时候，一些协程则在用CPU，在同一个线程中跑多个协程的就可以更充分地利用硬件资源，极大的提高服务的响应能力。不同于线程和进程由内核来调度并分配时间片，协程需要在代码层显式地控制与转换。 eventlet又将协程称为绿色线程(GreenThread)。所谓的并发，就是创建多个greenthread,并对其进行管理，以实现非阻塞式的I/O …" />

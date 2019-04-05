@@ -27,14 +27,14 @@
 
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#DCDCDC">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Microsoft EDGE -->
-    <meta name="msapplication-TileColor" content="#DCDCDC">
+    <meta name="msapplication-TileColor" content="#333333">
 
 <meta name="author" content="Yuwei Wang" />
 <meta name="description" content="一、背景 最近在OpenStack环境中分析给虚拟机打快照的过程。发现OpenStack默认打快照的方式是cold snapshot，在打快照的过程中，要么会把虚拟机关机（save状态），要么会将实例的文件系统静默。具体的情况下次解析。此文主要分析rbd做后端存储时使用qemu-guest-agent来静默文件系统。 二、简介 在KVM系统中，qemu-guest-agent（即qga）是一个运行在虚拟机内部的常驻进程。其功能类似vmware-tools，即实现宿主机和虚拟机的通信，这种方式不依赖于网络，而是依赖于virtio-serial（默认首选方式）或者isa-serial。OpenStack中，QEMU则提供了串口设备的模拟及数据交换的channel，最终呈现出来的是一个虚拟机内部的串口设备和宿主机上对应该虚拟机的unix socket文件。qga则通过读写串口设备和socket进行通信，通信协议为QMP（QEMU Machine Protocol）。QMP是一种基于json格式的传输协议，我们能利用它与从外部控制QEMU虚拟机实例，例如查询，更改虚拟机的状态，获取设备信息等等。 三、使用方式 3.1 前提条件 1） 使用ceph做后端存储时，为了实现Nova、Glance、Cinder统一存储快速创建虚拟机，必须使用raw格式的镜像，如果使用qcow2会导致创建虚拟机过程很慢（Nova会先下载镜像后台转成raw格式再启动 …" />
@@ -120,13 +120,12 @@
 <h3>三、使用方式</h3>
 <h4>3.1 前提条件</h4>
 <p>1） 使用ceph做后端存储时，为了实现Nova、Glance、Cinder统一存储快速创建虚拟机，必须使用raw格式的镜像，如果使用qcow2会导致创建虚拟机过程很慢（Nova会先下载镜像后台转成raw格式再启动）</p>
-<div class="highlight"><pre><span></span>qemu-img convert -f qcow2 -O raw cirros-0.3.4-x86_64-disk.img
-cirros-0.3.4-x86_64-disk.raw
+<div class="highlight"><pre><span></span><span class="c1"># qemu-img convert -f qcow2 -O raw cirros-0.3.4-x86_64-disk.img cirros-0.3.4-x86_64-disk.raw</span>
 </pre></div>
 
 
 <p>2）通过OpenStack创建虚拟机时，首先要满足选择的镜像属性hw_qemu_guest_agent=yes：</p>
-<div class="highlight"><pre><span></span>glance image-update --property hw_qemu_guest_agent=yes $image_id
+<div class="highlight"><pre><span></span><span class="c1"># glance image-update --property hw_qemu_guest_agent=yes $image_id</span>
 </pre></div>
 
 

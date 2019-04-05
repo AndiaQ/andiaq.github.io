@@ -27,14 +27,14 @@
 
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#DCDCDC">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Microsoft EDGE -->
-    <meta name="msapplication-TileColor" content="#DCDCDC">
+    <meta name="msapplication-TileColor" content="#333333">
 
     <meta name="author" content="Yuwei Wang" />
     <meta name="description" content="" />
@@ -179,7 +179,7 @@
 </article>
 <article>
   <header>
-    <h2><a href="https://andiaq.github.io/articles/git-usages.html#git-usages">Git常用操作</a></h2>
+    <h2><a href="https://andiaq.github.io/articles/git-usage.html#git-usage">Git常用操作</a></h2>
     <p>
           Posted on 2016-12-11(星期日) 20:24 in <a href="https://andiaq.github.io/category/tools.html">Tools</a>
 
@@ -234,12 +234,12 @@
 
 
 <p>常用的格式占位符写法及其代表的意义如下：</p>
-<div class="highlight"><pre><span></span><span class="err">选项</span>   <span class="err">说明</span>
-<span class="o">%</span><span class="n">H</span>  <span class="err">提交对象（</span><span class="n">commit</span><span class="err">）的完整哈希字串</span>
-<span class="nf">%h</span>  <span class="err">提交对象的简短哈希字串</span>
-<span class="o">%</span><span class="n">T</span>  <span class="err">树对象（</span><span class="n">tree</span><span class="err">）的完整哈希字串 …</span></pre></div>
+<div class="highlight"><pre><span></span>选项   说明
+%H  提交对象（commit）的完整哈希字串
+%h  提交对象的简短哈希字串
+%T  树对象（tree）的完整哈希字串 …</pre></div>
         <br>
-        <a class="btn" href="https://andiaq.github.io/articles/git-usages.html#git-usages">    Continue reading
+        <a class="btn" href="https://andiaq.github.io/articles/git-usage.html#git-usage">    Continue reading
 </a>
   </div>
   <hr />
@@ -386,12 +386,17 @@
 <p>RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。</p>
 <h3>二、RPM常用命令</h3>
 <p>常用命令组合：</p>
-<div class="highlight"><pre><span></span><span class="p">-</span><span class="nf">ivh</span>  <span class="err">#</span> <span class="err">安装显示安装进度</span> <span class="o">--</span><span class="n">install</span><span class="o">--</span><span class="n">verbose</span><span class="o">--</span><span class="n">hash</span>
-<span class="o">-</span><span class="n">Uvh</span>  <span class="err">#</span> <span class="err">升级软件包</span> <span class="o">--</span><span class="n">Update</span><span class="p">;</span>
-<span class="p">-</span><span class="nf">qpl</span>  <span class="err">#</span> <span class="err">列出</span><span class="n">RPM软件包内的文件信息</span> <span class="p">[</span><span class="n">Query</span> <span class="n">Package</span> <span class="n">list</span><span class="p">];</span>
-<span class="p">-</span><span class="nf">qpi</span>  <span class="err">#</span> <span class="err">列出</span><span class="n">RPM软件包的描述信息</span> <span class="p">[</span><span class="n">Query</span> <span class="n">Package</span> <span class="n">install</span> <span class="n">package</span><span class="p">(</span><span class="n">s</span><span class="p">)];</span>
-<span class="p">-</span><span class="nf">qf</span>   <span class="err">#</span> <span class="err">查找指定文件属于哪个</span><span class="n">RPM软件包</span> <span class="p">[</span><span class="n">Query</span> <span class="n">File</span><span class="p">];</span>
-<span class="p">-</span><span class="nf">Va</span>   <span class="err">#</span> <span class="err">校验所有的</span><span class="n">RPM软件包 …</span></pre></div>
+<div class="highlight"><pre><span></span>-ivh  # 安装显示安装进度 --install--verbose--hash
+-Uvh  # 升级软件包 --Update;
+-qpl  # 列出RPM软件包内的文件信息 [Query Package list];
+-qpi  # 列出RPM软件包的描述信息 [Query Package install package(s)];
+-qf   # 查找指定文件属于哪个RPM软件包 [Query File];
+-Va   # 校验所有的RPM软件包，查找丢失的文件 [View Lost];
+-e    # 删除包  
+</pre></div>
+
+
+<p>更多命令可以通过 …</p>
         <br>
         <a class="btn" href="https://andiaq.github.io/articles/make-rpm-package.html#make-rpm-package">    Continue reading
 </a>

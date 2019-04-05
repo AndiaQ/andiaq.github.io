@@ -1,0 +1,484 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。 git log 显示所有历史记录 # git log 显示最近N条历史记录 # git log -N 显示详细历史记录，包括代码改动内容 # git log -p 只显示一行，哈希值和提交说明 # git log --pretty=oneline 显示提交历史记录的简单图形 # glog # git log --pretty=format:&#34;%H %s&#34; --graph 自定义格式显示历史记录 # git log --pretty=format:&#34; &#34; 常用的格式占位符写法及其代表的意义如下： 选项 说明 %H 提交对象（commit）的完整哈希字串 %h 提交对象的简短哈希字串 %T 树对象（tree）的完整哈希字串 …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="Git常用操作"/>
+<meta property="og:description" content="对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。 git log 显示所有历史记录 # git log 显示最近N条历史记录 # git log -N 显示详细历史记录，包括代码改动内容 # git log -p 只显示一行，哈希值和提交说明 # git log --pretty=oneline 显示提交历史记录的简单图形 # glog # git log --pretty=format:&#34;%H %s&#34; --graph 自定义格式显示历史记录 # git log --pretty=format:&#34; &#34; 常用的格式占位符写法及其代表的意义如下： 选项 说明 %H 提交对象（commit）的完整哈希字串 %h 提交对象的简短哈希字串 %T 树对象（tree）的完整哈希字串 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/articles/git-usage.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-12-11 20:24:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="Tools"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; Git常用操作</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="git-usage">Git常用操作</h1>
+    <p>
+          Posted on 2016-12-11(星期日) 20:24 in <a href="https://andiaq.github.io/category/tools.html">Tools</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。</p>
+<h2>git log</h2>
+<ul>
+<li>显示所有历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log</span>
+</pre></div>
+
+
+<ul>
+<li>显示最近N条历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log -N </span>
+</pre></div>
+
+
+<ul>
+<li>显示详细历史记录，包括代码改动内容</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log -p </span>
+</pre></div>
+
+
+<ul>
+<li>只显示一行，哈希值和提交说明</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=oneline</span>
+</pre></div>
+
+
+<ul>
+<li>显示提交历史记录的简单图形</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># glog</span>
+<span class="c1"># git log --pretty=format:&quot;%H %s&quot; --graph</span>
+</pre></div>
+
+
+<ul>
+<li>自定义格式显示历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=format:&quot; &quot;</span>
+</pre></div>
+
+
+<p>常用的格式占位符写法及其代表的意义如下：</p>
+<div class="highlight"><pre><span></span>选项   说明
+%H  提交对象（commit）的完整哈希字串
+%h  提交对象的简短哈希字串
+%T  树对象（tree）的完整哈希字串
+%t  树对象的简短哈希字串
+%P  父对象（parent）的完整哈希字串
+%p  父对象的简短哈希字串
+%an 作者（author）的名字
+%ae 作者的电子邮件地址
+%ad 作者修订日期（可以用 -date= 选项定制格式）
+%ar 作者修订日期，按多久以前的方式显示
+%cn 提交者(committer)的名字
+%ce 提交者的电子邮件地址
+%cd 提交日期
+%cr 提交日期，按多久以前的方式显示
+%s  提交说明
+</pre></div>
+
+
+<p>例如：</p>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=format:&quot;%H | %an | %s&quot;</span>
+6f74e1e5d83fbfd5fa7d9a079854e168689920b5 <span class="p">|</span> AndiaQ <span class="p">|</span> Merge branch <span class="s1">&#39;master&#39;</span> of git.ustack.com:uos3/nova
+486b90b24e9515678166d0b370e4daefe4e9e341 <span class="p">|</span> Jenkins <span class="p">|</span> Merge <span class="s2">&quot;Make server_external_events cells-aware&quot;</span>
+6a3b436b09321259d4fe1c5079c65d0241464a3a <span class="p">|</span> Jenkins <span class="p">|</span> Merge <span class="s2">&quot;Remove service version check for Ocata/Newton placement decisions&quot;</span>
+8bbc1eeca75f2ebdd57d977ebb9004ac1ade6690 <span class="p">|</span> Jenkins <span class="p">|</span> Merge <span class="s2">&quot;Fix novncproxy for python3&quot;</span>
+94f3281a53b0592a8985f7301dd0a62c6b413a90 <span class="p">|</span> Dan Smith <span class="p">|</span> Make server_external_events cells-aware
+c604a6cf16441458df79654cb2cfbb551fa7d0b7 <span class="p">|</span> Dan Smith <span class="p">|</span> Remove service version check <span class="k">for</span> Ocata/Newton placement decisions
+384e02217df4aae72340e169d05b9d595f54fb37 <span class="p">|</span> Jenkins <span class="p">|</span> Merge <span class="s2">&quot;Tests: improve assertJsonEqual diagnostic message&quot;</span>
+c746974054e1a78032051fef7202a1b98dc9603f <span class="p">|</span> Jenkins <span class="p">|</span> Merge <span class="s2">&quot;Raise correct error instead of class exist in Placement API&quot;</span>
+f6885362fe4e08a7019504bc5d7cc4e717d3c9af <span class="p">|</span> zhouweiyu <span class="p">|</span> Initial empty repository
+</pre></div>
+
+
+<h2>git rebase</h2>
+<p><code>git rebase</code>操作简单理解就是“换基”。一般只操作还未push到远程仓库的commit，一旦push到了远程仓库，那么不允许再修改commit，不然会给其他开发带来很多麻烦。</p>
+<div class="highlight"><pre><span></span>Assume the following history exists and the current branch is &quot;topic&quot;:
+
+             A---B---C topic
+            /
+       D---E---F---G master
+
+
+From this point, the result of either of the following commands:
+
+   git rebase master
+   git rebase master topic
+
+would be:
+
+                     A&#39;--B&#39;--C&#39; topic
+                    /
+       D---E---F---G master
+</pre></div>
+
+
+<p>如上图所示，topic和master有共同的基E，即topic分支是从master分支的E点切出来的新分支。当topic分支有了自己的私有开发，但master分支仍然在更新时，若操作者需要拉取master分支更新的内容，这时就需要“换基”。也就是说，将topic的HEAD变成master分支最新的G，将自己的私有代码放到master分支的尾巴上。</p>
+<p><code>git rebase</code>还有一些高级且很重要的操作。</p>
+<h3>commit合并</h3>
+<p>当需要在一个分支上将两个或者以上的commits合并时，我们可以通过<code>git rebase -i</code>来完成这件事。</p>
+<ul>
+<li><code>-i</code> 是 <code>--interactive</code> 的简写，在使用 git rebase -i 时，我们要在后面再添加一个参数，这个参数应该是 最新的一个想保留的 Commit。</li>
+</ul>
+<p>如下是一个简单的范例，将e46b345和44e910a两次commits合并成一个。</p>
+<div class="highlight"><pre><span></span>➜  nova git:<span class="o">(</span>master<span class="o">)</span> git log --pretty<span class="o">=</span>format:<span class="s2">&quot;%H| %s&quot;</span>
+e46b345324a8411e8b9b1a085f3df67e48799c48 <span class="p">|</span> Fix novncproxy <span class="k">for</span> python3
+44e910a693b424a2f75fbca76f97eb6d8ed94fc7 <span class="p">|</span> Tests: improve assertJsonEqual diagnostic message
+e8b7214946fd124e568495cd7cd78ae3e0033d07 <span class="p">|</span> Raise correct error instead of class exist in Placement API
+...
+</pre></div>
+
+
+<p>根据上面的解释，那么<code>-i</code>后面的commit就是<code>e8b7214</code>。（若想将<code>44e910a</code>和<code>e8b7214</code>合并的话，则<code>-i</code>后面的commit应该是<code>e46b345</code>）</p>
+<div class="highlight"><pre><span></span>git rebase -i e8b7214
+</pre></div>
+
+
+<p>进入如下编辑界面：</p>
+<div class="highlight"><pre><span></span>pick 44e910a Tests: improve assertJsonEqual diagnostic message                                                                                                                                                                              
+pick e46b345 Fix novncproxy <span class="k">for</span> python3
+
+<span class="c1"># Rebase e8b7214..e46b345 onto e8b7214</span>
+<span class="c1">#</span>
+<span class="c1"># Commands:</span>
+<span class="c1">#  p, pick = use commit</span>
+<span class="c1">#  r, reword = use commit, but edit the commit message</span>
+<span class="c1">#  e, edit = use commit, but stop for amending</span>
+<span class="c1">#  s, squash = use commit, but meld into previous commit</span>
+<span class="c1">#  f, fixup = like &quot;squash&quot;, but discard this commit&#39;s log message</span>
+<span class="c1">#  x, exec = run command (the rest of the line) using shell</span>
+<span class="c1">#</span>
+<span class="c1"># These lines can be re-ordered; they are executed from top to bottom.</span>
+<span class="c1">#</span>
+<span class="c1"># If you remove a line here THAT COMMIT WILL BE LOST.</span>
+<span class="c1">#</span>
+<span class="c1"># However, if you remove everything, the rebase will be aborted.</span>
+<span class="c1">#</span>
+<span class="c1"># Note that empty commits are commented out</span>
+</pre></div>
+
+
+<p>简单说明一下以上注释中的部分内容：
+- <code>squash</code>:使用该commit，会被合并到上一个commit</p>
+<p>因此我们将用到的就是这个command。下面在编辑框中修改如下内容：</p>
+<div class="highlight"><pre><span></span>pick 44e910a Tests: improve assertJsonEqual diagnostic message
+squash e46b345 Fix novncproxy for python3
+</pre></div>
+
+
+<p>修改完后wq保存并退出，出现如下界面：</p>
+<div class="highlight"><pre><span></span><span class="c1"># This is a combination of 2 commits.                                                                                                                                                                                                       </span>
+<span class="c1"># The first commit&#39;s message is:</span>
+
+Tests: improve assertJsonEqual diagnostic message
+
+This change adds a path information in assertJsonEqual output.
+Example:
+before: Difference: <span class="m">1</span> !<span class="o">=</span> <span class="m">2</span>
+arter: Difference: <span class="m">1</span> !<span class="o">=</span> <span class="m">2</span>: path: root.country.state.city<span class="o">[</span><span class="m">0</span><span class="o">]</span>.street.building
+
+Change-Id: I4243e48cc7f01b5fa049e0c4aef48a72cc640d0a
+
+<span class="c1"># This is the 2nd commit message:</span>
+
+Fix novncproxy <span class="k">for</span> python3
+
+The getheader<span class="o">()</span> <span class="k">function</span> isn<span class="s1">&#39;t available in python3 [1]. Instead one can </span>
+<span class="s1">simply use get() similar to what is done in the websockify module that</span>
+<span class="s1">this code is using.</span>
+
+<span class="s1">[1] https://bugs.python.org/issue4773</span>
+
+<span class="s1">Change-Id: I349742d80e0abeb7866eeeb647ce18948eff81f8</span>
+<span class="s1">Partial-Bug: 1663593</span>
+
+<span class="s1"># Please enter the commit message for your changes. Lines starting</span>
+<span class="s1"># with &#39;</span><span class="c1">#&#39; will be ignored, and an empty message aborts the commit.</span>
+<span class="c1">#</span>
+<span class="c1"># Author:    Andrey Volkov &lt;avolkov@mirantis.com&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># rebase in progress; onto e8b7214</span>
+<span class="c1"># You are currently editing a commit while rebasing branch &#39;master&#39; on &#39;e8b7214&#39;.</span>
+<span class="c1">#</span>
+<span class="c1"># Changes to be committed:</span>
+<span class="c1">#       modified:   nova/console/websocketproxy.py</span>
+<span class="c1">#       modified:   nova/test.py</span>
+<span class="c1">#       modified:   nova/tests/unit/console/test_websocketproxy.py</span>
+<span class="c1">#       modified:   nova/tests/unit/test_test.py</span>
+</pre></div>
+
+
+<p>可以看出这是一个输入commit message的界面，修改成你想写的内容即可，如下：</p>
+<div class="highlight"><pre><span></span>Merge commits 44e910a and e46b345                                                   
+
+<span class="c1"># Please enter the commit message for your changes. Lines starting</span>
+<span class="c1"># with &#39;#&#39; will be ignored, and an empty message aborts the commit.</span>
+<span class="c1">#</span>
+<span class="c1"># Author:    Andrey Volkov &lt;avolkov@mirantis.com&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># rebase in progress; onto e8b7214</span>
+<span class="c1"># You are currently editing a commit while rebasing branch &#39;master&#39; on &#39;e8b7214&#39;.</span>
+<span class="c1">#</span>
+<span class="c1"># Changes to be committed:</span>
+<span class="c1">#       modified:   nova/console/websocketproxy.py</span>
+<span class="c1">#       modified:   nova/test.py</span>
+<span class="c1">#       modified:   nova/tests/unit/console/test_websocketproxy.py</span>
+<span class="c1">#       modified:   nova/tests/unit/test_test.py</span>
+</pre></div>
+
+
+<p>修改完后wq保存退出，提示已经rebase成功。</p>
+<div class="highlight"><pre><span></span>➜  nova git:<span class="o">(</span>master<span class="o">)</span> git rebase -i e8b7214
+<span class="o">[</span>detached HEAD d51b317<span class="o">]</span> Merge commits 44e910a and e46b345
+ Author: Andrey Volkov &lt;avolkov@mirantis.com&gt;
+ <span class="m">4</span> files changed, <span class="m">197</span> insertions<span class="o">(</span>+<span class="o">)</span>, <span class="m">139</span> deletions<span class="o">(</span>-<span class="o">)</span>
+Successfully rebased and updated refs/heads/master.
+</pre></div>
+
+
+<p>进入历史记录查看。</p>
+<div class="highlight"><pre><span></span>➜  nova git:<span class="o">(</span>master<span class="o">)</span> git log --pretty<span class="o">=</span>format:<span class="s2">&quot;%H | %s&quot;</span>
+d51b31794a628d2e2d21d6089d188ab7ab27b5cb <span class="p">|</span> Merge commits 44e910a and e46b345
+e8b7214946fd124e568495cd7cd78ae3e0033d07 <span class="p">|</span> Raise correct error instead of class exist in Placement API
+</pre></div>
+
+
+<h3>更换commits顺序</h3>
+<p>在本地基于某个分支做开发时，由于总会不断的完善功能，很容易出现一些小功能之间穿插提交代码，造成commits比较混乱。<code>git rebase -i</code>依然可以很好地解决这个问题。</p>
+<p>以下范例是需要将dev1-2和dev2-1调整顺序。</p>
+<div class="highlight"><pre><span></span>➜  tests git:<span class="o">(</span>master<span class="o">)</span> git log --pretty<span class="o">=</span>format:<span class="s2">&quot;%h | %s&quot;</span>
+12be243 <span class="p">|</span> dev2-2
+da0a1d4 <span class="p">|</span> <span class="nb">test</span>
+22a5a50 <span class="p">|</span> dev1-2
+14bbd74 <span class="p">|</span> dev2-1
+98e752f <span class="p">|</span> dev1-1
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>➜  tests git:(master) git rebase -i 98e752f
+
+pick 14bbd74 dev2-1
+pick 22a5a50 dev1-2
+pick da0a1d4 test
+pick 12be243 dev2-2
+</pre></div>
+
+
+<p>将以上内容显示的顺序与git log查看的顺序完全相反。只需将<code>dev1-2</code>和<code>dev2-1</code>调换顺序即可。调换顺序后保存退出，查看历史记录：</p>
+<div class="highlight"><pre><span></span>➜  tests git:(master) git log --pretty=format:&quot;%h | %s&quot;
+ff2c926 | dev2-2
+f894e78 | test
+8482018 | dev2-1
+6743e79 | dev1-2
+98e752f | dev1-1
+</pre></div>
+
+
+<p>若想将test这次的commit删除，同样只需在编辑框中删除<code>pick da0a1d4 test</code>这一行。</p>
+<h2>git fetch</h2>
+<p>当远程仓库有了新的更新，需要将新的commits更新到本地时，可使用<code>git fetch</code>完成操作。</p>
+<p>Usage:</p>
+<ol>
+<li>获取远程主机所有更新。</li>
+</ol>
+<div class="highlight"><pre><span></span>git fetch &lt;远程主机名&gt;
+</pre></div>
+
+
+<ol>
+<li>获取远程主机特定分支上的所有更新。</li>
+</ol>
+<div class="highlight"><pre><span></span>git fetch &lt;远程主机名&gt; &lt;分支名&gt;
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>➜  tests git:(master) git remote -v
+trystack    http://git.trystack.cn/openstack/nova.git (fetch)
+trystack    http://git.trystack.cn/openstack/nova.git (push)
+</pre></div>
+
+
+<p>如上，若想获取将远程trystack仓库nova的newton分支上的所有更新，执行：</p>
+<div class="highlight"><pre><span></span>git fetch trystack stable/newton
+</pre></div>
+
+
+<p>结果如下：</p>
+<div class="highlight"><pre><span></span>➜  tests git:(master) git branch -a
+* master
+  remotes/trystack/stable/newton
+</pre></div>
+
+
+<p>若想将以上fetch到的远程分支拉取到本地，可基于远程分支切换新的分支，执行：</p>
+<div class="highlight"><pre><span></span>➜  tests git:<span class="o">(</span>master<span class="o">)</span> git checkout -b stable/newton trystack/stable/newton
+Branch stable/newton <span class="nb">set</span> up to track remote branch stable/newton from trystack.
+</pre></div>
+
+
+<p>同理，若想获取远程仓库master分支的所有更新，执行：</p>
+<div class="highlight"><pre><span></span>获取远程master分支
+<span class="c1"># git fetch trystack master  </span>
+切换到本地master分支
+<span class="c1"># git checkout master       </span>
+rebase本地master到远程master
+<span class="c1"># git rebase trystack/master  </span>
+</pre></div>
+
+
+<h2>git tag</h2>
+<ul>
+<li>创建tag。</li>
+</ul>
+<div class="highlight"><pre><span></span>git tag -a &lt;tag号&gt; &lt;commit号&gt;
+</pre></div>
+
+
+<ul>
+<li>删除多个tag。有如下两种方式。使用正则表达式进行过滤即可。</li>
+</ul>
+<div class="highlight"><pre><span></span>➜  nova git:(master) git tag | awk &#39;/2012/&#39; | xargs git tag -d
+Deleted tag &#39;2012.1&#39; (was 49934aa)
+Deleted tag &#39;2012.1.1&#39; (was 29293ce)
+Deleted tag &#39;2012.1.2&#39; (was 7a7c8f8)
+...
+</pre></div>
+
+
+<div class="highlight"><pre><span></span># git show-ref --tag | awk &#39;/2012/ {print &quot;:&quot;$2}&#39; | xargs git push origin
+</pre></div>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

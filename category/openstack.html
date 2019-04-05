@@ -27,14 +27,14 @@
 
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#DCDCDC">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Microsoft EDGE -->
-    <meta name="msapplication-TileColor" content="#DCDCDC">
+    <meta name="msapplication-TileColor" content="#333333">
 
     <meta name="author" content="Yuwei Wang" />
     <meta name="description" content="" />
@@ -293,12 +293,17 @@
 <p>RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。</p>
 <h3>二、RPM常用命令</h3>
 <p>常用命令组合：</p>
-<div class="highlight"><pre><span></span><span class="p">-</span><span class="nf">ivh</span>  <span class="err">#</span> <span class="err">安装显示安装进度</span> <span class="o">--</span><span class="n">install</span><span class="o">--</span><span class="n">verbose</span><span class="o">--</span><span class="n">hash</span>
-<span class="o">-</span><span class="n">Uvh</span>  <span class="err">#</span> <span class="err">升级软件包</span> <span class="o">--</span><span class="n">Update</span><span class="p">;</span>
-<span class="p">-</span><span class="nf">qpl</span>  <span class="err">#</span> <span class="err">列出</span><span class="n">RPM软件包内的文件信息</span> <span class="p">[</span><span class="n">Query</span> <span class="n">Package</span> <span class="n">list</span><span class="p">];</span>
-<span class="p">-</span><span class="nf">qpi</span>  <span class="err">#</span> <span class="err">列出</span><span class="n">RPM软件包的描述信息</span> <span class="p">[</span><span class="n">Query</span> <span class="n">Package</span> <span class="n">install</span> <span class="n">package</span><span class="p">(</span><span class="n">s</span><span class="p">)];</span>
-<span class="p">-</span><span class="nf">qf</span>   <span class="err">#</span> <span class="err">查找指定文件属于哪个</span><span class="n">RPM软件包</span> <span class="p">[</span><span class="n">Query</span> <span class="n">File</span><span class="p">];</span>
-<span class="p">-</span><span class="nf">Va</span>   <span class="err">#</span> <span class="err">校验所有的</span><span class="n">RPM软件包 …</span></pre></div>
+<div class="highlight"><pre><span></span>-ivh  # 安装显示安装进度 --install--verbose--hash
+-Uvh  # 升级软件包 --Update;
+-qpl  # 列出RPM软件包内的文件信息 [Query Package list];
+-qpi  # 列出RPM软件包的描述信息 [Query Package install package(s)];
+-qf   # 查找指定文件属于哪个RPM软件包 [Query File];
+-Va   # 校验所有的RPM软件包，查找丢失的文件 [View Lost];
+-e    # 删除包  
+</pre></div>
+
+
+<p>更多命令可以通过 …</p>
         <br>
         <a class="btn" href="https://andiaq.github.io/articles/make-rpm-package.html#make-rpm-package">    Continue reading
 </a>

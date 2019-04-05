@@ -32,35 +32,44 @@
 &lt;/ol&gt;
 &lt;p&gt;总的来说，nova-api所做的操作都是为了最后能获取虚拟机更新后的新image-meta数据，并没有执行创建工作。&lt;/p&gt;
 &lt;p&gt;对虚拟机执行quiesce操作的测试如下：&lt;/p&gt;
-&lt;p&gt;1）对虚拟机注入循环执行程序，该程序实现向另外一个文件持续写入时间戳。
-   &lt;code&gt;[root@jenkins test]# tailf quiesce.log
-   1489632992.9
-   1489632993.91
-   1489632994.91&lt;/code&gt;
-   2）在虚拟机所在的宿主机上执行以下命令：
-   &lt;code&gt;$ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-freeze"}'
-   {"return":2}
-   查看quiesce状态：
-   $ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-status"}'
-   {"return":"frozen"}&lt;/code&gt;
-   3）等待一会儿之后，将虚拟机解冻，查看日志。
-   &lt;code&gt;$ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-thaw"}'
-   {"return":2}
-   $ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-status"}'
-   {"return":"thawed"}
-   [root@jenkins test]# tailf quiesce.log
-   1489632991.9
-   1489632992.9
-   1489632993.91
-   1489632994.91
-   1489633427.07
-   1489633428.07
-   1489633429.07
-   1489633430.07
-   1489633431.07
-   1489633432.07
-   1489633433.08&lt;/code&gt;
-   通过以上结果可以发现，在对虚拟机执行quiesce之后，虚拟机确实不再写入文件，thaw之后，虚拟机继续写入文件。达到预期结果。&lt;/p&gt;
+&lt;p&gt;1）对虚拟机注入循环执行程序，该程序实现向另外一个文件持续写入时间戳。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@jenkins test&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# tailf quiesce.log&lt;/span&gt;
+&lt;span class="m"&gt;1489632992&lt;/span&gt;.9
+&lt;span class="m"&gt;1489632993&lt;/span&gt;.91
+&lt;span class="m"&gt;1489632994&lt;/span&gt;.91
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;2）在虚拟机所在的宿主机上执行以下命令：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ virsh qemu-agent-command instance-0003abaf &lt;span class="s1"&gt;&amp;#39;{&amp;quot;execute&amp;quot;:&amp;quot;guest-fsfreeze-freeze&amp;quot;}&amp;#39;&lt;/span&gt;
+&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;return&amp;quot;&lt;/span&gt;:2&lt;span class="o"&gt;}&lt;/span&gt;
+查看quiesce状态：
+$ virsh qemu-agent-command instance-0003abaf &lt;span class="s1"&gt;&amp;#39;{&amp;quot;execute&amp;quot;:&amp;quot;guest-fsfreeze-status&amp;quot;}&amp;#39;&lt;/span&gt;
+&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;return&amp;quot;&lt;/span&gt;:&lt;span class="s2"&gt;&amp;quot;frozen&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;3）等待一会儿之后，将虚拟机解冻，查看日志。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ virsh qemu-agent-command instance-0003abaf &lt;span class="s1"&gt;&amp;#39;{&amp;quot;execute&amp;quot;:&amp;quot;guest-fsfreeze-thaw&amp;quot;}&amp;#39;&lt;/span&gt;
+&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;return&amp;quot;&lt;/span&gt;:2&lt;span class="o"&gt;}&lt;/span&gt;
+$ virsh qemu-agent-command instance-0003abaf &lt;span class="s1"&gt;&amp;#39;{&amp;quot;execute&amp;quot;:&amp;quot;guest-fsfreeze-status&amp;quot;}&amp;#39;&lt;/span&gt;
+&lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;return&amp;quot;&lt;/span&gt;:&lt;span class="s2"&gt;&amp;quot;thawed&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@jenkins test&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# tailf quiesce.log&lt;/span&gt;
+&lt;span class="m"&gt;1489632991&lt;/span&gt;.9
+&lt;span class="m"&gt;1489632992&lt;/span&gt;.9
+&lt;span class="m"&gt;1489632993&lt;/span&gt;.91
+&lt;span class="m"&gt;1489632994&lt;/span&gt;.91
+&lt;span class="m"&gt;1489633427&lt;/span&gt;.07
+&lt;span class="m"&gt;1489633428&lt;/span&gt;.07
+&lt;span class="m"&gt;1489633429&lt;/span&gt;.07
+&lt;span class="m"&gt;1489633430&lt;/span&gt;.07
+&lt;span class="m"&gt;1489633431&lt;/span&gt;.07
+&lt;span class="m"&gt;1489633432&lt;/span&gt;.07
+&lt;span class="m"&gt;1489633433&lt;/span&gt;.08
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;通过以上结果可以发现，在对虚拟机执行quiesce之后，虚拟机确实不再写入文件，thaw之后，虚拟机继续写入文件。达到预期结果。&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;nova-api在获取新image-meta元数据之后，会向glance-api发送create信息。glance-api根据传过来的instance和image-meta信息创建快照镜像。所以glance创建的快照镜像中只会保存volume snapshot信息到&lt;code&gt;block_device_mapping&lt;/code&gt;，镜像中不会存在磁盘数据。&lt;/li&gt;
 &lt;/ol&gt;
@@ -161,28 +170,28 @@
 &lt;ol&gt;
 &lt;li&gt;将上面创建的快照clone到虚拟机镜像所在的pool；&lt;/li&gt;
 &lt;/ol&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;compute&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;bj&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;withlvm&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;rbd&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="n"&gt;openstack&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="n"&gt;c4b3058&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;0f&lt;/span&gt;&lt;span class="mi"&gt;58&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;483&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;b7e2&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;20274&lt;/span&gt;&lt;span class="n"&gt;df984d9&lt;/span&gt;
-&lt;span class="n"&gt;rbd&lt;/span&gt; &lt;span class="n"&gt;image&lt;/span&gt; &lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="n"&gt;c4b3058&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;0f&lt;/span&gt;&lt;span class="mi"&gt;58&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;483&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;b7e2&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;20274&lt;/span&gt;&lt;span class="n"&gt;df984d9&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
-    &lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="mi"&gt;20480&lt;/span&gt; &lt;span class="n"&gt;MB&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="mi"&gt;5120&lt;/span&gt; &lt;span class="n"&gt;objects&lt;/span&gt;
-    &lt;span class="n"&gt;order&lt;/span&gt; &lt;span class="mi"&gt;22&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4096&lt;/span&gt; &lt;span class="n"&gt;kB&lt;/span&gt; &lt;span class="n"&gt;objects&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="nl"&gt;block_name_prefix&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;rbd_data&lt;/span&gt;&lt;span class="mf"&gt;.953&lt;/span&gt;&lt;span class="n"&gt;d4e89a492&lt;/span&gt;
-    &lt;span class="nl"&gt;format&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
-    &lt;span class="nl"&gt;features&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;layering&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;exclusive&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;lock&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;object&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;map&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;fast&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;diff&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;deep&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;flatten&lt;/span&gt;
-    &lt;span class="nl"&gt;flags&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; 
-    &lt;span class="nl"&gt;parent&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;openstack&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="n"&gt;a1e1b85&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;eacb&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;401&lt;/span&gt;&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="n"&gt;b5c&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mf"&gt;93f&lt;/span&gt;&lt;span class="mi"&gt;59&lt;/span&gt;&lt;span class="n"&gt;c12c8d0_disk&lt;/span&gt;&lt;span class="mf"&gt;@47e07&lt;/span&gt;&lt;span class="n"&gt;a6c6f4d42b3817cae614493992d&lt;/span&gt;
-    &lt;span class="nl"&gt;overlap&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;20480&lt;/span&gt; &lt;span class="n"&gt;MB&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@compute-bj-2-withlvm ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9&lt;/span&gt;
+rbd image &lt;span class="s1"&gt;&amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&amp;#39;&lt;/span&gt;:
+    size &lt;span class="m"&gt;20480&lt;/span&gt; MB in &lt;span class="m"&gt;5120&lt;/span&gt; objects
+    order &lt;span class="m"&gt;22&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;4096&lt;/span&gt; kB objects&lt;span class="o"&gt;)&lt;/span&gt;
+    block_name_prefix: rbd_data.953d4e89a492
+    format: &lt;span class="m"&gt;2&lt;/span&gt;
+    features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+    flags: 
+    parent: openstack-00/6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk@47e07a6c6f4d42b3817cae614493992d
+    overlap: &lt;span class="m"&gt;20480&lt;/span&gt; MB
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;ol&gt;
 &lt;li&gt;对快照进行flatten操作，让其与它的parent解除关联；&lt;/li&gt;
 &lt;/ol&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@compute-bj-2-withlvm ~]# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9
-rbd image &amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&amp;#39;:
-    size 20480 MB in 5120 objects
-    order 22 (4096 kB objects)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@compute-bj-2-withlvm ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9&lt;/span&gt;
+rbd image &lt;span class="s1"&gt;&amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&amp;#39;&lt;/span&gt;:
+    size &lt;span class="m"&gt;20480&lt;/span&gt; MB in &lt;span class="m"&gt;5120&lt;/span&gt; objects
+    order &lt;span class="m"&gt;22&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;4096&lt;/span&gt; kB objects&lt;span class="o"&gt;)&lt;/span&gt;
     block_name_prefix: rbd_data.953d4e89a492
-    format: 2
+    format: &lt;span class="m"&gt;2&lt;/span&gt;
     features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
     flags: 
 &lt;/pre&gt;&lt;/div&gt;
@@ -192,12 +201,12 @@ rbd image &amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&amp;#39;:
 &lt;li&gt;将快照（此时已经成为image）的parent删除(即删除&lt;code&gt;openstack-00/6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk@47e07a6c6f4d42b3817cae614493992d&lt;/code&gt;)&lt;/li&gt;
 &lt;li&gt;对以上生成的image创建受保护的快照&lt;/li&gt;
 &lt;/ol&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@compute-bj-2-withlvm ~]# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9@snap
-rbd image &amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&amp;#39;:
-    size 20480 MB in 5120 objects
-    order 22 (4096 kB objects)
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@compute-bj-2-withlvm ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9@snap&lt;/span&gt;
+rbd image &lt;span class="s1"&gt;&amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&amp;#39;&lt;/span&gt;:
+    size &lt;span class="m"&gt;20480&lt;/span&gt; MB in &lt;span class="m"&gt;5120&lt;/span&gt; objects
+    order &lt;span class="m"&gt;22&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;4096&lt;/span&gt; kB objects&lt;span class="o"&gt;)&lt;/span&gt;
     block_name_prefix: rbd_data.953d4e89a492
-    format: 2
+    format: &lt;span class="m"&gt;2&lt;/span&gt;
     features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
     flags: 
     protected: True
@@ -205,9 +214,12 @@ rbd image &amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&amp;#39;:
 
 
 &lt;ol&gt;
-&lt;li&gt;更新image信息，上传到glance成功。
-&lt;code&gt;{'status': 'active', 'name': u'wei-image-snap', 'container_format': u'bare', 'disk_format': 'raw', 'location': u'rbd://cdd3749c-df0d-40f6-a178-78ae91517dfa/openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9/snap', 'is_public': False, '}&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;更新image信息，上传到glance成功。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;{&amp;#39;status&amp;#39;: &amp;#39;active&amp;#39;, &amp;#39;name&amp;#39;: u&amp;#39;wei-image-snap&amp;#39;, &amp;#39;container_format&amp;#39;: u&amp;#39;bare&amp;#39;, &amp;#39;disk_format&amp;#39;: &amp;#39;raw&amp;#39;, &amp;#39;location&amp;#39;: u&amp;#39;rbd://cdd3749c-df0d-40f6-a178-78ae91517dfa/openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9/snap&amp;#39;, &amp;#39;is_public&amp;#39;: False&amp;#39;}
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h2&gt;总结&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -507,7 +519,7 @@ NUMA架构产生的原因之一，就是为了解决SMP在扩展能力上的限�
 &lt;p&gt;从NUMA架构来看，它可以在一个物理服务器内集成许多CPU，使系统具有较高的事务处理能力，由于远地内存访问时延远长于本地内存访问，因此需要尽量减少不同CPU模块之间的数据交互。显然，NUMA架构更适用于OLTP事务处理环境，当用于数据仓库环境时，由于大量复杂的数据处理必然导致大量的数据交互，将使CPU的利用率大大降低。&lt;/p&gt;
 &lt;p&gt;相对而言，MPP服务器架构的并行处理能力更优越，更适合于复杂的数据综合分析与处理环境。当然，它需要借助于支持MPP技术的关系数据库系统来屏蔽节点之间负载平衡与调度的复杂性。另外，这种并行处理能力也与节点互联网络有很大的关系。显然，适应于数据仓库环境的MPP服务器，其节点互联网络的I/O性能应该非常突出，才能充分发挥整个系统的性能。&lt;/p&gt;
 &lt;h2&gt;参考资料&lt;/h2&gt;
-&lt;p&gt;1.http://blog.csdn.net/chengleisheng/article/details/43454515&lt;/p&gt;</content></entry><entry><title>Git常用操作</title><link href="https://andiaq.github.io/articles/git-usages.html" rel="alternate"></link><published>2016-12-11T20:24:00+08:00</published><updated>2016-12-11T20:24:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-12-11:/articles/git-usages.html</id><summary type="html">&lt;p&gt;对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。&lt;/p&gt;
+&lt;p&gt;1.http://blog.csdn.net/chengleisheng/article/details/43454515&lt;/p&gt;</content></entry><entry><title>Git常用操作</title><link href="https://andiaq.github.io/articles/git-usage.html" rel="alternate"></link><published>2016-12-11T20:24:00+08:00</published><updated>2016-12-11T20:24:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-12-11:/articles/git-usage.html</id><summary type="html">&lt;p&gt;对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。&lt;/p&gt;
 &lt;h2&gt;git log&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;显示所有历史记录&lt;/li&gt;
@@ -553,10 +565,10 @@ NUMA架构产生的原因之一，就是为了解决SMP在扩展能力上的限�
 
 
 &lt;p&gt;常用的格式占位符写法及其代表的意义如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;选项&lt;/span&gt;   &lt;span class="err"&gt;说明&lt;/span&gt;
-&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="n"&gt;H&lt;/span&gt;  &lt;span class="err"&gt;提交对象（&lt;/span&gt;&lt;span class="n"&gt;commit&lt;/span&gt;&lt;span class="err"&gt;）的完整哈希字串&lt;/span&gt;
-&lt;span class="nf"&gt;%h&lt;/span&gt;  &lt;span class="err"&gt;提交对象的简短哈希字串&lt;/span&gt;
-&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;  &lt;span class="err"&gt;树对象（&lt;/span&gt;&lt;span class="n"&gt;tree&lt;/span&gt;&lt;span class="err"&gt;）的完整哈希字串 …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;选项   说明
+%H  提交对象（commit）的完整哈希字串
+%h  提交对象的简短哈希字串
+%T  树对象（tree）的完整哈希字串 …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。&lt;/p&gt;
 &lt;h2&gt;git log&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;显示所有历史记录&lt;/li&gt;
@@ -602,22 +614,22 @@ NUMA架构产生的原因之一，就是为了解决SMP在扩展能力上的限�
 
 
 &lt;p&gt;常用的格式占位符写法及其代表的意义如下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;选项&lt;/span&gt;   &lt;span class="err"&gt;说明&lt;/span&gt;
-&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="n"&gt;H&lt;/span&gt;  &lt;span class="err"&gt;提交对象（&lt;/span&gt;&lt;span class="n"&gt;commit&lt;/span&gt;&lt;span class="err"&gt;）的完整哈希字串&lt;/span&gt;
-&lt;span class="nf"&gt;%h&lt;/span&gt;  &lt;span class="err"&gt;提交对象的简短哈希字串&lt;/span&gt;
-&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt;  &lt;span class="err"&gt;树对象（&lt;/span&gt;&lt;span class="n"&gt;tree&lt;/span&gt;&lt;span class="err"&gt;）的完整哈希字串&lt;/span&gt;
-&lt;span class="nf"&gt;%t&lt;/span&gt;  &lt;span class="err"&gt;树对象的简短哈希字串&lt;/span&gt;
-&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="n"&gt;P&lt;/span&gt;  &lt;span class="err"&gt;父对象（&lt;/span&gt;&lt;span class="n"&gt;parent&lt;/span&gt;&lt;span class="err"&gt;）的完整哈希字串&lt;/span&gt;
-&lt;span class="nf"&gt;%p&lt;/span&gt;  &lt;span class="err"&gt;父对象的简短哈希字串&lt;/span&gt;
-&lt;span class="nf"&gt;%an&lt;/span&gt; &lt;span class="err"&gt;作者（&lt;/span&gt;&lt;span class="n"&gt;author&lt;/span&gt;&lt;span class="err"&gt;）的名字&lt;/span&gt;
-&lt;span class="nf"&gt;%ae&lt;/span&gt; &lt;span class="err"&gt;作者的电子邮件地址&lt;/span&gt;
-&lt;span class="nf"&gt;%ad&lt;/span&gt; &lt;span class="err"&gt;作者修订日期（可以用&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;date&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="err"&gt;选项定制格式）&lt;/span&gt;
-&lt;span class="nf"&gt;%ar&lt;/span&gt; &lt;span class="err"&gt;作者修订日期，按多久以前的方式显示&lt;/span&gt;
-&lt;span class="nf"&gt;%cn&lt;/span&gt; &lt;span class="err"&gt;提交者&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;committer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="err"&gt;的名字&lt;/span&gt;
-&lt;span class="nf"&gt;%ce&lt;/span&gt; &lt;span class="err"&gt;提交者的电子邮件地址&lt;/span&gt;
-&lt;span class="nf"&gt;%cd&lt;/span&gt; &lt;span class="err"&gt;提交日期&lt;/span&gt;
-&lt;span class="nf"&gt;%cr&lt;/span&gt; &lt;span class="err"&gt;提交日期，按多久以前的方式显示&lt;/span&gt;
-&lt;span class="nf"&gt;%s&lt;/span&gt;  &lt;span class="err"&gt;提交说明&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;选项   说明
+%H  提交对象（commit）的完整哈希字串
+%h  提交对象的简短哈希字串
+%T  树对象（tree）的完整哈希字串
+%t  树对象的简短哈希字串
+%P  父对象（parent）的完整哈希字串
+%p  父对象的简短哈希字串
+%an 作者（author）的名字
+%ae 作者的电子邮件地址
+%ad 作者修订日期（可以用 -date= 选项定制格式）
+%ar 作者修订日期，按多久以前的方式显示
+%cn 提交者(committer)的名字
+%ce 提交者的电子邮件地址
+%cd 提交日期
+%cr 提交日期，按多久以前的方式显示
+%s  提交说明
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -637,23 +649,23 @@ f6885362fe4e08a7019504bc5d7cc4e717d3c9af &lt;span class="p"&gt;|&lt;/span&gt; zh
 
 &lt;h2&gt;git rebase&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;git rebase&lt;/code&gt;操作简单理解就是“换基”。一般只操作还未push到远程仓库的commit，一旦push到了远程仓库，那么不允许再修改commit，不然会给其他开发带来很多麻烦。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;       Assume the following history exists and the current branch is &amp;quot;topic&amp;quot;:
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Assume the following history exists and the current branch is &amp;quot;topic&amp;quot;:
 
-                     A---B---C topic
+             A---B---C topic
+            /
+       D---E---F---G master
+
+
+From this point, the result of either of the following commands:
+
+   git rebase master
+   git rebase master topic
+
+would be:
+
+                     A&amp;#39;--B&amp;#39;--C&amp;#39; topic
                     /
-               D---E---F---G master
-
-
-       From this point, the result of either of the following commands:
-
-           git rebase master
-           git rebase master topic
-
-       would be:
-
-                             A&amp;#39;--B&amp;#39;--C&amp;#39; topic
-                            /
-               D---E---F---G master
+       D---E---F---G master
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -1131,11 +1143,13 @@ TCP服务器在端口上被监听，比如，SSH服务器在22号端口被监听
                                   &lt;span class="n"&gt;initial_delay&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;initial_delay&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;     
                                   &lt;span class="n"&gt;periodic_interval_max&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;           
                                      &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;periodic_interval_max&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="err"&gt;其中，&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;periodic_tasks调用了nova&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;manager&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py的periodic_tasks方法&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;periodic_tasks&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;raise_on_error&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;Tasks to be run at a periodic interval.&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run_periodic_tasks&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;raise_on_error&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;raise_on_error&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; 
+
+&lt;p&gt;其中，self.periodic_tasks调用了nova/manager.py的periodic_tasks方法:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;periodic_tasks&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;raise_on_error&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;Tasks to be run at a periodic interval.&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run_periodic_tasks&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;raise_on_error&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;raise_on_error&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; 
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -1676,13 +1690,12 @@ shell4 $ ./receive_logs_topic.py &amp;quot;*.error&amp;quot;                    
 &lt;h3&gt;三、使用方式&lt;/h3&gt;
 &lt;h4&gt;3.1 前提条件&lt;/h4&gt;
 &lt;p&gt;1） 使用ceph做后端存储时，为了实现Nova、Glance、Cinder统一存储快速创建虚拟机，必须使用raw格式的镜像，如果使用qcow2会导致创建虚拟机过程很慢（Nova会先下载镜像后台转成raw格式再启动）&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;qemu-img convert -f qcow2 -O raw cirros-0.3.4-x86_64-disk.img
-cirros-0.3.4-x86_64-disk.raw
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# qemu-img convert -f qcow2 -O raw cirros-0.3.4-x86_64-disk.img cirros-0.3.4-x86_64-disk.raw&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;2）通过OpenStack创建虚拟机时，首先要满足选择的镜像属性hw_qemu_guest_agent=yes：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;glance image-update --property hw_qemu_guest_agent=yes $image_id
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# glance image-update --property hw_qemu_guest_agent=yes $image_id&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -1790,27 +1803,32 @@ cirros-0.3.4-x86_64-disk.raw
 &lt;p&gt;RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。&lt;/p&gt;
 &lt;h3&gt;二、RPM常用命令&lt;/h3&gt;
 &lt;p&gt;常用命令组合：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;ivh&lt;/span&gt;  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;安装显示安装进度&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;verbose&lt;/span&gt;&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;hash&lt;/span&gt;
-&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Uvh&lt;/span&gt;  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;升级软件包&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;Update&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;qpl&lt;/span&gt;  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;列出&lt;/span&gt;&lt;span class="n"&gt;RPM软件包内的文件信息&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Query&lt;/span&gt; &lt;span class="n"&gt;Package&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;qpi&lt;/span&gt;  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;列出&lt;/span&gt;&lt;span class="n"&gt;RPM软件包的描述信息&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Query&lt;/span&gt; &lt;span class="n"&gt;Package&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;package&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)];&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;qf&lt;/span&gt;   &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;查找指定文件属于哪个&lt;/span&gt;&lt;span class="n"&gt;RPM软件包&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Query&lt;/span&gt; &lt;span class="n"&gt;File&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;Va&lt;/span&gt;   &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;校验所有的&lt;/span&gt;&lt;span class="n"&gt;RPM软件包 …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;-ivh  # 安装显示安装进度 --install--verbose--hash
+-Uvh  # 升级软件包 --Update;
+-qpl  # 列出RPM软件包内的文件信息 [Query Package list];
+-qpi  # 列出RPM软件包的描述信息 [Query Package install package(s)];
+-qf   # 查找指定文件属于哪个RPM软件包 [Query File];
+-Va   # 校验所有的RPM软件包，查找丢失的文件 [View Lost];
+-e    # 删除包  
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;更多命令可以通过 …&lt;/p&gt;</summary><content type="html">&lt;p&gt;近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。&lt;/p&gt;
 &lt;h3&gt;一、简介&lt;/h3&gt;
 &lt;p&gt;RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。&lt;/p&gt;
 &lt;h3&gt;二、RPM常用命令&lt;/h3&gt;
 &lt;p&gt;常用命令组合：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;ivh&lt;/span&gt;  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;安装显示安装进度&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;install&lt;/span&gt;&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;verbose&lt;/span&gt;&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;hash&lt;/span&gt;
-&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;Uvh&lt;/span&gt;  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;升级软件包&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;Update&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;qpl&lt;/span&gt;  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;列出&lt;/span&gt;&lt;span class="n"&gt;RPM软件包内的文件信息&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Query&lt;/span&gt; &lt;span class="n"&gt;Package&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;qpi&lt;/span&gt;  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;列出&lt;/span&gt;&lt;span class="n"&gt;RPM软件包的描述信息&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Query&lt;/span&gt; &lt;span class="n"&gt;Package&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;package&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;)];&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;qf&lt;/span&gt;   &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;查找指定文件属于哪个&lt;/span&gt;&lt;span class="n"&gt;RPM软件包&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;Query&lt;/span&gt; &lt;span class="n"&gt;File&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;Va&lt;/span&gt;   &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;校验所有的&lt;/span&gt;&lt;span class="n"&gt;RPM软件包&lt;/span&gt;&lt;span class="err"&gt;，查找丢失的文件&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;Lost&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
-&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nf"&gt;e&lt;/span&gt;    &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;删除包&lt;/span&gt;  
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;-ivh  # 安装显示安装进度 --install--verbose--hash
+-Uvh  # 升级软件包 --Update;
+-qpl  # 列出RPM软件包内的文件信息 [Query Package list];
+-qpi  # 列出RPM软件包的描述信息 [Query Package install package(s)];
+-qf   # 查找指定文件属于哪个RPM软件包 [Query File];
+-Va   # 校验所有的RPM软件包，查找丢失的文件 [View Lost];
+-e    # 删除包  
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;更多命令可以通过man rpm查询。&lt;/p&gt;
+&lt;p&gt;更多命令可以通过&lt;code&gt;man rpm&lt;/code&gt;查询。&lt;/p&gt;
 &lt;h3&gt;三、打包过程&lt;/h3&gt;
 &lt;h4&gt;3.1 准备操作&lt;/h4&gt;
 &lt;p&gt;在创建RPM包之前，需要先安装一些必须的开发工具：&lt;/p&gt;
@@ -1846,49 +1864,49 @@ $ vim test.spec
 
 
 &lt;p&gt;以下通过test.spec模板进行解释：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nl"&gt;Name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;                                   &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;该软件包的名称，如&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;rock&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;可通过宏&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="nf"&gt;%name&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="err"&gt;来引用&lt;/span&gt;
-    &lt;span class="nl"&gt;Version&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;                                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;版本信息&lt;/span&gt;
-    &lt;span class="nl"&gt;Release&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;    &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="o"&gt;?&lt;/span&gt;&lt;span class="n"&gt;dist&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;                   &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;rpm包的发行号&lt;/span&gt;
-    &lt;span class="nl"&gt;Summary&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;                                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;软件包简介&lt;/span&gt;
-    &lt;span class="nl"&gt;Group&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;                                  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;软件类型&lt;/span&gt;
-    &lt;span class="nl"&gt;License&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;                                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;软件包的版权规则&lt;/span&gt;
-    &lt;span class="nl"&gt;URL&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;                                    &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;软件地址&lt;/span&gt;
-    &lt;span class="nl"&gt;Source0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;                                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;源文件包，通常为&lt;/span&gt;&lt;span class="n"&gt;tar&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gz&lt;/span&gt;
-    &lt;span class="nl"&gt;BuildRoot&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;  &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;_tmppath&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="o"&gt;/%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="o"&gt;-%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="o"&gt;-%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;release&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="o"&gt;-%&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;__id_u&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; 
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Name:                                   # 该软件包的名称，如:rock,可通过宏{%name}来引用
+Version:                                # 版本信息
+Release:    1%{?dist}                   # rpm包的发行号
+Summary:                                # 软件包简介
+Group:                                  # 软件类型
+License:                                # 软件包的版权规则
+URL:                                    # 软件地址
+Source0:                                # 源文件包，通常为tar.gz
+BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n) 
 
-    &lt;span class="n"&gt;BuildRequires&lt;/span&gt;
-    &lt;span class="nl"&gt;Requires&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+BuildRequires
+Requires:
 
-    &lt;span class="nf"&gt;%description&lt;/span&gt;                            &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;软件包的详细描述信息&lt;/span&gt;
+%description                            # 软件包的详细描述信息
 
-    &lt;span class="nf"&gt;%prep&lt;/span&gt;                                   &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;打包前的准备操作&lt;/span&gt;
-    &lt;span class="nf"&gt;%setup&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="o"&gt;-%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;version&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;         &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;解压源码包到&lt;/span&gt;&lt;span class="n"&gt;BUILD目录下&lt;/span&gt;
+%prep                                   # 打包前的准备操作
+%setup -q -n %{name}-%{version}         # 解压源码包到BUILD目录下
 
-    &lt;span class="nf"&gt;%build&lt;/span&gt;                                  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;构建阶段&lt;/span&gt;
-    &lt;span class="nf"&gt;%configure&lt;/span&gt;
-    &lt;span class="n"&gt;make&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="o"&gt;?&lt;/span&gt;&lt;span class="n"&gt;_smp_mflags&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+%build                                  # 构建阶段
+%configure
+make %{?_smp_mflags}
 
-    &lt;span class="nf"&gt;%install&lt;/span&gt;                                &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;安装阶段&lt;/span&gt;
-    &lt;span class="n"&gt;rm&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;rf&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;buildroot&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
-    &lt;span class="n"&gt;make&lt;/span&gt; &lt;span class="n"&gt;install&lt;/span&gt; &lt;span class="n"&gt;DESTDIR&lt;/span&gt;&lt;span class="o"&gt;=%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;buildroot&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+%install                                # 安装阶段
+rm -rf %{buildroot}
+make install DESTDIR=%{buildroot}
 
-    &lt;span class="nf"&gt;%clean&lt;/span&gt;                                  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;清理临时文件&lt;/span&gt;
-    &lt;span class="n"&gt;rm&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;rf&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;buildroot&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+%clean                                  # 清理临时文件
+rm -rf %{buildroot}
 
-    &lt;span class="nf"&gt;%files&lt;/span&gt;                                  &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;定义放入&lt;/span&gt;&lt;span class="n"&gt;rpm包中的文件和目录&lt;/span&gt;
-    &lt;span class="nf"&gt;%defattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="nf"&gt;%doc&lt;/span&gt;
+%files                                  # 定义放入rpm包中的文件和目录
+%defattr(-,root,root,-)
+%doc
 
-    &lt;span class="nf"&gt;%changelog&lt;/span&gt;                              &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;日志变更信息&lt;/span&gt;
+%changelog                              # 日志变更信息
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;部分具体说明如下：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;%group：可在/usr/share/doc/rpm-x.x.x/GROUPS中查看Group的一个列表。&lt;/li&gt;
-&lt;li&gt;%BuildRoot：构建包时的安装目录。BUILD目录即%{_builddir}，编译是在BUILD目录中进行的，当编译完成后，将打包需要的文件从BUILD目录复制到BuildRoot目录，然后在BuildRoot目录进行安装，若设置BuildRoot为/usr/local，可用$RPM_BUILD_ROOT或%{buildroot}访问它，值为rpmbuild/BUILDROOT/usr/local。除了在spec文件中设置BuildRoot外，还可以在rpmrc文件或在rpmbuild命令使用--buildroot来设置BuildRoot。&lt;/li&gt;
-&lt;li&gt;%BuildRequires：编译该软件包所需的依赖包列表，以逗号分隔。编译依赖不会自动判断，所以需要列出编译所需的所有依赖包。常见的软件包可省略，例如 gcc。&lt;/li&gt;
-&lt;li&gt;%Requires：安装该软件所需的依赖包列表。BuildRequires 标签是编译所需的依赖，而 Requires 标签是安装/运行程序所需的依赖。大多数情况下，rpmbuild 会自动探测依赖，所以可能不需要 Requires 标签。然而，你也可以明确标明需要哪些软件包，或由于未自动探测所需依赖而需要手动标明。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;%group&lt;/code&gt;：可在&lt;code&gt;/usr/share/doc/rpm-x.x.x/GROUPS&lt;/code&gt;中查看 Group 的一个列表。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;%BuildRoot&lt;/code&gt;：构建包时的安装目录。BUILD 目录即&lt;code&gt;%{_builddir}&lt;/code&gt;，编译是在 BUILD 目录中进行的，当编译完成后，将打包需要的文件从 BUILD 目录复制到 BuildRoot 目录，然后在 BuildRoot 目录进行安装，若设置 BuildRoot 为 &lt;code&gt;/usr/local&lt;/code&gt;，可用 &lt;code&gt;$RPM_BUILD_ROOT&lt;/code&gt; 或 &lt;code&gt;%{buildroot}&lt;/code&gt; 访问它，值为 &lt;code&gt;rpmbuild/BUILDROOT/usr/local&lt;/code&gt;。除了在 spec 文件中设置 BuildRoot 外，还可以在 rpmrc 文件或在 rpmbuild 命令使用 &lt;code&gt;--buildroot&lt;/code&gt; 来设置 BuildRoot。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;%BuildRequires&lt;/code&gt;：编译该软件包所需的依赖包列表，以逗号分隔。编译依赖不会自动判断，所以需要列出编译所需的所有依赖包。常见的软件包可省略，例如 gcc。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;%Requires&lt;/code&gt;：安装该软件所需的依赖包列表。BuildRequires 标签是编译所需的依赖，而 Requires 标签是安装/运行程序所需的依赖。大多数情况下，rpmbuild 会自动探测依赖，所以可能不需要 Requires 标签。然而，你也可以明确标明需要哪些软件包，或由于未自动探测所需依赖而需要手动标明。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;更多详细信息可以&lt;a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn#SPEC_.E6.96.87.E4.BB.B6.E7.BB.BC.E8.BF.B0"&gt;这里&lt;/a&gt;查看。&lt;/p&gt;
 &lt;h4&gt;3.3 打包时的具体问题&lt;/h4&gt;
@@ -1902,31 +1920,31 @@ $ vim test.spec
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
-&lt;td __python&gt;%&lt;/td&gt;
+&lt;td _95_95_python="__python"&gt;%&lt;/td&gt;
 &lt;td&gt;/usr/bin/python&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td _prefix&gt;%&lt;/td&gt;
+&lt;td _95_prefix="_prefix"&gt;%&lt;/td&gt;
 &lt;td&gt;/usr&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td _sysconfdir&gt;%&lt;/td&gt;
+&lt;td _95_sysconfdir="_sysconfdir"&gt;%&lt;/td&gt;
 &lt;td&gt;/etc/&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td _unitdir&gt;%&lt;/td&gt;
+&lt;td _95_unitdir="_unitdir"&gt;%&lt;/td&gt;
 &lt;td&gt;/usr/lib/systemd/system&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td _python_sitelib&gt;%&lt;/td&gt;
+&lt;td _95_python_95_sitelib="_python_sitelib"&gt;%&lt;/td&gt;
 &lt;td&gt;/usr/lib/python2.7/site-packages&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td _localstatedir&gt;%&lt;/td&gt;
+&lt;td _95_localstatedir="_localstatedir"&gt;%&lt;/td&gt;
 &lt;td&gt;/var&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td _bindir&gt;%&lt;/td&gt;
+&lt;td _95_bindir="_bindir"&gt;%&lt;/td&gt;
 &lt;td&gt;/usr/bin&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;

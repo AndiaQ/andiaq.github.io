@@ -27,22 +27,22 @@
 
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#DCDCDC">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Microsoft EDGE -->
-    <meta name="msapplication-TileColor" content="#DCDCDC">
+    <meta name="msapplication-TileColor" content="#333333">
 
 <meta name="author" content="Yuwei Wang" />
-<meta name="description" content="近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。 一、简介 RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。 二、RPM常用命令 常用命令组合： -ivh # 安装显示安装进度 --install--verbose--hash -Uvh # 升级软件包 --Update; -qpl # 列出RPM软件包内的文件信息 [Query Package list]; -qpi # 列出RPM软件包的描述信息 [Query Package install package(s)]; -qf # 查找指定文件属于哪个RPM软件包 [Query File]; -Va # 校验所有的RPM软件包 …" />
+<meta name="description" content="近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。 一、简介 RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。 二、RPM常用命令 常用命令组合： -ivh # 安装显示安装进度 --install--verbose--hash -Uvh # 升级软件包 --Update; -qpl # 列出RPM软件包内的文件信息 [Query Package list]; -qpi # 列出RPM软件包的描述信息 [Query Package install package(s)]; -qf # 查找指定文件属于哪个RPM软件包 [Query File]; -Va # 校验所有的RPM软件包，查找丢失的文件 [View Lost]; -e # 删除包 更多命令可以通过 …" />
 <meta name="keywords" content="">
 
 <meta property="og:site_name" content="Andia"/>
 <meta property="og:title" content="make rpm package"/>
-<meta property="og:description" content="近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。 一、简介 RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。 二、RPM常用命令 常用命令组合： -ivh # 安装显示安装进度 --install--verbose--hash -Uvh # 升级软件包 --Update; -qpl # 列出RPM软件包内的文件信息 [Query Package list]; -qpi # 列出RPM软件包的描述信息 [Query Package install package(s)]; -qf # 查找指定文件属于哪个RPM软件包 [Query File]; -Va # 校验所有的RPM软件包 …"/>
+<meta property="og:description" content="近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。 一、简介 RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。 二、RPM常用命令 常用命令组合： -ivh # 安装显示安装进度 --install--verbose--hash -Uvh # 升级软件包 --Update; -qpl # 列出RPM软件包内的文件信息 [Query Package list]; -qpi # 列出RPM软件包的描述信息 [Query Package install package(s)]; -qf # 查找指定文件属于哪个RPM软件包 [Query File]; -Va # 校验所有的RPM软件包，查找丢失的文件 [View Lost]; -e # 删除包 更多命令可以通过 …"/>
 <meta property="og:locale" content="zh_CN"/>
 <meta property="og:url" content="https://andiaq.github.io/articles/make-rpm-package.html"/>
 <meta property="og:type" content="article"/>
@@ -118,17 +118,17 @@
 <p>RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。</p>
 <h3>二、RPM常用命令</h3>
 <p>常用命令组合：</p>
-<div class="highlight"><pre><span></span><span class="p">-</span><span class="nf">ivh</span>  <span class="err">#</span> <span class="err">安装显示安装进度</span> <span class="o">--</span><span class="n">install</span><span class="o">--</span><span class="n">verbose</span><span class="o">--</span><span class="n">hash</span>
-<span class="o">-</span><span class="n">Uvh</span>  <span class="err">#</span> <span class="err">升级软件包</span> <span class="o">--</span><span class="n">Update</span><span class="p">;</span>
-<span class="p">-</span><span class="nf">qpl</span>  <span class="err">#</span> <span class="err">列出</span><span class="n">RPM软件包内的文件信息</span> <span class="p">[</span><span class="n">Query</span> <span class="n">Package</span> <span class="n">list</span><span class="p">];</span>
-<span class="p">-</span><span class="nf">qpi</span>  <span class="err">#</span> <span class="err">列出</span><span class="n">RPM软件包的描述信息</span> <span class="p">[</span><span class="n">Query</span> <span class="n">Package</span> <span class="n">install</span> <span class="n">package</span><span class="p">(</span><span class="n">s</span><span class="p">)];</span>
-<span class="p">-</span><span class="nf">qf</span>   <span class="err">#</span> <span class="err">查找指定文件属于哪个</span><span class="n">RPM软件包</span> <span class="p">[</span><span class="n">Query</span> <span class="n">File</span><span class="p">];</span>
-<span class="p">-</span><span class="nf">Va</span>   <span class="err">#</span> <span class="err">校验所有的</span><span class="n">RPM软件包</span><span class="err">，查找丢失的文件</span> <span class="p">[</span><span class="n">View</span> <span class="n">Lost</span><span class="p">];</span>
-<span class="p">-</span><span class="nf">e</span>    <span class="err">#</span> <span class="err">删除包</span>  
+<div class="highlight"><pre><span></span>-ivh  # 安装显示安装进度 --install--verbose--hash
+-Uvh  # 升级软件包 --Update;
+-qpl  # 列出RPM软件包内的文件信息 [Query Package list];
+-qpi  # 列出RPM软件包的描述信息 [Query Package install package(s)];
+-qf   # 查找指定文件属于哪个RPM软件包 [Query File];
+-Va   # 校验所有的RPM软件包，查找丢失的文件 [View Lost];
+-e    # 删除包  
 </pre></div>
 
 
-<p>更多命令可以通过man rpm查询。</p>
+<p>更多命令可以通过<code>man rpm</code>查询。</p>
 <h3>三、打包过程</h3>
 <h4>3.1 准备操作</h4>
 <p>在创建RPM包之前，需要先安装一些必须的开发工具：</p>
@@ -164,49 +164,49 @@ $ vim test.spec
 
 
 <p>以下通过test.spec模板进行解释：</p>
-<div class="highlight"><pre><span></span>    <span class="nl">Name</span><span class="p">:</span>                                   <span class="err">#</span> <span class="err">该软件包的名称，如</span><span class="o">:</span><span class="n">rock</span><span class="p">,</span><span class="err">可通过宏</span><span class="p">{</span><span class="nf">%name</span><span class="p">}</span><span class="err">来引用</span>
-    <span class="nl">Version</span><span class="p">:</span>                                <span class="err">#</span> <span class="err">版本信息</span>
-    <span class="nl">Release</span><span class="p">:</span>    <span class="mi">1</span><span class="o">%</span><span class="p">{</span><span class="o">?</span><span class="n">dist</span><span class="p">}</span>                   <span class="err">#</span> <span class="n">rpm包的发行号</span>
-    <span class="nl">Summary</span><span class="p">:</span>                                <span class="err">#</span> <span class="err">软件包简介</span>
-    <span class="nl">Group</span><span class="p">:</span>                                  <span class="err">#</span> <span class="err">软件类型</span>
-    <span class="nl">License</span><span class="p">:</span>                                <span class="err">#</span> <span class="err">软件包的版权规则</span>
-    <span class="nl">URL</span><span class="p">:</span>                                    <span class="err">#</span> <span class="err">软件地址</span>
-    <span class="nl">Source0</span><span class="p">:</span>                                <span class="err">#</span> <span class="err">源文件包，通常为</span><span class="n">tar</span><span class="p">.</span><span class="n">gz</span>
-    <span class="nl">BuildRoot</span><span class="p">:</span>  <span class="o">%</span><span class="p">{</span><span class="n">_tmppath</span><span class="p">}</span><span class="o">/%</span><span class="p">{</span><span class="n">name</span><span class="p">}</span><span class="o">-%</span><span class="p">{</span><span class="n">version</span><span class="p">}</span><span class="o">-%</span><span class="p">{</span><span class="n">release</span><span class="p">}</span><span class="o">-</span><span class="n">root</span><span class="o">-%</span><span class="p">(</span><span class="o">%</span><span class="p">{</span><span class="n">__id_u</span><span class="p">}</span> <span class="o">-</span><span class="n">n</span><span class="p">)</span> 
+<div class="highlight"><pre><span></span>Name:                                   # 该软件包的名称，如:rock,可通过宏{%name}来引用
+Version:                                # 版本信息
+Release:    1%{?dist}                   # rpm包的发行号
+Summary:                                # 软件包简介
+Group:                                  # 软件类型
+License:                                # 软件包的版权规则
+URL:                                    # 软件地址
+Source0:                                # 源文件包，通常为tar.gz
+BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n) 
 
-    <span class="n">BuildRequires</span>
-    <span class="nl">Requires</span><span class="p">:</span>
+BuildRequires
+Requires:
 
-    <span class="nf">%description</span>                            <span class="err">#</span> <span class="err">软件包的详细描述信息</span>
+%description                            # 软件包的详细描述信息
 
-    <span class="nf">%prep</span>                                   <span class="err">#</span> <span class="err">打包前的准备操作</span>
-    <span class="nf">%setup</span> <span class="o">-</span><span class="n">q</span> <span class="o">-</span><span class="n">n</span> <span class="o">%</span><span class="p">{</span><span class="n">name</span><span class="p">}</span><span class="o">-%</span><span class="p">{</span><span class="n">version</span><span class="p">}</span>         <span class="err">#</span> <span class="err">解压源码包到</span><span class="n">BUILD目录下</span>
+%prep                                   # 打包前的准备操作
+%setup -q -n %{name}-%{version}         # 解压源码包到BUILD目录下
 
-    <span class="nf">%build</span>                                  <span class="err">#</span> <span class="err">构建阶段</span>
-    <span class="nf">%configure</span>
-    <span class="n">make</span> <span class="o">%</span><span class="p">{</span><span class="o">?</span><span class="n">_smp_mflags</span><span class="p">}</span>
+%build                                  # 构建阶段
+%configure
+make %{?_smp_mflags}
 
-    <span class="nf">%install</span>                                <span class="err">#</span> <span class="err">安装阶段</span>
-    <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span>
-    <span class="n">make</span> <span class="n">install</span> <span class="n">DESTDIR</span><span class="o">=%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span>
+%install                                # 安装阶段
+rm -rf %{buildroot}
+make install DESTDIR=%{buildroot}
 
-    <span class="nf">%clean</span>                                  <span class="err">#</span> <span class="err">清理临时文件</span>
-    <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">%</span><span class="p">{</span><span class="n">buildroot</span><span class="p">}</span>
+%clean                                  # 清理临时文件
+rm -rf %{buildroot}
 
-    <span class="nf">%files</span>                                  <span class="err">#</span> <span class="err">定义放入</span><span class="n">rpm包中的文件和目录</span>
-    <span class="nf">%defattr</span><span class="p">(</span><span class="o">-</span><span class="p">,</span><span class="n">root</span><span class="p">,</span><span class="n">root</span><span class="p">,</span><span class="o">-</span><span class="p">)</span>
-    <span class="nf">%doc</span>
+%files                                  # 定义放入rpm包中的文件和目录
+%defattr(-,root,root,-)
+%doc
 
-    <span class="nf">%changelog</span>                              <span class="err">#</span> <span class="err">日志变更信息</span>
+%changelog                              # 日志变更信息
 </pre></div>
 
 
 <p>部分具体说明如下：</p>
 <ul>
-<li>%group：可在/usr/share/doc/rpm-x.x.x/GROUPS中查看Group的一个列表。</li>
-<li>%BuildRoot：构建包时的安装目录。BUILD目录即%{_builddir}，编译是在BUILD目录中进行的，当编译完成后，将打包需要的文件从BUILD目录复制到BuildRoot目录，然后在BuildRoot目录进行安装，若设置BuildRoot为/usr/local，可用$RPM_BUILD_ROOT或%{buildroot}访问它，值为rpmbuild/BUILDROOT/usr/local。除了在spec文件中设置BuildRoot外，还可以在rpmrc文件或在rpmbuild命令使用--buildroot来设置BuildRoot。</li>
-<li>%BuildRequires：编译该软件包所需的依赖包列表，以逗号分隔。编译依赖不会自动判断，所以需要列出编译所需的所有依赖包。常见的软件包可省略，例如 gcc。</li>
-<li>%Requires：安装该软件所需的依赖包列表。BuildRequires 标签是编译所需的依赖，而 Requires 标签是安装/运行程序所需的依赖。大多数情况下，rpmbuild 会自动探测依赖，所以可能不需要 Requires 标签。然而，你也可以明确标明需要哪些软件包，或由于未自动探测所需依赖而需要手动标明。</li>
+<li><code>%group</code>：可在<code>/usr/share/doc/rpm-x.x.x/GROUPS</code>中查看 Group 的一个列表。</li>
+<li><code>%BuildRoot</code>：构建包时的安装目录。BUILD 目录即<code>%{_builddir}</code>，编译是在 BUILD 目录中进行的，当编译完成后，将打包需要的文件从 BUILD 目录复制到 BuildRoot 目录，然后在 BuildRoot 目录进行安装，若设置 BuildRoot 为 <code>/usr/local</code>，可用 <code>$RPM_BUILD_ROOT</code> 或 <code>%{buildroot}</code> 访问它，值为 <code>rpmbuild/BUILDROOT/usr/local</code>。除了在 spec 文件中设置 BuildRoot 外，还可以在 rpmrc 文件或在 rpmbuild 命令使用 <code>--buildroot</code> 来设置 BuildRoot。</li>
+<li><code>%BuildRequires</code>：编译该软件包所需的依赖包列表，以逗号分隔。编译依赖不会自动判断，所以需要列出编译所需的所有依赖包。常见的软件包可省略，例如 gcc。</li>
+<li><code>%Requires</code>：安装该软件所需的依赖包列表。BuildRequires 标签是编译所需的依赖，而 Requires 标签是安装/运行程序所需的依赖。大多数情况下，rpmbuild 会自动探测依赖，所以可能不需要 Requires 标签。然而，你也可以明确标明需要哪些软件包，或由于未自动探测所需依赖而需要手动标明。</li>
 </ul>
 <p>更多详细信息可以<a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn#SPEC_.E6.96.87.E4.BB.B6.E7.BB.BC.E8.BF.B0">这里</a>查看。</p>
 <h4>3.3 打包时的具体问题</h4>
@@ -220,31 +220,31 @@ $ vim test.spec
 </thead>
 <tbody>
 <tr>
-<td __python>%</td>
+<td _95_95_python="__python">%</td>
 <td>/usr/bin/python</td>
 </tr>
 <tr>
-<td _prefix>%</td>
+<td _95_prefix="_prefix">%</td>
 <td>/usr</td>
 </tr>
 <tr>
-<td _sysconfdir>%</td>
+<td _95_sysconfdir="_sysconfdir">%</td>
 <td>/etc/</td>
 </tr>
 <tr>
-<td _unitdir>%</td>
+<td _95_unitdir="_unitdir">%</td>
 <td>/usr/lib/systemd/system</td>
 </tr>
 <tr>
-<td _python_sitelib>%</td>
+<td _95_python_95_sitelib="_python_sitelib">%</td>
 <td>/usr/lib/python2.7/site-packages</td>
 </tr>
 <tr>
-<td _localstatedir>%</td>
+<td _95_localstatedir="_localstatedir">%</td>
 <td>/var</td>
 </tr>
 <tr>
-<td _bindir>%</td>
+<td _95_bindir="_bindir">%</td>
 <td>/usr/bin</td>
 </tr>
 </tbody>

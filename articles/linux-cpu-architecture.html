@@ -27,14 +27,14 @@
 
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#DCDCDC">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Microsoft EDGE -->
-    <meta name="msapplication-TileColor" content="#DCDCDC">
+    <meta name="msapplication-TileColor" content="#333333">
 
 <meta name="author" content="Yuwei Wang" />
 <meta name="description" content="商用服务器的系统架构大致可以分为三类： SMP NUMA MMP SMP SMP即Symmetric Multi-Processor，对称多处理器架构。 所谓对称多处理器架构，是指服务器中的多个CPU对称工作，无主次和从属关系。各CPU共享相同的物理内存，每个CPU访问内存中的任何地址所需的时间都是相同的，因此SMP也被称为一致存储器访问结构。对SMP服务器进行扩展的方式包括：增加内存； 使用更快的CPU；增加CPU数量；扩充I/O(槽口数和总线数)；以及添加更多的外部设备(通常是磁盘存储)。 SMP服务器的主要特征是共享，系统中的所有资源(CPU、内存、I/O等)都是共享的。也正是由于这种特征，导致了SMP服务器的主要问题，那就是它得扩展能力非常有限。 对于SMP服务器而言，每一个共享的环节都可能造成SMP服务器扩展时的瓶颈，而最受限制的则是内存。由于每个CPU必须通过相同的内存总线访问相同的内存资源，因此随着CPU数量的增加，内存访问冲突将迅速增加，最终会造成CPU资源的浪费，使 CPU性能的有效性大大降低。实验证明，SMP服务器CPU利用率最好的情况是2至4个CPU。 NUMA NUMA即Non-Uniform Memory Access …" />

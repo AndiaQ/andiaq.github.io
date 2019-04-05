@@ -27,14 +27,14 @@
 
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#DCDCDC">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Microsoft EDGE -->
-    <meta name="msapplication-TileColor" content="#DCDCDC">
+    <meta name="msapplication-TileColor" content="#333333">
 
 <meta name="author" content="Yuwei Wang" />
 <meta name="description" content="本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。 用法： usage: nova image-create [--metadata &lt;key=value&gt;] [--show] [--poll] &lt;server&gt; &lt;name&gt; 从volume启动的虚拟机，可以对[ACTIVE, STOPPED, SUSPEND]虚拟机进行快照操作。 nova-api接收到请求之后，首先会从nova数据库中获取instance_system_metadata表中image metadata properties.删除不能被继承的properties(通过non_inheritable_image_properties参数配置)。在获取虚拟机的image properties之后，nova-api只会先生成一个类似只有image properties（比如block device mapping, kernel and ramdisk IDs)）的bucket,实际大小设置为0。 如果虚拟机处于ACTIVE状态，会通过发送异步RPC调用nova-compute，然后调用libvirt对虚拟机执行quiesce操作来静默文件系统，禁止磁盘继续读写，从而保证磁盘快照的一致性（执行该操作需要安装qemu-guest-agent）。在quiesce之后，获取虚拟机上挂载的所有磁盘，包括根磁盘，调用cinder-api依次对这些volume卷进行打快照 …" />
@@ -132,35 +132,44 @@
 </ol>
 <p>总的来说，nova-api所做的操作都是为了最后能获取虚拟机更新后的新image-meta数据，并没有执行创建工作。</p>
 <p>对虚拟机执行quiesce操作的测试如下：</p>
-<p>1）对虚拟机注入循环执行程序，该程序实现向另外一个文件持续写入时间戳。
-   <code>[root@jenkins test]# tailf quiesce.log
-   1489632992.9
-   1489632993.91
-   1489632994.91</code>
-   2）在虚拟机所在的宿主机上执行以下命令：
-   <code>$ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-freeze"}'
-   {"return":2}
-   查看quiesce状态：
-   $ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-status"}'
-   {"return":"frozen"}</code>
-   3）等待一会儿之后，将虚拟机解冻，查看日志。
-   <code>$ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-thaw"}'
-   {"return":2}
-   $ virsh qemu-agent-command instance-0003abaf '{"execute":"guest-fsfreeze-status"}'
-   {"return":"thawed"}
-   [root@jenkins test]# tailf quiesce.log
-   1489632991.9
-   1489632992.9
-   1489632993.91
-   1489632994.91
-   1489633427.07
-   1489633428.07
-   1489633429.07
-   1489633430.07
-   1489633431.07
-   1489633432.07
-   1489633433.08</code>
-   通过以上结果可以发现，在对虚拟机执行quiesce之后，虚拟机确实不再写入文件，thaw之后，虚拟机继续写入文件。达到预期结果。</p>
+<p>1）对虚拟机注入循环执行程序，该程序实现向另外一个文件持续写入时间戳。</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@jenkins test<span class="o">]</span><span class="c1"># tailf quiesce.log</span>
+<span class="m">1489632992</span>.9
+<span class="m">1489632993</span>.91
+<span class="m">1489632994</span>.91
+</pre></div>
+
+
+<p>2）在虚拟机所在的宿主机上执行以下命令：</p>
+<div class="highlight"><pre><span></span>$ virsh qemu-agent-command instance-0003abaf <span class="s1">&#39;{&quot;execute&quot;:&quot;guest-fsfreeze-freeze&quot;}&#39;</span>
+<span class="o">{</span><span class="s2">&quot;return&quot;</span>:2<span class="o">}</span>
+查看quiesce状态：
+$ virsh qemu-agent-command instance-0003abaf <span class="s1">&#39;{&quot;execute&quot;:&quot;guest-fsfreeze-status&quot;}&#39;</span>
+<span class="o">{</span><span class="s2">&quot;return&quot;</span>:<span class="s2">&quot;frozen&quot;</span><span class="o">}</span>
+</pre></div>
+
+
+<p>3）等待一会儿之后，将虚拟机解冻，查看日志。</p>
+<div class="highlight"><pre><span></span>$ virsh qemu-agent-command instance-0003abaf <span class="s1">&#39;{&quot;execute&quot;:&quot;guest-fsfreeze-thaw&quot;}&#39;</span>
+<span class="o">{</span><span class="s2">&quot;return&quot;</span>:2<span class="o">}</span>
+$ virsh qemu-agent-command instance-0003abaf <span class="s1">&#39;{&quot;execute&quot;:&quot;guest-fsfreeze-status&quot;}&#39;</span>
+<span class="o">{</span><span class="s2">&quot;return&quot;</span>:<span class="s2">&quot;thawed&quot;</span><span class="o">}</span>
+<span class="o">[</span>root@jenkins test<span class="o">]</span><span class="c1"># tailf quiesce.log</span>
+<span class="m">1489632991</span>.9
+<span class="m">1489632992</span>.9
+<span class="m">1489632993</span>.91
+<span class="m">1489632994</span>.91
+<span class="m">1489633427</span>.07
+<span class="m">1489633428</span>.07
+<span class="m">1489633429</span>.07
+<span class="m">1489633430</span>.07
+<span class="m">1489633431</span>.07
+<span class="m">1489633432</span>.07
+<span class="m">1489633433</span>.08
+</pre></div>
+
+
+<p>通过以上结果可以发现，在对虚拟机执行quiesce之后，虚拟机确实不再写入文件，thaw之后，虚拟机继续写入文件。达到预期结果。</p>
 <ol>
 <li>nova-api在获取新image-meta元数据之后，会向glance-api发送create信息。glance-api根据传过来的instance和image-meta信息创建快照镜像。所以glance创建的快照镜像中只会保存volume snapshot信息到<code>block_device_mapping</code>，镜像中不会存在磁盘数据。</li>
 </ol>
@@ -261,28 +270,28 @@
 <ol>
 <li>将上面创建的快照clone到虚拟机镜像所在的pool；</li>
 </ol>
-<div class="highlight"><pre><span></span><span class="p">[</span><span class="n">root</span><span class="p">@</span><span class="n">compute</span><span class="o">-</span><span class="n">bj</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">withlvm</span> <span class="o">~</span><span class="p">]</span><span class="err">#</span> <span class="n">rbd</span> <span class="n">info</span> <span class="n">openstack</span><span class="o">-</span><span class="mo">00</span><span class="o">/</span><span class="mi">3</span><span class="n">c4b3058</span><span class="o">-</span><span class="mf">0f</span><span class="mi">58</span><span class="o">-</span><span class="mi">483</span><span class="n">c</span><span class="o">-</span><span class="n">b7e2</span><span class="o">-</span><span class="mi">20274</span><span class="n">df984d9</span>
-<span class="n">rbd</span> <span class="n">image</span> <span class="err">&#39;</span><span class="mi">3</span><span class="n">c4b3058</span><span class="o">-</span><span class="mf">0f</span><span class="mi">58</span><span class="o">-</span><span class="mi">483</span><span class="n">c</span><span class="o">-</span><span class="n">b7e2</span><span class="o">-</span><span class="mi">20274</span><span class="n">df984d9</span><span class="err">&#39;</span><span class="o">:</span>
-    <span class="n">size</span> <span class="mi">20480</span> <span class="n">MB</span> <span class="k">in</span> <span class="mi">5120</span> <span class="n">objects</span>
-    <span class="n">order</span> <span class="mi">22</span> <span class="p">(</span><span class="mi">4096</span> <span class="n">kB</span> <span class="n">objects</span><span class="p">)</span>
-    <span class="nl">block_name_prefix</span><span class="p">:</span> <span class="n">rbd_data</span><span class="mf">.953</span><span class="n">d4e89a492</span>
-    <span class="nl">format</span><span class="p">:</span> <span class="mi">2</span>
-    <span class="nl">features</span><span class="p">:</span> <span class="n">layering</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">-</span><span class="n">lock</span><span class="p">,</span> <span class="n">object</span><span class="o">-</span><span class="n">map</span><span class="p">,</span> <span class="n">fast</span><span class="o">-</span><span class="n">diff</span><span class="p">,</span> <span class="n">deep</span><span class="o">-</span><span class="n">flatten</span>
-    <span class="nl">flags</span><span class="p">:</span> 
-    <span class="nl">parent</span><span class="p">:</span> <span class="n">openstack</span><span class="o">-</span><span class="mo">00</span><span class="o">/</span><span class="mi">6</span><span class="n">a1e1b85</span><span class="o">-</span><span class="n">eacb</span><span class="o">-</span><span class="mi">401</span><span class="n">b</span><span class="o">-</span><span class="mi">9</span><span class="n">b5c</span><span class="o">-</span><span class="mf">93f</span><span class="mi">59</span><span class="n">c12c8d0_disk</span><span class="mf">@47e07</span><span class="n">a6c6f4d42b3817cae614493992d</span>
-    <span class="nl">overlap</span><span class="p">:</span> <span class="mi">20480</span> <span class="n">MB</span>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@compute-bj-2-withlvm ~<span class="o">]</span><span class="c1"># rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9</span>
+rbd image <span class="s1">&#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;</span>:
+    size <span class="m">20480</span> MB in <span class="m">5120</span> objects
+    order <span class="m">22</span> <span class="o">(</span><span class="m">4096</span> kB objects<span class="o">)</span>
+    block_name_prefix: rbd_data.953d4e89a492
+    format: <span class="m">2</span>
+    features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+    flags: 
+    parent: openstack-00/6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk@47e07a6c6f4d42b3817cae614493992d
+    overlap: <span class="m">20480</span> MB
 </pre></div>
 
 
 <ol>
 <li>对快照进行flatten操作，让其与它的parent解除关联；</li>
 </ol>
-<div class="highlight"><pre><span></span>[root@compute-bj-2-withlvm ~]# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9
-rbd image &#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;:
-    size 20480 MB in 5120 objects
-    order 22 (4096 kB objects)
+<div class="highlight"><pre><span></span><span class="o">[</span>root@compute-bj-2-withlvm ~<span class="o">]</span><span class="c1"># rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9</span>
+rbd image <span class="s1">&#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;</span>:
+    size <span class="m">20480</span> MB in <span class="m">5120</span> objects
+    order <span class="m">22</span> <span class="o">(</span><span class="m">4096</span> kB objects<span class="o">)</span>
     block_name_prefix: rbd_data.953d4e89a492
-    format: 2
+    format: <span class="m">2</span>
     features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
     flags: 
 </pre></div>
@@ -292,12 +301,12 @@ rbd image &#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;:
 <li>将快照（此时已经成为image）的parent删除(即删除<code>openstack-00/6a1e1b85-eacb-401b-9b5c-93f59c12c8d0_disk@47e07a6c6f4d42b3817cae614493992d</code>)</li>
 <li>对以上生成的image创建受保护的快照</li>
 </ol>
-<div class="highlight"><pre><span></span>[root@compute-bj-2-withlvm ~]# rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9@snap
-rbd image &#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;:
-    size 20480 MB in 5120 objects
-    order 22 (4096 kB objects)
+<div class="highlight"><pre><span></span><span class="o">[</span>root@compute-bj-2-withlvm ~<span class="o">]</span><span class="c1"># rbd info openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9@snap</span>
+rbd image <span class="s1">&#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;</span>:
+    size <span class="m">20480</span> MB in <span class="m">5120</span> objects
+    order <span class="m">22</span> <span class="o">(</span><span class="m">4096</span> kB objects<span class="o">)</span>
     block_name_prefix: rbd_data.953d4e89a492
-    format: 2
+    format: <span class="m">2</span>
     features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
     flags: 
     protected: True
@@ -305,9 +314,12 @@ rbd image &#39;3c4b3058-0f58-483c-b7e2-20274df984d9&#39;:
 
 
 <ol>
-<li>更新image信息，上传到glance成功。
-<code>{'status': 'active', 'name': u'wei-image-snap', 'container_format': u'bare', 'disk_format': 'raw', 'location': u'rbd://cdd3749c-df0d-40f6-a178-78ae91517dfa/openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9/snap', 'is_public': False, '}</code></li>
+<li>更新image信息，上传到glance成功。</li>
 </ol>
+<div class="highlight"><pre><span></span>{&#39;status&#39;: &#39;active&#39;, &#39;name&#39;: u&#39;wei-image-snap&#39;, &#39;container_format&#39;: u&#39;bare&#39;, &#39;disk_format&#39;: &#39;raw&#39;, &#39;location&#39;: u&#39;rbd://cdd3749c-df0d-40f6-a178-78ae91517dfa/openstack-00/3c4b3058-0f58-483c-b7e2-20274df984d9/snap&#39;, &#39;is_public&#39;: False&#39;}
+</pre></div>
+
+
 <h2>总结</h2>
 <ul>
 <li>

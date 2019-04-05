@@ -27,14 +27,14 @@
 
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#DCDCDC">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#DCDCDC">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Microsoft EDGE -->
-    <meta name="msapplication-TileColor" content="#DCDCDC">
+    <meta name="msapplication-TileColor" content="#333333">
 
 <meta name="author" content="Yuwei Wang" />
 <meta name="description" content="一、periodic_task 1.1 what is periodic_task 在Nova中，nova-compute, nova-scheduler, nova-cell, network都有自己的周期性任务，通过nova的代码结构可以发现，它们都统一由各自模块下的manager.py中periodic_task管理。其中，periodic_task首先实现了一个装饰器，所有的周期性任务都是通过添加该装饰器实现，而周期性任务的启动伴随着每个服务的start也同步开始。 首先装饰器实现如下(oslo_service/periodic_task.py)，我们阅读后会发现，该方法主要定义了周期性任务（为True），以及周期性任务的名称，间隔时间（默认间隔时间是60s），运行方式等。实际上，此方法也只是定义了上述内容，添加了几个属性，并没有做其他的什么操作。由这些参数作为周期性任务的标记，保存到kwargs。 def periodic_task(*args, **kwargs): def decorator(f): # f为被装饰的函数 # Test for old style invocation if …" />
@@ -154,11 +154,13 @@
                                   <span class="n">initial_delay</span><span class="o">=</span><span class="n">initial_delay</span><span class="p">,</span>     
                                   <span class="n">periodic_interval_max</span><span class="o">=</span>           
                                      <span class="bp">self</span><span class="o">.</span><span class="n">periodic_interval_max</span><span class="p">)</span>
-<span class="err">其中，</span><span class="bp">self</span><span class="o">.</span><span class="n">periodic_tasks调用了nova</span><span class="o">/</span><span class="n">manager</span><span class="o">.</span><span class="n">py的periodic_tasks方法</span><span class="p">:</span>
+</pre></div>
 
-    <span class="k">def</span> <span class="nf">periodic_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">raise_on_error</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Tasks to be run at a periodic interval.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_periodic_tasks</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">raise_on_error</span><span class="o">=</span><span class="n">raise_on_error</span><span class="p">)</span> 
+
+<p>其中，self.periodic_tasks调用了nova/manager.py的periodic_tasks方法:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">periodic_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">raise_on_error</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tasks to be run at a periodic interval.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_periodic_tasks</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">raise_on_error</span><span class="o">=</span><span class="n">raise_on_error</span><span class="p">)</span> 
 </pre></div>
 
 
