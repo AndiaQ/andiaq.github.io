@@ -1,5 +1,1971 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Andia</title><link href="https://andiaq.github.io/" rel="alternate"></link><link href="https://andiaq.github.io/feeds/atom.xml" rel="self"></link><id>https://andiaq.github.io/</id><updated>2017-03-17T10:29:00+08:00</updated><subtitle>拒绝熊猫眼。</subtitle><entry><title>OpenStack环境虚拟机打快照分析</title><link href="https://andiaq.github.io/articles/create-snapshots.html" rel="alternate"></link><published>2017-03-17T10:29:00+08:00</published><updated>2017-03-17T10:29:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2017-03-17:/articles/create-snapshots.html</id><summary type="html">&lt;p&gt;本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Andia</title><link href="https://andiaq.github.io/" rel="alternate"></link><link href="https://andiaq.github.io/feeds/atom.xml" rel="self"></link><id>https://andiaq.github.io/</id><updated>2018-10-24T13:51:00+08:00</updated><subtitle>拒绝熊猫眼。</subtitle><entry><title>博文推荐</title><link href="https://andiaq.github.io/articles/article-links.html" rel="alternate"></link><published>2018-10-24T13:51:00+08:00</published><updated>2018-10-24T13:51:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-10-24:/articles/article-links.html</id><summary type="html">&lt;ol&gt;
+&lt;li&gt;https://forum.huawei.com/enterprise/zh/thread-334207.html&lt;/li&gt;
+&lt;li&gt;https://wenku.baidu.com/view/39a6d8c1844769eae109ed46.html&lt;/li&gt;
+&lt;li&gt;https://wenku.baidu.com/view/5faaed31941ea76e59fa0419.html&lt;/li&gt;
+&lt;li&gt;https://wenku.baidu.com/view/743542d3650e52ea54189846.html&lt;/li&gt;
+&lt;li&gt;https://wenku.baidu.com/view/17b2a438f61fb7360a4c6546.html&lt;/li&gt;
+&lt;li&gt;https://zhuanlan.zhihu.com/p/29881248&lt;/li&gt;
+&lt;li&gt;https://zhuanlan.zhihu.com/p/29975418&lt;/li&gt;
+&lt;li&gt;https://zhuanlan …&lt;/li&gt;&lt;/ol&gt;</summary><content type="html">&lt;ol&gt;
+&lt;li&gt;https://forum.huawei.com/enterprise/zh/thread-334207.html&lt;/li&gt;
+&lt;li&gt;https://wenku.baidu.com/view/39a6d8c1844769eae109ed46.html&lt;/li&gt;
+&lt;li&gt;https://wenku.baidu.com/view/5faaed31941ea76e59fa0419.html&lt;/li&gt;
+&lt;li&gt;https://wenku.baidu.com/view/743542d3650e52ea54189846.html&lt;/li&gt;
+&lt;li&gt;https://wenku.baidu.com/view/17b2a438f61fb7360a4c6546.html&lt;/li&gt;
+&lt;li&gt;https://zhuanlan.zhihu.com/p/29881248&lt;/li&gt;
+&lt;li&gt;https://zhuanlan.zhihu.com/p/29975418&lt;/li&gt;
+&lt;li&gt;https://zhuanlan.zhihu.com/p/30119950&lt;/li&gt;
+&lt;/ol&gt;</content></entry><entry><title>OVS 和 Openflow</title><link href="https://andiaq.github.io/articles/ovs-openflow.html" rel="alternate"></link><published>2018-09-29T18:27:00+08:00</published><updated>2018-09-29T18:27:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-29:/articles/ovs-openflow.html</id><summary type="html">&lt;p&gt;本篇文章主要介绍 OVS 以及 Openflow 在 OVS 中的应用。在理解 OVS 原理的基础上，再去学习 Openflow 能更好的掌握二者的实现机制和使用方法。&lt;/p&gt;
+&lt;h3&gt;一、介绍 OpenvSwitch&lt;/h3&gt;
+&lt;p&gt;在介绍 ovs 之前先说一下另外一个虚拟交换机，即 linux kernel 中的 linux bridge。linux bridge 是一个工作在内核的二层虚拟交换机，添加到 linuxbridge 上的设备 (比如虚拟机的 tap 设备) 被设置为只接受二层数据帧并且转发所有收到的数据包到 linuxbridge 的内核模块中，在 linuxbridge 内核模块中会进行一个类似物理交换机的查 MAC 端口映射表，转发，更新 MAC 端口映射表这样的处理逻辑，从而数据包可以被转发到另一个接口或者被丢弃/广播/发往上层协议栈，由此 …&lt;/p&gt;</summary><content type="html">&lt;p&gt;本篇文章主要介绍 OVS 以及 Openflow 在 OVS 中的应用。在理解 OVS 原理的基础上，再去学习 Openflow 能更好的掌握二者的实现机制和使用方法。&lt;/p&gt;
+&lt;h3&gt;一、介绍 OpenvSwitch&lt;/h3&gt;
+&lt;p&gt;在介绍 ovs 之前先说一下另外一个虚拟交换机，即 linux kernel 中的 linux bridge。linux bridge 是一个工作在内核的二层虚拟交换机，添加到 linuxbridge 上的设备 (比如虚拟机的 tap 设备) 被设置为只接受二层数据帧并且转发所有收到的数据包到 linuxbridge 的内核模块中，在 linuxbridge 内核模块中会进行一个类似物理交换机的查 MAC 端口映射表，转发，更新 MAC 端口映射表这样的处理逻辑，从而数据包可以被转发到另一个接口或者被丢弃/广播/发往上层协议栈，由此 linuxbridge 实现了数据转发的功能。&lt;/p&gt;
+&lt;p&gt;与 linuxbridge 不同的是，ovs 能支持一些高级特性比如 OpenFlow 协议, VLAN tag, QOS, ACL ,Flow 等，是一个高质量的多层虚拟交换机，具备三层交换功能，相比来说更适合 SDN，但是也因此不如 linuxbridge 简单高效易理解。&lt;/p&gt;
+&lt;p&gt;OVS 支持 OpenFlow 协议，我们就可以使用任何支持 OpenFlow 协议的控制器来对 OVS 进行远程管理，但这并不意味着 OVS 必须要有一个控制器才能工作。在不连接外部控制器情况下，OVS 作为一个二层虚拟交换机，自身也可以依靠 MAC 地址学习实现二层数据包转发功能，就像 Linuxbridge。&lt;/p&gt;
+&lt;h4&gt;1.1 OVS 核心组件及其关联关系&lt;/h4&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-openflow.png"&gt;&lt;/p&gt;
+&lt;p&gt;ovs 在实现中分为用户空间和内核空间两部分，用户空间主要负责实现数据交换和 Openflow 流表功能，以及一些管理工具。内核空间主要负责流表查找的快速通道。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;ovs-vswitchd: 实现 OpenFlow 交换机的核心功能，通过 Netlink 协议直接和 OVS 内部模块进行通信。另外，通过 UNIX socket 通信机制和 ovs-server 进行通信，将虚拟交换机的配置、流表、统计信息等保存在数据库 ovsdb 中，当 ovsdb 中的配置信息改变时 (例如使用 ovs-vsctl 工具) ，ovs-vswitchd 也会自动更新其配置以保持与数据库同步。也可以直接使用 ovsdb-tool 直接对 ovsdb 数据库进行操作。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;openvswitch.ko：内核空间的快速通路，主要包括 datapath 模块，datapath 负责执行报文的快速转发，把从接受端口接收到的数据包在流表中进行匹配，并执行匹配到的动作，实现快速转发能力。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;OVS 数据流的大致转发流程如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;OVS 的 datapath 收到来自物理网卡或者虚拟网卡发来的数据包，获取其中的 IP/MAC/Port 等相关信息&lt;/li&gt;
+&lt;li&gt;在内核态查看流表（ datapath flows ），如果有匹配 flow 则按照 action 执行相应的操作进行快速转发，否则将数据包送到用户空间由 ovs-vswitchd 处理。&lt;/li&gt;
+&lt;li&gt;ovs-vswitchd 查找用户态流表，如果还找不到，在有 sdn 控制器接入情况下，通过 openflow 协议告知控制器，由控制器处理。&lt;/li&gt;
+&lt;li&gt;如果 ovs-vswitchd 找到匹配的 flow，则将匹配的 actions 返回给 datapath 并设置一条 datapath flows 到 datapath 中，这样后续进入的同类型的数据包因为缓存匹配会被 datapath 直接处理，不用再次进入用户空间。&lt;/li&gt;
+&lt;li&gt;datapath 重新发起选路，查询其流表，匹配然后进行数据转发。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;1.2 原生 OVS 源码安装配置&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;下载 ovs 源码，安装 2.9.0 版本。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# git clone https://github.com/openvswitch/ovs.git
+# git checkout -b v2.9.0 v2.9.0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;进行源码安装配置。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# mkdir /usr/local/ovs
+# cd ovs
+# ./boot.sh
+# ./configure --prefix=/usr/local/ovs --with-linux=/lib/modules/`uname -r`/build
+# make &amp;amp;&amp;amp; make install
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;验证。可以看到 ovs 2.9.0 版本原生支持 openflow 1.5 版本。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@POD23-CLU02-H006 ~]# ovs-ofctl --version
+ovs-ofctl (Open vSwitch) 2.9.0
+OpenFlow versions 0x1:0x5
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;二、介绍 OpenFlow&lt;/h3&gt;
+&lt;p&gt;Openflow 核心思想很简单，就是将原本完全由交换机/路由器控制的数据包转发过程，转化为由 OpenFlow 交换机 ( OpenFlow Switch ) 和 OpenFlow 控制器 (Controller) 分别完成的独立过程。转变背后进行的实际上是控制权的更迭：传统网络中数据包的流向是人为指定的，虽然交换机、路由器拥有控制权，却没有数据流的概念，只进行数据包级别的交换；而在 OpenFlow 网络中，统一的控制器取代路由，决定了所有数据包在网络中传输路径。&lt;/p&gt;
+&lt;p&gt;OpenFlow 交换机会在本地维护一份从控制器获取的流表 (Flow Table) ,如果要转发的数据包在本地流表中有对应项，则直接进行快速转发，若流表中没有此项，数据包就会被发送到控制器进行传输路径的确认，再根据下发结果进行转发。&lt;/p&gt;
+&lt;p&gt;现在应该能明白网上关于 OpenFlow 资料经常提到的一句话 OpenFlow 协议实现了控制层面和转发层面的分离，控制层面就是指 OpenFlow 控制器，分离就是说控制器负责控制转发规则，交换机只负责执行转发工作，他们可以通过 IP 网络使用 OpenFlow 协议连接，不需要位于同一台主机上。&lt;/p&gt;
+&lt;h4&gt;2.1 OVS 中的 Openflow&lt;/h4&gt;
+&lt;p&gt;OVS 是 Openflow 的一个具体实现，ovs-ofctl 是 ovs 原生支持的配置 openflow 流表的工具，在没有 Controller 的接入下，依然可以使用 ovs-ofctl 命令通过 Openflow 协议去连接 OVS，并对 OVS 流表进行操作。本篇文章目的是进行学习测试，通过将 OVS 作为普通 MAC 地址学习交换机并手动添加流表的方式，掌握相关内容。&lt;/p&gt;
+&lt;p&gt;在没有连接控制器时，使用 OVS 创建的网桥默认是一个二层虚拟交换机，和 linuxbridge 一样使用简单的 MAC 地址学习方式转发数据包。当流表项指定 action 为 normal，表示匹配此条流表项的数据包脱离 OpenFlow 的控制，由 OVS 根据 MAC 地址学习方式完成后续转发，后面数据包如何被处理就跟 flow 没关系了。如下所示：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@POD23-CLU02-H006 ~]# ovs-vsctl add-br br2
+[root@POD23-CLU02-H006 ~]# ovs-ofctl dump-flows br2
+ cookie=0x0, duration=19.727s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;若 OVS 连接有 OpenFlow 控制器或 OVS 中配置有流表，则此时 OVS 数据转发策略就完全由流表来决定。&lt;/p&gt;
+&lt;p&gt;下面介绍 openflow 中 flow 的基本语法。&lt;/p&gt;
+&lt;h4&gt;2.2 flow 语法&lt;/h4&gt;
+&lt;p&gt;在 OVS 中，流表项作为 ovs-ofctl 的参数，采用如下的格式：字段=值。如果有多个字段，可以用逗号或者空格分开。一些常用的字段列举如下：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;匹配字段&lt;/th&gt;
+&lt;th&gt;作用&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;in_port=port&lt;/td&gt;
+&lt;td&gt;int 类型，数据包进入的 openflow 端口号，&lt;code&gt;ovs-ofctl show br0&lt;/code&gt;可以查看 port number&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;dl_vlan=vlan&lt;/td&gt;
+&lt;td&gt;0-4095, 或0xffff，数据包的 VLAN Tag，0xffff 表示此数据包不带 VLAN Tag&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;dl_src=xx:xx:xx:xx:xx:xx&lt;/td&gt;
+&lt;td&gt;数据包源 MAC (eg. 00:0A:E4:25:6B:B0)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;dl_dst=xx:xx:xx:xx:xx:xx&lt;/td&gt;
+&lt;td&gt;数据包目的 MAC (eg. 00:0A:E4:25:6B:B0)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;01:00:00:00:00:00/01:00:00:00:00:00&lt;/td&gt;
+&lt;td&gt;匹配所有多播或广播数据包&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;00:00:00:00:00:00/01:00:00:00:00:00&lt;/td&gt;
+&lt;td&gt;匹配所有单播数据包&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;dl_type=ethertype&lt;/td&gt;
+&lt;td&gt;0 到 65535 的长整数或者 16 进制表示，匹配以太网数据包类型，EX：0x0800 ( IPv4 数据包) 0x0806 ( arp 数据包)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;nw_src=ip[/netmask] nw_dst=ip[/netmask]&lt;/td&gt;
+&lt;td&gt;dl_type 字段为 0x0800 时就匹配源或目的 ip 地址，为 0x0806 就匹配 ar_spa 或 ar_tpa ，若 dl_type 字段为通配符，这两个参数会被忽略&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;tcp_src=port tcp_dst=port udp_src=port udp_dst=port&lt;/td&gt;
+&lt;td&gt;匹配 TCP 或 UDP 的源或目的端口，当然，若 dl_type 字段为通配符或者未明确协议类型时，这些字段会忽略&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;关于当前 OVS 版本支持的更多匹配字段以及详细说明和用法，可以通过 &lt;code&gt;man ovs-ofctl&lt;/code&gt; 查看。&lt;/p&gt;
+&lt;p&gt;上面提到 flow 支持通配符，添加流表项时只能指定有限的几个字段，对于未指定的字段则默认为通配符，因此若某条添加 flow 命令中所有匹配字段都为通配符，那么这条 flow 将匹配所有数据包，下面新建一个网桥 br-test 测试一下。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@POD23-CLU02-H006 ~]# ovs-vsctl add-br br-test
+[root@POD23-CLU02-H006 ~]# ovs-ofctl dump-flows br-test
+ cookie=0x0, duration=4.866s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看到新创建的br-test中默认只有一条flow，也未连接任何控制器，而且此flow中没有匹配字段(priority不是)，因此这条默认添加的flow将匹配所有进入br-test的数据包，而其动作NORMAL表明数据包完全按照MAC地址学习方式完成转发。&lt;/p&gt;
+&lt;h4&gt;2.3 flow action 语法&lt;/h4&gt;
+&lt;p&gt;action 字段语法为 actions=[action][,action...]，多个 action 用逗号隔开，指定匹配某条流表项的数据包要执行的指令集，要注意的是，若未指定任何 action，数据包会被 DROP。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;action 指令&lt;/th&gt;
+&lt;th&gt;作用&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;output:PORT&lt;/td&gt;
+&lt;td&gt;数据包从端口 PORT 发出，PORT 为 openflow 端口号，若 PORT 为数据包进入端口，则不执行此 action&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;normal&lt;/td&gt;
+&lt;td&gt;数据包交由 OVS 自身的转发规则完成转发，不再匹配任何 openflow flow&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;all&lt;/td&gt;
+&lt;td&gt;数据包从网桥上所有端口发出，除了其进入端口&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;drop&lt;/td&gt;
+&lt;td&gt;丢弃数据包，当然，drop 之后不能再跟其它 action&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;mod_vlan_vid:vlan_vid&lt;/td&gt;
+&lt;td&gt;添加或修改数据包中的 VLAN tag 为此处指定的 tag&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;strip_vlan&lt;/td&gt;
+&lt;td&gt;移除数据包中的VLAN tag，如果有的话&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;mod_dl_src:mac /mod_dl_dst:mac&lt;/td&gt;
+&lt;td&gt;修改源或目的 MAC 地址&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;mod_nw_src:ip / mod_nw_dst:ip&lt;/td&gt;
+&lt;td&gt;修改源或者目的 ip 地址&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;mod_tp_src:port / mod_tp_dst:port&lt;/td&gt;
+&lt;td&gt;修改 TCP 或 UDP 数据包的源或目的端口号(注意不是 openflow 端口号)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;resubmit([port],[table])&lt;/td&gt;
+&lt;td&gt;若 port 指定,替换数据包 in_port 字段,并重新匹配；若 table 指定，提交数据包到指定 table，并匹配&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4&gt;2.4 实践操作 OpenFlow 命令&lt;/h4&gt;
+&lt;p&gt;在本例中, 我们会创建一个不连接到任何控制器的 OVS 交换机，并演示如何使用 ovs-ofctl 命令操作 OpenFlow 流表。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;创建一个新的 OVS 交换机&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-vsctl add-br br1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;创建三台虚拟机，指定 bridge 为 br1，当虚拟机启动时会自动按照 xml 中配置的 tap 设备名称创建一个 port 并挂载到 ovs 网桥上。OVS 会为 interface 自动生成一个 OpenFlow 端口编号。这个端口编号也可以自己配置。配置 openflow 端口编号如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-vsctl set interface tap-vm1 ofport_request=100
+# ovs-vsctl set interface tap-vm2 ofport_request=101
+# ovs-vsctl set interface tap-vm3 ofport_request=102
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;配置完成后，两台虚拟机信息：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;虚拟机&lt;/th&gt;
+&lt;th&gt;interface&lt;/th&gt;
+&lt;th&gt;OpenFlow 端口号&lt;/th&gt;
+&lt;th&gt;vlan tag&lt;/th&gt;
+&lt;th&gt;IP 地址&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;wangyuwei-1&lt;/td&gt;
+&lt;td&gt;tap-vm1&lt;/td&gt;
+&lt;td&gt;100&lt;/td&gt;
+&lt;td&gt;100&lt;/td&gt;
+&lt;td&gt;11.11.11.12&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;wangyuwei-2&lt;/td&gt;
+&lt;td&gt;tap-vm2&lt;/td&gt;
+&lt;td&gt;101&lt;/td&gt;
+&lt;td&gt;100&lt;/td&gt;
+&lt;td&gt;11.11.11.13&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;wangyuwei-3&lt;/td&gt;
+&lt;td&gt;tap-vm3&lt;/td&gt;
+&lt;td&gt;102&lt;/td&gt;
+&lt;td&gt;100&lt;/td&gt;
+&lt;td&gt;11.11.11.14&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ol&gt;
+&lt;li&gt;屏蔽数据包&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;屏蔽所有进入 OVS 网桥 br1 的以太网数据包&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-ofctl add-flow br1 &amp;quot;table=0, dl_src=01:00:00:00:00:00/01:00:00:00:00:00, actions=drop&amp;quot;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;修改数据包&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;添加新的 OpenFlow 条目，修改从端口 tap-vm1 收到的数据包的源地址为 12.12.12.12&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-ofctl add-flow br1 &amp;quot;priority=1 idle_timeout=0,in_port=100,actions=mod_nw_src:12.12.12.12,normal&amp;quot;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;从 wangyuwei-1 (11.11.11.12) ping wangyuwei-2 (11.11.11.13)，并对 tap-vm2 进行抓包，可以看到地址成功被替换成 12.12.12.12，符合预期。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@POD23-CLU02-H006 ~]# tcpdump -i tap-vm2 icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on tap-vm2, link-type EN10MB (Ethernet), capture size 262144 bytes
+18:04:03.382171 IP 12.12.12.12 &amp;gt; 11.11.11.13: ICMP echo request, id 15694, seq 28, length 64
+18:04:04.382254 IP 12.12.12.12 &amp;gt; 11.11.11.13: ICMP echo request, id 15694, seq 29, length 64
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;重定向数据包&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;添加新的 OpenFlow 条目，重定向来自 tap-vm1 的所有 ICMP 数据包到端口 tap-vm3。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-ofctl add-flow br1 idle_timeout=0,dl_type=0x0800,nw_proto=1,nw_src=&amp;quot;11.11.11.12&amp;quot;,actions=output:102
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;分别从 wangyuwei-1 (11.11.11.12) ping wangyuwei-2 (11.11.11.13)，wangyuwei-3 (11.11.11.14) 并对 tap-vm3 进行抓包，可以看到对 tap-vm2 的访问也由 tap-vm3 接收到了，符合预期。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@POD23-CLU02-H006 ~]# tcpdump -i tap-vm3 icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on tap-vm3, link-type EN10MB (Ethernet), capture size 262144 bytes
+18:16:09.137650 IP 11.11.11.12 &amp;gt; 11.11.11.13: ICMP echo request, id 15705, seq 5, length 64
+18:16:10.137738 IP 11.11.11.12 &amp;gt; 11.11.11.13: ICMP echo request, id 15705, seq 6, length 64
+18:16:14.571260 IP 11.11.11.12 &amp;gt; 11.11.11.14: ICMP echo request, id 15706, seq 1, length 64
+18:16:14.571433 IP 11.11.11.14 &amp;gt; 11.11.11.12: ICMP echo reply, id 15706, seq 1, length 64
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;修改数据包的 VLAN Tag&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;除了使用 &lt;code&gt;ping&lt;/code&gt;、&lt;code&gt;tcpdump&lt;/code&gt; 和 &lt;code&gt;iperf&lt;/code&gt; 等 Linux 命令以外，我们也可以使用 OVS 提供的 &lt;code&gt;ovs-appctl ofproto/trace&lt;/code&gt; 工具来测试 OVS 对数据包的转发状况。&lt;code&gt;ovs-appctl ofproto/trace&lt;/code&gt; 可以用来生成测试用的模拟数据包，并一步步的展示 OVS 对数据包的流处理过程。在以下的例子中，我们演示一下如何使用这个命令：&lt;/p&gt;
+&lt;p&gt;修改端口 tap-vm1 的 VLAN tag 为 101:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-vsctl set port tap-vm1 tag=101
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;现在由于端口 tap-vm1 和 tap-vm2 属于不同的 VLAN，它们之间无法进行数据交换。我们使用tap-vm1 ping tap-vm2，我们使用 ovs-appctl ofproto/trace 生成一个从端口 t 发送到端口 p1 的数据包，这个数据包不包含任何 VLAN tag，并观察 OVS 的处理过程&lt;/p&gt;
+&lt;h3&gt;三、参考文档&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;https://opengers.github.io/openstack/openstack-base-openflow-in-openvswitch/&lt;/li&gt;
+&lt;li&gt;https://opengers.github.io/openstack/openstack-base-use-openvswitch/&lt;/li&gt;
+&lt;li&gt;https://opengers.github.io/openstack/openstack-base-virtual-network-devices-bridge-and-vlan/&lt;/li&gt;
+&lt;li&gt;https://www.ibm.com/developerworks/cn/cloud/library/1401_zhaoyi_openswitch/index.html&lt;/li&gt;
+&lt;/ol&gt;</content></entry><entry><title>OpenvSwitch + VxLAN 实现</title><link href="https://andiaq.github.io/articles/openvswitch-vxlan.html" rel="alternate"></link><published>2018-09-25T10:12:00+08:00</published><updated>2018-09-25T10:12:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-25:/articles/openvswitch-vxlan.html</id><summary type="html">&lt;p&gt;本实验基于 OVS 构建 Overlay 的 VxLAN 网络。在实验过程中，建立对 VXLAN 的基本认识，以及了解如何建立并进行配置 VxLAN 隧道网络，从而实现相同网段和不同网段之间的通信。&lt;/p&gt;
+&lt;h3&gt;一、对  VxLAN 的认识&lt;/h3&gt;
+&lt;p&gt;VXLAN ( Virtual eXtensible Local Area Network ) 一种网络虚拟化技术，通过将 VM 或物理服务器发出的数据包封装在 UDP 中，并使用物理网络的 IP/MAC 作为报文头进行封装，然后在 IP 网络上传输，到达目的地后由隧道终结点解封装并将数据发送给目标虚拟机或物理服务器。&lt;/p&gt;
+&lt;h4&gt;1.1 VxLAN 封装和包格式&lt;/h4&gt;
+&lt;p&gt;VxLAN 是将二层建立在三层上的网络。通过将二层数据封装到 UDP 的方式来扩展数据中心的二层网段数量。传输协议是 IP …&lt;/p&gt;</summary><content type="html">&lt;p&gt;本实验基于 OVS 构建 Overlay 的 VxLAN 网络。在实验过程中，建立对 VXLAN 的基本认识，以及了解如何建立并进行配置 VxLAN 隧道网络，从而实现相同网段和不同网段之间的通信。&lt;/p&gt;
+&lt;h3&gt;一、对  VxLAN 的认识&lt;/h3&gt;
+&lt;p&gt;VXLAN ( Virtual eXtensible Local Area Network ) 一种网络虚拟化技术，通过将 VM 或物理服务器发出的数据包封装在 UDP 中，并使用物理网络的 IP/MAC 作为报文头进行封装，然后在 IP 网络上传输，到达目的地后由隧道终结点解封装并将数据发送给目标虚拟机或物理服务器。&lt;/p&gt;
+&lt;h4&gt;1.1 VxLAN 封装和包格式&lt;/h4&gt;
+&lt;p&gt;VxLAN 是将二层建立在三层上的网络。通过将二层数据封装到 UDP 的方式来扩展数据中心的二层网段数量。传输协议是 IP + UDP。
+VxLAN 是一种在现有物理网络设施中支持大规模多租户网络环境的解决方案。&lt;/p&gt;
+&lt;p&gt;VxLAN 定义了一个 MAC-in-UDP 的封装格式。
+在原始的 Layer 2 网络包前加上 VxLAN header，然后放到 UDP 和 IP 包中。
+通过 MAC-in-UDP 封装，VxLAN 能够在 Layer 3 网络上建立起了一条 Layer 2 的隧道。&lt;/p&gt;
+&lt;p&gt;VxLAN 包的格式如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-vxlan-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;如上图所示，VxLAN 引入了 8-byte VxLAN header，其中 VNI 占 24-bit。
+VxLAN 和原始的 L2 frame 被封装到 UDP 包中。&lt;/p&gt;
+&lt;p&gt;这 24-bit 的 VNI 用于标示不同的二层网段，能够支持 16777216 个 LAN。不同 VxLAN 段的虚拟机不能直接二层相互通信。&lt;/p&gt;
+&lt;h4&gt;1.2 VxLAN Tunnel Endpoint&lt;/h4&gt;
+&lt;p&gt;VxLAN 使用 VxLAN tunnel endpoint (VTEP) 设备处理 VxLAN 的封装和解封。
+每个 VTEP 有一个 IP interface，并配置了一个 IP 地址作为该服务器上的 VxLAN 隧道端点。VTEP 使用该 IP 封装 Layer 2 frame，
+并通过该 IP interface 传输和接收封装后的 VxLAN 数据包。&lt;/p&gt;
+&lt;p&gt;VxLAN 独立于底层的网络拓扑；
+反过来，两个 VTEP 之间的底层 IP 网络也独立于 VxLAN。
+VxLAN 数据包是根据外层的 IP header 路由的，该 header 将两端的 VTEP IP 作为源和目标 IP。&lt;/p&gt;
+&lt;p&gt;后面通过详细的实验进行说明。&lt;/p&gt;
+&lt;h3&gt;二、数据报文转发&lt;/h3&gt;
+&lt;p&gt;VM 之间的通信模式主要有3种：同 VNI 下的不同 VM（分布在同一实体和不同实体两种），不同 VNI 下的跨网访问，VxLAN 和非 VxLAN 之间的访问。&lt;/p&gt;
+&lt;p&gt;VxLAN 网关分为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;二层网关&lt;/strong&gt;：位于同一网段的终端用户通信，L2 网关收到用户报文后，根据报文中包含的目的 MAC 类型，报文转发流程分为：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;MAC 地址为 BUM（broadcast&amp;amp;unknown-unicast&amp;amp;multicast）地址，按照 BUM 报文转发流程进行处理&lt;/li&gt;
+&lt;li&gt;MAC 地址为已知单播地址，按照已知单播报文转发流程进行处理&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;三层网关&lt;/strong&gt;：用于非同一网段的终端用户通信或 VxLAN 和非 VxLAN 用户间的通信。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;2.1 相同 VNI VM 之间的通信&lt;/h4&gt;
+&lt;p&gt;对于相同 VNI 的 VxLAN，属于同一个二层网络段。对于同网段主机的通信而言，报文通过查询 MAC 表进行二层转发。
+以下实验的二层网关即 tep0。&lt;/p&gt;
+&lt;p&gt;相同 VNI vm 之间互访拓扑图如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-vxlan-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;在两个物理机上分别配置 VNI 为1000，配置如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;host1 配置:
+&lt;span class="c1"&gt;# ovs-vsctl add-br br0&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-port br0 ens10f1&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-port br0 tep0 -- set interface tep0 type=internal&lt;/span&gt;
+&lt;span class="c1"&gt;# ip addr add 192.168.0.10/24 dev tep0&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-br br1&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.20 options:key=1000 options:dst_port=4789&lt;/span&gt;
+
+host2 配置：
+&lt;span class="c1"&gt;# ovs-vsctl add-br br0&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-port br0 ens10f1&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-port br0 tep0 -- set interface tep0 type=internal&lt;/span&gt;
+&lt;span class="c1"&gt;# ip addr add 192.168.0.20/24 dev tep0&lt;/span&gt;
+&lt;span class="c1"&gt;# ip link set tep0 up&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-br br1&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.10 options:key=1000 options:dst_port=4789&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;vm 网卡配置信息如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nt"&gt;&amp;lt;interface&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;bridge&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;mac&lt;/span&gt; &lt;span class="na"&gt;address=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;e2:2e:54:67:c3:22&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;source&lt;/span&gt; &lt;span class="na"&gt;bridge=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;br1&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;virtualport&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;openvswitch&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;parameters&lt;/span&gt; &lt;span class="na"&gt;interfaceid=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;d3cc9fef-ff8d-4432-a1b9-87e231f9dc1e&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;/virtualport&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;target&lt;/span&gt; &lt;span class="na"&gt;dev=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;tap-vm1&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;model&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;virtio&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;address&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;pci&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;domain=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x0000&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;bus=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x00&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;slot=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x03&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;function=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x0&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/interface&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;按照以上配置，在 host1 上创建 vm1, 且配置 vm1 ip 地址为 12.12.12.14/24；host1 上创建 vm2, 且配置 vm2 ip 地址为 12.12.12.12/24.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@POD23-CLU02-H006 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl show&lt;/span&gt;
+0611578f-a3e2-4df1-927c-d8ec139084a1
+    Bridge &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;tep0&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;tep0&amp;quot;&lt;/span&gt;
+                type: internal
+        Port &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+                type: internal
+        Port &lt;span class="s2"&gt;&amp;quot;ens10f1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;ens10f1&amp;quot;&lt;/span&gt;
+    Bridge &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+                type: internal
+        Port &lt;span class="s2"&gt;&amp;quot;tap-vm1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;tap-vm1&amp;quot;&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;vx1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;vx1&amp;quot;&lt;/span&gt;
+                type: vxlan
+                options: &lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="nv"&gt;dst_port&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;4789&amp;quot;&lt;/span&gt;, &lt;span class="nv"&gt;key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;1000&amp;quot;&lt;/span&gt;, &lt;span class="nv"&gt;remote_ip&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;192.168.0.10&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;对 vm1 (12.12.12.14) ping vm2 (12.12.12.12) 进行抓包分析，结果如下。可以清楚的看到配置的 VNI 值，以及 overlay 和 underlay ip 地址信息。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-vxlan-3.png"&gt;&lt;/p&gt;
+&lt;p&gt;选择使用 VxLAN 网络模式时，每个租户网络使用一个 VNI，处于一个租户下的 vm 之间可以二层互访。不同租户之间即不同 VxLAN 段不能直接二层通信，也就是说通过 VNI ID 实现租户隔离。VNI 数量和 VLAN ID 数量远远不能相比，所以使用 VxLAN 大大解决了租户 vlan 的数量限制。&lt;/p&gt;
+&lt;p&gt;实现租户隔离之后，如果再想实现租户内网络二层隔离，这时候可以再结合使用 VLAN tag，从而实现本地隔离。&lt;/p&gt;
+&lt;h4&gt;2.2 不同 VNI VM 之间的通信&lt;/h4&gt;
+&lt;p&gt;实现不同 VNI 下的跨网访问，需要配置三层网关。以下实验通过增加路由虚拟机，将配置子网网关地址到路由虚拟机上，从而实现跨网访问。&lt;/p&gt;
+&lt;p&gt;不同子网拓扑图实现如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-vxlan-4.png"&gt;&lt;/p&gt;
+&lt;p&gt;如图所示，vm1 和 vm2 分别属于 10.10.10.0/24 网段和 12.12.12.0/24 网段，且分别属于 VNI 1000 和 VNI 2000。vm1 和 vm2 对应的三层网关分别是 vrouter 上 NIC_0 和 NIC_1 的 IP 地址。vrouter上存在到 10.10.10.0/24 网段和 12.12.12.0/24 网段的路由。此时，vm1 想与 vm2 进行通信。&lt;/p&gt;
+&lt;p&gt;host1 配置如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.20 options:key=1000 options:dst_port=4789&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl add-port br2 vx2 -- set interface vx2 type=vxlan options:remote_ip=192.168.0.30 options:key=2000 options:dst_port=4789&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;host2 配置如下:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.10 options:key=1000 options:dst_port=4789&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;host3 配置如下:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.10 options:key=2000 options:dst_port=4789&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;由于是首次进行通信，且 vm1 和 vm2 处于不同网段，vm1 需要先发送 ARP 广播报文请求网关 vrouter（NIC_0）的MAC，获得网关的 MAC 后，vm1 先将数据报文发送给网关；之后网关也将发送 ARP 广播报文请求 vm2 的 MAC，获得 vm2 的 MAC 后，网关再将数据报文发送给 vm2。&lt;/p&gt;
+&lt;h4&gt;2.3 VM 和外部服务器的通信&lt;/h4&gt;
+&lt;h5&gt;2.3.1 绑定 floating ip 到虚拟机&lt;/h5&gt;
+&lt;p&gt;若要直接将 floating ip 绑定到虚拟机，首先我们需要一个 floating ip 段，并且该子网段中有一个 ip 地址作为子网的网关。然后从以上 floating ip 子网段中分配一个 ip 地址给虚拟机。&lt;/p&gt;
+&lt;p&gt;在本实验中，由于没有公网 ip 可用，我们可以在计算节点配置一个 11.11.11.1/24 子网段作为 floating ip 段。并将网关地址 11.11.11.1 配置到计算节点上。通过计算节点上 ip 转发以及路由功能，将 floating ip 映射到公网。&lt;/p&gt;
+&lt;p&gt;以 host2 为例，配置之前 ovs 信息如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@POD23-CLU02-H006 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl show&lt;/span&gt;
+0611578f-a3e2-4df1-927c-d8ec139084a1
+    Bridge &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;tep0&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;tep0&amp;quot;&lt;/span&gt;
+                type: internal
+        Port &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+                type: internal
+        Port &lt;span class="s2"&gt;&amp;quot;ens10f1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;ens10f1&amp;quot;&lt;/span&gt;
+    Bridge &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+                type: internal
+        Port &lt;span class="s2"&gt;&amp;quot;tap-vm1&amp;quot;&lt;/span&gt;
+            tag: &lt;span class="m"&gt;100&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;tap-vm1&amp;quot;&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;vx1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;vx1&amp;quot;&lt;/span&gt;
+                type: vxlan
+                options: &lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="nv"&gt;dst_port&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;4789&amp;quot;&lt;/span&gt;, &lt;span class="nv"&gt;key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;1000&amp;quot;&lt;/span&gt;, &lt;span class="nv"&gt;remote_ip&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;192.168.0.10&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我们对虚拟机的网卡 tap-vm1 设备打上了 tag=100, 用来模拟 vlan 模型的外部网络。接着做如下配置：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl add-port br1 tap-gateway -- set interface tap-gateway type=internal&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl set port tap-gateway tag=100&lt;/span&gt;
+&lt;span class="c1"&gt;# ip link set tap-gateway up&lt;/span&gt;
+&lt;span class="c1"&gt;# ip addr add 11.11.11.1/24 dev tap-gateway&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以上步骤完成 floating ip 子网段和网关地址的配置，我们还需要在计算节点开启 ip 转发和路由转发。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# cat /etc/sysctl.d/99-sysctl.conf &lt;/span&gt;
+net.ipv4.ip_forward &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="m"&gt;1&lt;/span&gt;
+&lt;span class="c1"&gt;# sysctl -p&lt;/span&gt;
+
+&lt;span class="c1"&gt;# iptables -t nat -A POSTROUTING -s 11.11.11.0/24 -j SNAT --to-source 18.23.120.66&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以下配置是开启计算节点 dns 服务端口：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# iptables -A OUTPUT -p udp --dport 53 -j ACCEPT&lt;/span&gt;
+&lt;span class="c1"&gt;# iptables -A OUTPUT -p udp --sport 53 -j ACCEPT&lt;/span&gt;
+&lt;span class="c1"&gt;# iptables -A INPUT -p udp --sport 53 -j ACCEPT&lt;/span&gt;
+&lt;span class="c1"&gt;# iptables -A INPUT -p udp --dport 53 -j ACCEPT&lt;/span&gt;
+&lt;span class="c1"&gt;# iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited&lt;/span&gt;
+&lt;span class="c1"&gt;# iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;结果如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@wangyuwei-1 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ip a&lt;/span&gt;
+&lt;span class="m"&gt;1&lt;/span&gt;: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;65536&lt;/span&gt; qdisc noqueue state UNKNOWN 
+    link/loopback &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00 brd &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00
+    inet &lt;span class="m"&gt;127&lt;/span&gt;.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+&lt;span class="m"&gt;2&lt;/span&gt;: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc pfifo_fast state UP qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;52&lt;/span&gt;:54:00:7d:e8:37 brd ff:ff:ff:ff:ff:ff
+    inet &lt;span class="m"&gt;11&lt;/span&gt;.11.11.12/24 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::5054:ff:fe7d:e837/64 scope link 
+       valid_lft forever preferred_lft forever
+&lt;span class="o"&gt;[&lt;/span&gt;root@wangyuwei-1 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ping -c 2 baidu.com&lt;/span&gt;
+PING baidu.com &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;123&lt;/span&gt;.125.115.110&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="m"&gt;56&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;84&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; bytes of data.
+&lt;span class="m"&gt;64&lt;/span&gt; bytes from &lt;span class="m"&gt;123&lt;/span&gt;.125.115.110: &lt;span class="nv"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt; &lt;span class="nv"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;52&lt;/span&gt; &lt;span class="nv"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;.40 ms
+&lt;span class="m"&gt;64&lt;/span&gt; bytes from &lt;span class="m"&gt;123&lt;/span&gt;.125.115.110: &lt;span class="nv"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt; &lt;span class="nv"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;52&lt;/span&gt; &lt;span class="nv"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;.37 ms
+
+--- baidu.com ping statistics ---
+&lt;span class="m"&gt;2&lt;/span&gt; packets transmitted, &lt;span class="m"&gt;2&lt;/span&gt; received, &lt;span class="m"&gt;0&lt;/span&gt;% packet loss, &lt;span class="nb"&gt;time&lt;/span&gt; 1001ms
+rtt min/avg/max/mdev &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="m"&gt;2&lt;/span&gt;.376/2.391/2.407/0.051 ms
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以上测试只能作为基础功能实验，理解访问外网的过程，但是并没有做隔离。
+如果环境中事先已经准备了一个 floating ip 池，则不需要该 floating ip 池开启 DHCP 功能，只需要按需分配并挂载到虚拟机上。&lt;/p&gt;
+&lt;p&gt;如果仅从分配 ip 地址角度来说，在没有路由器参与时，若是分配内网 ip 地址，以上场景可以将虚拟机 ip 地址配置成 dhcp，且可以使用 namespace 实现隔离。&lt;/p&gt;
+&lt;h5&gt;2.3.2 绑定 floating ip 到路由器&lt;/h5&gt;
+&lt;p&gt;这里路由器有两种实现方式：
+1. 使用 namespace 实现
+2. 使用虚拟机，比如 vyos 或者 6wind 等自带路由，DHCP 等功能的 vrouter&lt;/p&gt;
+&lt;p&gt;这里如果使用虚拟机实现 vrouter, 那么绑定 floating ip 到路由器也意味着绑定 floating ip 到虚拟机。过程及原理和上述绑定 floating ip 到虚拟机类似。&lt;/p&gt;</content></entry><entry><title>OVS-DPDK QoS 实现</title><link href="https://andiaq.github.io/articles/ovs-dpdk-qos.html" rel="alternate"></link><published>2018-09-04T15:16:00+08:00</published><updated>2018-09-04T15:16:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-04:/articles/ovs-dpdk-qos.html</id><summary type="html">&lt;p&gt;在使用 DPDK datapath 时，可以同时设置入口流量限制和出口流量限制。这些分别称为 QoS 和速率限制。&lt;/p&gt;
+&lt;h3&gt;一、QoS (Egress Policing)&lt;/h3&gt;
+&lt;p&gt;在 OVS-DPDK 环境中配置 QoS，仅在从 vSwitch 上的端口发送的出口流量上进行限制。&lt;/p&gt;
+&lt;p&gt;使用如下命令查看 OVS port 支持的 QoS 类型。目前 ovs-dpdk 只支持 egress-policer，随着版本更新可能会支持其他的 QoS 类型。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-appctl -t ovs-vswitchd qos/show-types dpdkvhostuserclient0
+QoS type: egress-policer
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;egress-policer&lt;/code&gt; 是 OVS-DPDK 支持的 QoS 类型。&lt;/p&gt;
+&lt;p&gt;一旦在接口上超过指定的传输速率（由 token …&lt;/p&gt;</summary><content type="html">&lt;p&gt;在使用 DPDK datapath 时，可以同时设置入口流量限制和出口流量限制。这些分别称为 QoS 和速率限制。&lt;/p&gt;
+&lt;h3&gt;一、QoS (Egress Policing)&lt;/h3&gt;
+&lt;p&gt;在 OVS-DPDK 环境中配置 QoS，仅在从 vSwitch 上的端口发送的出口流量上进行限制。&lt;/p&gt;
+&lt;p&gt;使用如下命令查看 OVS port 支持的 QoS 类型。目前 ovs-dpdk 只支持 egress-policer，随着版本更新可能会支持其他的 QoS 类型。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-appctl -t ovs-vswitchd qos/show-types dpdkvhostuserclient0
+QoS type: egress-policer
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;egress-policer&lt;/code&gt; 是 OVS-DPDK 支持的 QoS 类型。&lt;/p&gt;
+&lt;p&gt;一旦在接口上超过指定的传输速率（由 token bucket 实现），&lt;code&gt;egress policer&lt;/code&gt; 就会丢弃数据包。 对于物理设备来说，它将丢弃通过 NIC 从主机传输的流量。 对于虚拟接口来说，即 DPDK vhost-user，它将丢弃从 vSwitch 传输到 guest 虚拟机的流量，也就是限制了该端口上 guest 虚拟机的流量接收速率。 &lt;/p&gt;
+&lt;p&gt;使用如下命令对 dpdkvhostuserclient1 进行配置，将发送速率限制为 10Mbps。10Mbps = 10,000,000bps = 1250000Bps，即 cir 的值大小。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-vsctl set port dpdkvhostuserclient1 qos=@newqos -- --id=@newqos create qos type=egress-policer other-config:cir=1250000 other-config:cbs=2048
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;cir：（Committed Information Rate，承诺信息速率）, 端口允许发送的最大速率，单位为Bytes/s.&lt;/li&gt;
+&lt;li&gt;cbs：（Committed Burst Size，承诺突发尺寸），以 bytes 为单位，为令牌桶的容量，即每次突发所允许的最大的流量尺寸。设置的突发尺寸必须大于最大报文长度，即至少要比 MTU 的值大。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;使用如下命令查看端口上的 QoS 信息：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-appctl -t ovs-vswitchd qos/show dpdkvhostuserclient1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用如下命令从 ovsdb 和 port 上清除 QoS 配置：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-vsctl destroy QoS dpdkvhostuserclient1 -- clear Port dpdkvhostuserclient1 qos
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;二、Rate Limiting (Ingress Policing)&lt;/h3&gt;
+&lt;p&gt;与 QoS 功能作用链路相反，Rate limiting 对 vSwitch 上的端口接收的入口流量进行限制。&lt;/p&gt;
+&lt;p&gt;使用如下命令对 dpdkvhostuserclient0 进行配置，将接收速率限制为 10Mbps.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-vsctl set interface dpdkvhostuserclient0 ingress_policing_rate=10000 ingress_policing_burst=1000
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;ingress_policing_rate: 允许 VM 可发送的最大速率（以Kbps为单位）。对于创建入口流量策略限制，此值是必需的。 如果未指定任何值，则不会修改现有的速率限制配置。&lt;/li&gt;
+&lt;li&gt;ingress_policing_burst: 以kb为单位，表示令牌桶的容量。 这个参数最小值应不小于接口的MTU值。 如果未指定任何值，则默认值为 1000 kb。通常设置为 ingress_policing_rate 的 10% 更有利于 tcp 实现全速率。 这是因为 TCP 在丢弃数据包时如果传输交互不好，这会导致数据包重新传输出现问题。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;使用如下命令查看端口上的速率限制配置信息：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-vsctl list interface dpdkvhostuserclient0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用如下命令清除端口上的速率限制：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ovs-vsctl set interface dpdkvhostuserclient0 ingress_policing_rate=0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;2.1 实验结果&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;未限速之前：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-qos-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;设置限速到 4Mbps，即 rate 设置为 4000kbps.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ovs-vsctl set interface dpdkvhostuserclient2 ingress_policing_rate=4000 ingress_policing_burst=1000
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-qos-2.png"&gt;&lt;/p&gt;</content></entry><entry><title>OpenvSwitch + DPDK 实现</title><link href="https://andiaq.github.io/articles/openvswitch-dpdk.html" rel="alternate"></link><published>2018-08-29T09:36:00+08:00</published><updated>2018-08-29T09:36:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-29:/articles/openvswitch-dpdk.html</id><summary type="html">&lt;p&gt;本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。&lt;/p&gt;
+&lt;p&gt;使用了 DPDK 库的 OVS 运行在用户空间，可以直接将用户态的数据，不经过内核直接转发到网卡，从而实现加速目的。&lt;/p&gt;
+&lt;h3&gt;一、OVS + DPDK 编译部署&lt;/h3&gt;
+&lt;p&gt;在部署过程中，各个组件版本之间有一些依赖，版本不对很有可能会出现安装失败或者虚拟机无法开机，推荐使用以下版本。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@pod23-clu02-h005 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vswitchd --version&lt;/span&gt;
+ovs-vswitchd &lt;span class="o"&gt;(&lt;/span&gt;Open vSwitch&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="m"&gt;2&lt;/span&gt;.9.0
+DPDK &lt;span class="m"&gt;17&lt;/span&gt;.11.3
+
+&lt;span class="o"&gt;[&lt;/span&gt;root@pod23-clu02-h005 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# libvirtd --version&lt;/span&gt;
+libvirtd &lt;span class="o"&gt;(&lt;/span&gt;libvirt&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="m"&gt;4&lt;/span&gt;.0 …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。&lt;/p&gt;
+&lt;p&gt;使用了 DPDK 库的 OVS 运行在用户空间，可以直接将用户态的数据，不经过内核直接转发到网卡，从而实现加速目的。&lt;/p&gt;
+&lt;h3&gt;一、OVS + DPDK 编译部署&lt;/h3&gt;
+&lt;p&gt;在部署过程中，各个组件版本之间有一些依赖，版本不对很有可能会出现安装失败或者虚拟机无法开机，推荐使用以下版本。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@pod23-clu02-h005 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vswitchd --version&lt;/span&gt;
+ovs-vswitchd &lt;span class="o"&gt;(&lt;/span&gt;Open vSwitch&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="m"&gt;2&lt;/span&gt;.9.0
+DPDK &lt;span class="m"&gt;17&lt;/span&gt;.11.3
+
+&lt;span class="o"&gt;[&lt;/span&gt;root@pod23-clu02-h005 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# libvirtd --version&lt;/span&gt;
+libvirtd &lt;span class="o"&gt;(&lt;/span&gt;libvirt&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="m"&gt;4&lt;/span&gt;.0.0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;下载 DPDK&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# wget http://fast.dpdk.org/rel/dpdk-17.11.3.tar.xz&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;添加相关环境变量并安装依赖组件&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;export DPDK_DIR=&amp;lt;DPDK_DIR&amp;gt;        # dpdk-17.11.3安装目录
+export DPDK_TARGET=x86_64-native-linuxapp-gcc
+export DPDK_BUILD=$DPDK_DIR/$DPDK_TARGET
+export LD_LIBRARY_PATH=$DPDK_DIR/x86_64-native-linuxapp-gcc/lib
+export PATH=$PATH:/usr/local/ovs/share/openvswitch/scripts
+export DB_SOCK=/usr/local/ovs/var/run/openvswitch/db.sock
+
+# yum install autoconf automake libtool numactl numactl-devel
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;编译 DPDK &lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# cd dpdk-17.11.3
+# make install T=$DPDK_TARGET DESTDIR=install
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;下载 ovs，这里使用的版本是2.9.0&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# git clone https://github.com/openvswitch/ovs.git
+# git checkout -b v2.9.0 v2.9.0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;编译 ovs-dpdk&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# cd ovs
+# ./boot.sh
+# ./configure --prefix=/usr/local/ovs --with-dpdk=$DPDK_BUILD
+# make &amp;amp;&amp;amp; make install
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;配置 hugepages&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# cat /etc/sysctl.d/hugepages.conf
+# vm.nr_hugepages=8192
+# sysctl -p /etc/sysctl.d/hugepages.conf
+# mount -t hugetlbfs none /dev/hugepages
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;加载驱动模块，配置 dpdk 网卡&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;modprobe vfio-pci
+lsmod | grep vfio
+/usr/bin/chmod a+x /dev/vfio
+/usr/bin/chmod 0666 /dev/vfio/*
+dpdk-devbind.py -b vfio-pci ens10f1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;启动 ovsdb-server&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# mkdir -p /usr/local/ovs/var/run/openvswitch&lt;/span&gt;
+&lt;span class="c1"&gt;# /usr/local/ovs/bin/ovsdb-tool create /usr/local/ovs/etc/openvswitch/conf.db /usr/local/ovs/share/openvswitch/vswitch.ovsschema&lt;/span&gt;
+&lt;span class="c1"&gt;# /usr/local/ovs/sbin/ovsdb-server --remote=punix:/usr/local/ovs/var/run/openvswitch/db.sock --remote=db:Open_vSwitch,Open_vSwitch,manager_options --pidfile --detach --monitor&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 增加 dpdk 相关配置参数&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl --no-wait set Open_vSwitch . other_config:vhost-iommu-support=true&lt;/span&gt;
+&lt;span class="c1"&gt;# ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem=&amp;quot;1024,1024&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;ovs 进程核绑定，提升性能。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;查看cpu_layout:
+[root@pod23-clu02-h005 ~]# ./dpdk-stable-17.11.3/usertools/cpu_layout.py 
+======================================================================
+Core and Socket Information (as reported by &amp;#39;/sys/devices/system/cpu&amp;#39;)
+======================================================================
+
+cores =  [0, 1, 2, 3, 4, 8, 9, 10, 11, 16, 17, 18, 19, 20, 24, 25, 26, 27]
+sockets =  [0, 1]
+
+        Socket 0        Socket 1       
+        --------        --------       
+Core 0  [0, 36]         [18, 54]       
+Core 1  [1, 37]         [19, 55]       
+Core 2  [2, 38]         [20, 56]        =&amp;gt; OVS 主进程
+Core 3  [3, 39]         [21, 57]        =&amp;gt; OVS-PMD 收发包线程
+Core 4  [4, 40]         [22, 58]        
+Core 8  [5, 41]         [23, 59]       
+Core 9  [6, 42]         [24, 60]       
+Core 10 [7, 43]         [25, 61]       
+Core 11 [8, 44]         [26, 62]       
+Core 16 [9, 45]         [27, 63]       
+Core 17 [10, 46]        [28, 64]       
+Core 18 [11, 47]        [29, 65]       
+Core 19 [12, 48]        [30, 66]       
+Core 20 [13, 49]        [31, 67]       
+Core 24 [14, 50]        [32, 68]       
+Core 25 [15, 51]        [33, 69]       
+Core 26 [16, 52]        [34, 70]       
+Core 27 [17, 53]        [35, 71]      
+
+# ovs-vswitchd 绑定 2号物理核
+# python -c &amp;quot;print &amp;#39;%x&amp;#39; %((1&amp;lt;&amp;lt;2)|(1&amp;lt;&amp;lt;38)|(1&amp;lt;&amp;lt;20)|(1&amp;lt;&amp;lt;56))&amp;quot;
+100004000100004
+# ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-lcore-mask=0x100004000100004
+
+# OVS-PMD 绑定 3号物理核
+# python -c &amp;quot;print &amp;#39;%x&amp;#39; %((1&amp;lt;&amp;lt;3)|(1&amp;lt;&amp;lt;39)|(1&amp;lt;&amp;lt;21)|(1&amp;lt;&amp;lt;57))&amp;quot;
+200008000200008
+# ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=0x200008000200008
+
+# 查看 ovs 配置
+# ovs-vsctl list open_vswitch
+_uuid               : f4bb4728-d9d6-43e9-be9a-cc8b2cdb10b1
+bridges             : [7acc5f7b-3e73-4cb8-81c4-37b2a11bc0bf, e3a74062-4b05-44be-b248-09e26e5c1f24]
+cur_cfg             : 65
+datapath_types      : [netdev, system]
+db_version          : []
+external_ids        : {}
+iface_types         : [dpdk, dpdkr, dpdkvhostuser, dpdkvhostuserclient, geneve, gre, internal, lisp, patch, stt, system, tap, vxlan]
+manager_options     : []
+next_cfg            : 65
+other_config        : {dpdk-init=&amp;quot;true&amp;quot;, dpdk-lcore-mask=&amp;quot;0x100004000100004&amp;quot;, dpdk-socket-mem=&amp;quot;1024,1024&amp;quot;, pmd-cpu-mask=&amp;quot;0x200008000200008&amp;quot;, vhost-iommu-support=&amp;quot;true&amp;quot;}
+ovs_version         : []
+ssl                 : []
+statistics          : {}
+system_type         : []
+system_version      : []
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;启动 ovs-vswitchd&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ovs-vswitchd unix:/usr/local/ovs/var/run/openvswitch/db.sock --pidfile --detach --log-file&lt;span class="o"&gt;=&lt;/span&gt;/var/log/openvswitch/ovs-vswitchd.log
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;二、搭建实验环境&lt;/h3&gt;
+&lt;p&gt;Open vSwitch 提供了两种类型的 vhostuser 端口：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;vhost-user (dpdkvhostuser)&lt;/li&gt;
+&lt;li&gt;vhost-user-client (dpdkvhostuserclient)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;vhostuser 使用 C/S 模型。其中服务端负责创建/管理/销毁 vhostuser socket. 客户端和服务端相连接。ovs 通过配置 dpdkvhostuser 或者 dpdkvhostuserclient 来确定使用的模型。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用 vhostuser，OVS 作为服务端，qemu 作为客户端。这意味着如果 OVS 进程发生重启或者挂掉，则 guest vm 必须重启；&lt;/li&gt;
+&lt;li&gt;使用 vhostuserclient，OVS 作为客户端，qemu 作为服务端，这就意味着 OVS 可以毫无问题地挂掉或者重启。该功能需要满足 QEMU&amp;gt;=2.7.0。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;推荐使用 vhostuserclient。以下实践也会以 vhostuserclient 为例。使用该功能 ovs 需要做如下配置才会支持：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl set Open_vSwitch . other_config:vhost-iommu-support=true&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;2.1. 创建 OVS 网桥和端口&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ovs-vsctl add-br br0 -- &lt;span class="nb"&gt;set&lt;/span&gt; bridge br0 &lt;span class="nv"&gt;datapath_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;netdev    &lt;span class="c1"&gt;# 使用 ovs-dpdk 必须指定datapath_type类型为netdev&lt;/span&gt;
+ovs-vsctl add-br br1 -- &lt;span class="nb"&gt;set&lt;/span&gt; bridge br1 &lt;span class="nv"&gt;datapath_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;netdev
+ovs-vsctl add-port br0 dpdkvhostuserclient0  -- &lt;span class="nb"&gt;set&lt;/span&gt; Interface dpdkvhostuserclient0 &lt;span class="nv"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;dpdkvhostuserclient options:vhost-server-path&lt;span class="o"&gt;=&lt;/span&gt;/tmp/vhostuserclient0.sock
+ovs-vsctl add-port br0 dpdkvhostuserclient1  -- &lt;span class="nb"&gt;set&lt;/span&gt; Interface dpdkvhostuserclient1 &lt;span class="nv"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;dpdkvhostuserclient options:vhost-server-path&lt;span class="o"&gt;=&lt;/span&gt;/tmp/vhostuserclient1.sock
+ovs-vsctl add-port br0 dpdk0 -- &lt;span class="nb"&gt;set&lt;/span&gt; interface dpdk0 &lt;span class="nv"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;dpdk options:dpdk-devargs&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;0000&lt;/span&gt;:03:00.0
+ovs-vsctl add-port br1 dpdk1 -- &lt;span class="nb"&gt;set&lt;/span&gt; interface dpdk1 &lt;span class="nv"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;dpdk options:dpdk-devargs&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;0000&lt;/span&gt;:03:00.1
+ovs-vsctl &lt;span class="nb"&gt;set&lt;/span&gt; Interface dpdkvhostuserclient0 options:n_rxq&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;
+ovs-vsctl &lt;span class="nb"&gt;set&lt;/span&gt; Interface dpdkvhostuserclient1 options:n_rxq&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;
+vs-vsctl &lt;span class="nb"&gt;set&lt;/span&gt; Interface dpdk0 options:n_rxq&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;
+vs-vsctl &lt;span class="nb"&gt;set&lt;/span&gt; Interface dpdk1 options:n_rxq&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;查看以上配置：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@pod23-clu02-h005 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl show&lt;/span&gt;
+f4bb4728-d9d6-43e9-be9a-cc8b2cdb10b1
+    Bridge &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;br0&amp;quot;&lt;/span&gt;
+                type: internal
+        Port &lt;span class="s2"&gt;&amp;quot;dpdkvhostuserclient0&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;dpdkvhostuserclient0&amp;quot;&lt;/span&gt;
+                type: dpdkvhostuserclient
+                options: &lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="nv"&gt;n_rxq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;2&amp;quot;&lt;/span&gt;, vhost-server-path&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/tmp/vhostuserclient0.sock&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;dpdk0&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;dpdk0&amp;quot;&lt;/span&gt;
+                type: dpdk
+                options: &lt;span class="o"&gt;{&lt;/span&gt;dpdk-devargs&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;0000:03:00.0&amp;quot;&lt;/span&gt;, &lt;span class="nv"&gt;n_rxq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;2&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+    Bridge &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;br1&amp;quot;&lt;/span&gt;
+                type: internal
+        Port &lt;span class="s2"&gt;&amp;quot;dpdk1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;dpdk1&amp;quot;&lt;/span&gt;
+                type: dpdk
+                options: &lt;span class="o"&gt;{&lt;/span&gt;dpdk-devargs&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;0000:03:00.1&amp;quot;&lt;/span&gt;, &lt;span class="nv"&gt;n_rxq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;2&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+        Port &lt;span class="s2"&gt;&amp;quot;dpdkvhostuserclient1&amp;quot;&lt;/span&gt;
+            Interface &lt;span class="s2"&gt;&amp;quot;dpdkvhostuserclient1&amp;quot;&lt;/span&gt;
+                type: dpdkvhostuserclient
+                options: &lt;span class="o"&gt;{&lt;/span&gt;&lt;span class="nv"&gt;n_rxq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;2&amp;quot;&lt;/span&gt;, vhost-server-path&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/tmp/vhostuserclient1.sock&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;2.2 创建虚拟机&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;1. 配置共享内存&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;vhost-user 基于 vring 这套通用的共享内存通信方案，通过共享的虚拟队列来完成报文的传输和控制，因此大大降低了 vhost 和 virtio-net 之间的数据传输成本。使用该机制 QEMU 必须将 vm 的部分内存分配给 hugetlbfs， vhost-user 端口在访问 virtio-net 设备的 vring 和数据包缓冲区，会将 vm 的物理内存映射到 hugetlbfs 上。 要使 vhost-user 端口能够将 VM 的内存映射到其进程地址空间，我们需要配置共享内存和大页内存。否则会造成网络不通，流量出不去也进不来。&lt;/p&gt;
+&lt;p&gt;以上配置在 libvirt xml 中体现如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &lt;span class="nt"&gt;&amp;lt;memoryBacking&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;hugepages&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;page&lt;/span&gt; &lt;span class="na"&gt;size=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;2048&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;unit=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;KiB&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;nodeset=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/hugepages&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/memoryBacking&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;cpu&lt;/span&gt; &lt;span class="na"&gt;mode=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;host-passthrough&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;check=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;none&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;topology&lt;/span&gt; &lt;span class="na"&gt;sockets=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;1&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;cores=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;2&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;threads=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;2&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;numa&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;cell&lt;/span&gt; &lt;span class="na"&gt;id=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;cpus=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0-3&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;memory=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;6291456&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;unit=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;KiB&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;memAccess=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;shared&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt; 
+    &lt;span class="nt"&gt;&amp;lt;/numa&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/cpu&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在 qemu 进程中体现在 &lt;code&gt;mem-path=/dev/hugepages,share=on&lt;/code&gt;， 如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# /usr/libexec/qemu-kvm -name guest=wangyuwei-test -enable-kvm -m 4096 -smp 8,sockets=2,cores=2,threads=2 -chardev socket,id=char0,path=/usr/local/ovs/var/run/openvswitch/dpdkvhostuser0 -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,netdev=mynet1,mac=52:54:00:02:d9:05 -object memory-backend-file,id=mem,size=4096M,mem-path=/dev/hugepages,share=on -numa node,memdev=mem
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;指定 &lt;code&gt;hugepages&lt;/code&gt; 意味着 qemu 会在 guest OS 的内存中创建一个文件，&lt;code&gt;memAccess='shared'&lt;/code&gt; 选项允许其他进程访问这个文件，也就意味着能访问 guest OS 内存，达到共享内存的目的。&lt;/p&gt;
+&lt;p&gt;当 qemu 启动之后，首先会进行 vring 的初始化，并通过 socket 建立 C/S 的共享内存区域和事件机制，然后 client 通过 eventfd 将 virtio kick 事件通知到 server 端，server 端同样通过 eventfd 进行响应，完成整个数据交互。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2. 配置 vhostuser 通信接口&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在上面提到过，使用 vhostuserclient 时将 qemu 作为服务端，所以 xml 中配置 mode 时必须指定为&lt;code&gt;server&lt;/code&gt;，否则无法建立连接。&lt;/p&gt;
+&lt;p&gt;libvirt interface xml 体现如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nt"&gt;&amp;lt;interface&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;vhostuser&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;mac&lt;/span&gt; &lt;span class="na"&gt;address=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;52:54:00:1f:9f:66&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;source&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;unix&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;path=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/tmp/vhostuserclient0.sock&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;mode=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;server&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;model&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;virtio&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;driver&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;vhost&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;queues=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;2&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;host&lt;/span&gt; &lt;span class="na"&gt;mrg_rxbuf=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;off&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;/driver&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;address&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;pci&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;domain=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x0000&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;bus=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x00&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;slot=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x03&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;function=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x0&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/interface&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;interface&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;vhostuser&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;mac&lt;/span&gt; &lt;span class="na"&gt;address=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;52:54:00:1f:9f:67&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;source&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;unix&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;path=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/tmp/vhostuserclient1.sock&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;mode=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;server&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;model&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;virtio&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;driver&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;vhost&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;queues=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;2&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;host&lt;/span&gt; &lt;span class="na"&gt;mrg_rxbuf=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;off&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;/driver&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;address&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;pci&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;domain=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x0000&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;bus=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x00&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;slot=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x07&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;function=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x0&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/interface&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;三、测试过程&lt;/h3&gt;
+&lt;h4&gt;3.1 测试拓扑&lt;/h4&gt;
+&lt;p&gt;测试使用的拓扑图如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;使用 dpdkgen 的 p0 作为发包端口，p1 作为收包端口。&lt;/p&gt;
+&lt;p&gt;配置 6wind:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;eth0&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;10.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;
+&lt;span class="n"&gt;eth1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;20.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;
+&lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="n"&gt;neighbor&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;20.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.2&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;p1&lt;/span&gt; &lt;span class="n"&gt;mac&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;发包端口配置如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Pktgen&amp;gt; &lt;span class="nb"&gt;set&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt; src ip &lt;span class="m"&gt;10&lt;/span&gt;.0.0.2/24            &lt;span class="c1"&gt;# 配置 p0 源 ip 地址为 10.0.0.2/24 &lt;/span&gt;
+Pktgen&amp;gt; &lt;span class="nb"&gt;set&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt; src mac &lt;span class="m"&gt;90&lt;/span&gt;:e2:ba:f7:58:58     &lt;span class="c1"&gt;# 配置 p0 源 mac 地址为 90:e2:ba:f7:58:58&lt;/span&gt;
+Pktgen&amp;gt; &lt;span class="nb"&gt;set&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt; dst ip &lt;span class="m"&gt;20&lt;/span&gt;.0.0.2               &lt;span class="c1"&gt;# 配置 p0 目的 ip 地址为 20.0.0.2&lt;/span&gt;
+Pktgen&amp;gt; &lt;span class="nb"&gt;set&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt; dst mac &lt;span class="m"&gt;52&lt;/span&gt;:54:00:1f:9f:66     &lt;span class="c1"&gt;# 配置 p0 目的 mac 地址为 6wind 的 eth0 的 mac 地址&lt;/span&gt;
+Pktgen&amp;gt; &lt;span class="nb"&gt;set&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt; size &lt;span class="m"&gt;64&lt;/span&gt;
+Pktgen&amp;gt; &lt;span class="nb"&gt;enable&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt; range
+Pktgen&amp;gt; range &lt;span class="m"&gt;0&lt;/span&gt; size max &lt;span class="m"&gt;64&lt;/span&gt;
+Pktgen&amp;gt; &lt;span class="nb"&gt;set&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt; proto udp
+Pktgen&amp;gt; &lt;span class="nb"&gt;set&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt; rate &lt;span class="m"&gt;10&lt;/span&gt;%
+Pktgen&amp;gt; start &lt;span class="m"&gt;0&lt;/span&gt; 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;3.2 测试结果&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;将发包字节设置为64字节，发包速率设置10%时，几乎不存在丢包现象。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;将p0发包速率设置20%时，存在丢包现象。将p1发包速率设置为15%，收发数据差不多。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-3.png"&gt;&lt;/p&gt;</content></entry><entry><title>Pktgen-DPDK 网络性能测试</title><link href="https://andiaq.github.io/articles/pktgen-dpdk.html" rel="alternate"></link><published>2018-08-20T09:51:00+08:00</published><updated>2018-08-20T09:51:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-20:/articles/pktgen-dpdk.html</id><summary type="html">&lt;p&gt;在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。&lt;/p&gt;
+&lt;h2&gt;一、环境部署&lt;/h2&gt;
+&lt;h3&gt;1.1 安装DPDK&lt;/h3&gt;
+&lt;p&gt;DPDK 可以将用户态的数据不经过内核直接转发到网卡，同样网卡数据也不经过内核直接映射到用户态内存实现加速目的。&lt;/p&gt;
+&lt;p&gt;使用 pktgen-dpdk 工具，需要先安装 DPDK 环境。下面内容以 18.05 版本的 DPDK …&lt;/p&gt;</summary><content type="html">&lt;p&gt;在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。&lt;/p&gt;
+&lt;h2&gt;一、环境部署&lt;/h2&gt;
+&lt;h3&gt;1.1 安装DPDK&lt;/h3&gt;
+&lt;p&gt;DPDK 可以将用户态的数据不经过内核直接转发到网卡，同样网卡数据也不经过内核直接映射到用户态内存实现加速目的。&lt;/p&gt;
+&lt;p&gt;使用 pktgen-dpdk 工具，需要先安装 DPDK 环境。下面内容以 18.05 版本的 DPDK 为例进行简要介绍。获取安装包地址请移步：&lt;a href="http://core.dpdk.org/download/"&gt;DPDK Download&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;添加环境变量。这里把环境变量添加到 &lt;code&gt;/root/.bashrc&lt;/code&gt;，使环境变量永久生效。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;RTE_SDK&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&amp;lt;DPDKInstallDir&amp;gt;
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;RTE_TARGET&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;x86_64-native-linuxapp-gcc
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;安装所需依赖包。需要注意 kernel 相关安装包版本必须要和操作系统内核版本一致，否则会出现安装失败。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# yum install gcc-c++ gcc glib-devel numactl-devel numactl-libs &lt;/span&gt;
+&lt;span class="c1"&gt;# yum install kernel-headers kernel-devel&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;使用脚本安装 DPDK 环境。具体每一步这里不详细描述，可参考其他资料。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@vm1 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# cd dpdk-18.05&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@vm1 dpdk-18.05&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ./usertools/dpdk-setup.sh&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 需执行的步骤如下&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;15&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; x86_64-native-linuxapp-gcc                     &lt;span class="c1"&gt;# 下载环境&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;18&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Insert IGB UIO module                          &lt;span class="c1"&gt;# 加载igb_uio驱动&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;21&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Setup hugepage mappings &lt;span class="k"&gt;for&lt;/span&gt; non-NUMA systems   &lt;span class="c1"&gt;# 配置大页内存&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;24&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Bind Ethernet/Crypto device to IGB UIO module  &lt;span class="c1"&gt;# 绑定要使用DPDK的网卡&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 查看配置信息&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;23&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Display current Ethernet/Crypto device settings
+&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;29&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; List hugepage info from /proc/meminfo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;1.2 安装 pktgen-dpdk&lt;/h3&gt;
+&lt;p&gt;下面简单介绍该工具的安装步骤。获取安装包请移步：&lt;a href="http://git.dpdk.org/apps/pktgen-dpdk"&gt;pktgen-dpdk&lt;/a&gt;
+1. 环境编译。在编译结束之后，目录&lt;code&gt;app/build/pktgen&lt;/code&gt;就是编译出来的程序。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@vm1 ~]# cd pktgen-dpdk
+[root@vm1 pktgen-dpdk]# make
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;在安装过程中若出现如下错误，需要给 lua 源码打 patch。
+错误信息如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;No rule to make target `/root/pktgen-dpdk-pktgen-3.5.1/app/../lib/lua/src/x86_64-native-linuxapp-gcc/lib/librte_lua.a&amp;#39;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解决办法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@vm1 lua]# pwd
+/root/pktgen-dpdk/lib/lua
+[root@wangyuwei-1 lua]# patch -p0 &amp;lt; lua-5.3.4.patch   安装补丁
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;二、测试过程&lt;/h2&gt;
+&lt;p&gt;学会使用一个工具最好的方式就是通过 help 查看帮助文档。这里不对使用方式进行详细说明，将只介绍在之后测试中我使用到的参数。&lt;/p&gt;
+&lt;h3&gt;2.1  网卡之间互打流量&lt;/h3&gt;
+&lt;p&gt;以该测试为例，对使用 pktgen-dpdk 工具先产生感性认识，比较容易理解该工具的主要功能和基本的使用方式。然后再通过编写 lua 脚本构造数据包，实现自己真正需要测试的内容和获取的信息结果。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;环境说明：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;使用 SRIOV 配置多个 VF 网卡，将其中的三个 VF 网卡配置给虚拟机，一个 VF 绑定可访问的 ip 地址，将另外两个 VF 绑定为使用 igb_uio 驱动。&lt;/p&gt;
+&lt;p&gt;另外，使用 pktgen-dpdk 管理的网卡内核是看不到的，所以无法使用 ip command 对其进行查看或者操作。事实上，作为 traffic gen 也没有必要配置接口 ip 地址。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;测试脚本&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ./app/build/pktgen -l 2-10 -n 4 --proc-type auto --socket-mem 1024 -- -P -m &amp;quot;[3-4:5-6].0,[7-8:9-10].1&amp;quot; -f themes/black-yellow.theme
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;执行结果&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/pktgen-dpdk-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;以上结果符合预期，Port 0 进行发包，Port 1 进行收包。这两个网卡属于同一块物理网卡的 VF ，所以万兆网卡带宽进行了均分。&lt;/p&gt;
+&lt;h4&gt;2.2. 虚拟机与 NAT 网关互打流量&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;环境说明：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在物理机 Host01 上，使用 PCI passthrough 将两个物理网卡透传给虚拟机 DPDKGEN vm1 。进入虚拟机，将两个物理网卡配置成 DPDK 驱动。&lt;/li&gt;
+&lt;li&gt;在物理机 Host02 上，使用 PCI passthrough 将两个物理网卡透传给虚拟机 6wind，进行如下配置。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 1. 配置ip地址
+6wind:
+    ens3: 10.0.0.1
+    ens7: 20.0.0.1
+
+# 2. 配置arp，将发包机指定的目的ip地址与dpdkgen p1 mac地址进行绑定
+root@router:~# arp -n
+Address                  HWtype  HWaddress           Flags Mask            Iface
+20.0.0.2                 ether   90:e2:ba:f7:58:59   CM                    eth1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;测试拓扑图：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;测试脚本&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# ./app/build/pktgen -l 2-10 -n 4 --proc-type auto --socket-mem 1024 -- -P -m &amp;quot;[3-4:5-6].0,[7-8,9-10].1&amp;quot;
+
+Pktgen:/&amp;gt; set 0 src ip 10.0.0.2/24              # 虚拟一个与6wind ens3 同网段的ip地址
+Pktgen:/&amp;gt; set 0 src mac 90:e2:ba:f7:58:58       # dpdkgen p0 mac 地址
+Pktgen:/&amp;gt; set 0 dst ip 20.0.0.2                 # 虚拟一个与6wind ens7 同网段的ip地址，注意做arp配置
+Pktgen:/&amp;gt; set 0 dst mac 90:e2:ba:f7:53:10       # 6wind ens3 mac 地址
+Pktgen:/&amp;gt; set 0 proto udp                       # 配置64字节udp数据包
+Pktgen:/&amp;gt; set 0 size 64
+Pktgen:/&amp;gt; start 0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;执行结果&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;6wind cpu 利用率：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;root@router:~# fp-cpu-usage 
+Fast path CPU usage:
+cpu: %busy     cycles   cycles/packet   cycles/ic pkt
+  1:   &amp;lt;1%     156790            8537               0
+  2:  100%  458889164             209               0
+  3:   &amp;lt;1%      75228            5761               0
+average cycles/packets received from NIC: 209 (458989044/2186254)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;dpdkgen结果如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;从以上结果可以看到，在使用 6wind 一个 core 情况下，64 字节线速发包能力为 9914Mbps ，包转发性能为 14Mpps，接近物理网卡极限。&lt;/p&gt;</content></entry><entry><title>6wind 配置 SRIOV</title><link href="https://andiaq.github.io/articles/6wind-sriov.html" rel="alternate"></link><published>2018-08-14T09:34:00+08:00</published><updated>2018-08-14T09:34:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-14:/articles/6wind-sriov.html</id><summary type="html">&lt;p&gt;本文主要是介绍 6wind 配置 SRIOV 相关过程，在测试过程中进行学习，先产生感性认识，后期更深入了解原理后补充。&lt;/p&gt;
+&lt;h3&gt;一、前置条件&lt;/h3&gt;
+&lt;p&gt;SRIOV 功能需宿主机开启 VT-d 和 IOMMU 功能。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# grep &amp;quot;vmx&amp;quot; /proc/cpuinfo
+# kvm-ok
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;开启 IOMMU，配置验证如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim /etc/default/grub …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;本文主要是介绍 6wind 配置 SRIOV 相关过程，在测试过程中进行学习，先产生感性认识，后期更深入了解原理后补充。&lt;/p&gt;
+&lt;h3&gt;一、前置条件&lt;/h3&gt;
+&lt;p&gt;SRIOV 功能需宿主机开启 VT-d 和 IOMMU 功能。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# grep &amp;quot;vmx&amp;quot; /proc/cpuinfo
+# kvm-ok
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;开启 IOMMU，配置验证如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# vim /etc/default/grub 
+...
+GRUB_CMDLINE_LINUX=&amp;quot;crashkernel=auto rhgb quiet intel_iommu=on&amp;quot;    # 添加intel_iommu=on
+...
+# grub2-mkconfig -o /boot/grub2/grub.cfg 更新内核参数
+# reboot 重启使更改的参数生效
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;二、SRIOV 配置&lt;/h3&gt;
+&lt;p&gt;以下是 SRIOV 配置过程，如果需要以下配置参数永久生效，需要将设置命令行加入开启启动脚本。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# modprobe ixgbe max_vfs=2&lt;/span&gt;
+&lt;span class="c1"&gt;# 查看网卡可支持的最大VF数&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# cat /sys/class/net/ens10f0/device/sriov_totalvfs&lt;/span&gt;
+&lt;span class="m"&gt;63&lt;/span&gt;
+&lt;span class="c1"&gt;# 查看网卡当前的VF数&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# cat /sys/class/net/ens10f0/device/sriov_numvfs&lt;/span&gt;
+&lt;span class="m"&gt;0&lt;/span&gt;
+&lt;span class="c1"&gt;# 配置ens10f0网卡VF数为2&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# echo 2 &amp;gt; /sys/class/net/ens10f0/device/sriov_numvfs&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 查看当前的物理网卡和VF设备， 可以看到VF为03:10.0，03:10.2&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# lspci  | grep Eth&lt;/span&gt;
+&lt;span class="m"&gt;01&lt;/span&gt;:00.0 Ethernet controller: Intel Corporation 82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;01&lt;/span&gt;:00.1 Ethernet controller: Intel Corporation 82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;03&lt;/span&gt;:00.0 Ethernet controller: Intel Corporation 82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;03&lt;/span&gt;:00.1 Ethernet controller: Intel Corporation 82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;03&lt;/span&gt;:10.0 Ethernet controller: Intel Corporation &lt;span class="m"&gt;82599&lt;/span&gt; Ethernet Controller Virtual Function &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;03&lt;/span&gt;:10.2 Ethernet controller: Intel Corporation &lt;span class="m"&gt;82599&lt;/span&gt; Ethernet Controller Virtual Function &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;三、6wind 配置&lt;/h3&gt;
+&lt;p&gt;若要获取最佳性能，需要将 6wind 的 vcpu 与物理机的 cpu 进行绑定，且绑定的物理 cpu 需要在同一个物理 socket 上。另外，6wind 使用的物理网卡也需要在与其使用的 cpu 所在的 socket 相同。&lt;/p&gt;
+&lt;h4&gt;3.1. 6wind vcpu 绑定&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;查看物理机 cpu 信息，这里我们使用 numa node0 上的物理 cpu，将其分配给 6wind 虚拟机。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@localhost ~]# lscpu
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                72
+On-line CPU(s) list:   0-71
+Thread(s) per core:    2
+Core(s) per socket:    18
+Socket(s):             2
+NUMA node(s):          2
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 79
+Model name:            Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz
+Stepping:              1
+CPU MHz:               3599.949
+BogoMIPS:              4595.21
+Virtualization:        VT-x
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              256K
+L3 cache:              46080K
+NUMA node0 CPU(s):     0-17,36-53
+NUMA node1 CPU(s):     18-35,54-71
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;配置 6wind cpu 绑定，xml 添加如下配置：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &lt;span class="nt"&gt;&amp;lt;cputune&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;vcpupin&lt;/span&gt; &lt;span class="na"&gt;vcpu=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;cpuset=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;36&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;vcpupin&lt;/span&gt; &lt;span class="na"&gt;vcpu=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;1&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;cpuset=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;37&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/cputune&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;3.2. 6wind 网卡中断绑定&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;我们将物理网卡 ens10f1 进行 SRIOV 配置，将生成的 PCI 设备给 6wind 使用，网卡信息如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ip link show&lt;/span&gt;
+&lt;span class="m"&gt;1&lt;/span&gt;: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;65536&lt;/span&gt; qdisc noqueue state UNKNOWN mode DEFAULT qlen &lt;span class="m"&gt;1&lt;/span&gt;
+    link/loopback &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00 brd &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00
+&lt;span class="m"&gt;2&lt;/span&gt;: ens20f0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc mq state UP mode DEFAULT qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether d8:c4:97:0a:39:57 brd ff:ff:ff:ff:ff:ff
+&lt;span class="m"&gt;3&lt;/span&gt;: ens20f1: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc mq state UP mode DEFAULT qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether d8:c4:97:0a:39:58 brd ff:ff:ff:ff:ff:ff
+&lt;span class="m"&gt;4&lt;/span&gt;: ens10f0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc mq state UP mode DEFAULT qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;90&lt;/span&gt;:e2:ba:f7:53:10 brd ff:ff:ff:ff:ff:ff
+&lt;span class="m"&gt;5&lt;/span&gt;: ens10f1: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc mq state UP mode DEFAULT qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;90&lt;/span&gt;:e2:ba:f7:53:11 brd ff:ff:ff:ff:ff:ff
+    vf &lt;span class="m"&gt;0&lt;/span&gt; MAC &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00, spoof checking on, link-state auto, trust off
+    vf &lt;span class="m"&gt;1&lt;/span&gt; MAC &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00, spoof checking on, link-state auto, trust off
+
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ip link set ens10f1 vf 0 mac 02:09:c0:cc:0f:8b&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ip link set ens10f1 vf 1 mac 02:09:c0:48:95:d2&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ip link show ens10f1&lt;/span&gt;
+&lt;span class="m"&gt;5&lt;/span&gt;: ens10f1: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc mq state UP mode DEFAULT qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;90&lt;/span&gt;:e2:ba:f7:53:11 brd ff:ff:ff:ff:ff:ff
+    vf &lt;span class="m"&gt;0&lt;/span&gt; MAC &lt;span class="m"&gt;02&lt;/span&gt;:09:c0:cc:0f:8b, spoof checking on, link-state auto, trust off
+    vf &lt;span class="m"&gt;1&lt;/span&gt; MAC &lt;span class="m"&gt;02&lt;/span&gt;:09:c0:48:95:d2, spoof checking on, link-state auto, trust off
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;查看 ens10f1 网卡中断绑定信息：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@localhost ~]# cat /proc/interrupts | grep ens10f1
+ 239:          0     117768          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0    2527729          0          0          0      76586          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1-TxRx-0
+ 240:          0       2071          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0      41424          0          0          0       1445          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1-TxRx-1
+ 241:          0       2473          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0      45597          0          0          0       1599          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1-TxRx-2
+ 242:          0       2722          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0      51584          0          0          0       1858          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1-TxRx-3
+ 243:          0        106          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0        325          0          0          0         64          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第一列为中断号，查看中断绑定的 cpu 信息如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@localhost ~]# cat /proc/irq/239/smp_affinity_list 
+36
+[root@localhost ~]# cat /proc/irq/240/smp_affinity_list 
+37
+[root@localhost ~]# cat /proc/irq/241/smp_affinity_list 
+38
+[root@localhost ~]# cat /proc/irq/242/smp_affinity_list 
+39
+[root@localhost ~]# cat /proc/irq/243/smp_affinity_list 
+40
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;3.2. 配置 hugepages&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;根据分配给虚拟机的内存大小配置满足需要的 hugepages，这里我们给 6wind 分配了 6G 内存。
+则HugePages_Free * Hugepagesize &amp;gt;= 6wind内存 KB 大小。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mount -t hugetlbfs hugetlbfs /dev/hugepages
+sysctl vm.nr_hugepages=4096
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;6wind hugepages 配置：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &amp;lt;memoryBacking&amp;gt;
+    &amp;lt;hugepages/&amp;gt;
+  &amp;lt;/memoryBacking&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;开启虚拟机，查看当前 hugepages:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# cat /proc/meminfo | grep Huge&lt;/span&gt;
+AnonHugePages:     &lt;span class="m"&gt;75776&lt;/span&gt; kB
+HugePages_Total:    &lt;span class="m"&gt;4096&lt;/span&gt;
+HugePages_Free:     &lt;span class="m"&gt;1024&lt;/span&gt;
+HugePages_Rsvd:        &lt;span class="m"&gt;0&lt;/span&gt;
+HugePages_Surp:        &lt;span class="m"&gt;0&lt;/span&gt;
+Hugepagesize:       &lt;span class="m"&gt;2048&lt;/span&gt; kB
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;四、测试&lt;/h3&gt;
+&lt;p&gt;测试过程见：Pktgen-DPDK 网络性能测试&lt;/p&gt;</content></entry><entry><title>6wind NFV 实现</title><link href="https://andiaq.github.io/articles/6wind-nfv.html" rel="alternate"></link><published>2018-08-06T11:29:00+08:00</published><updated>2018-08-06T11:29:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-06:/articles/6wind-nfv.html</id><summary type="html">&lt;h3&gt;一、简介&lt;/h3&gt;
+&lt;p&gt;NFV，即网络功能虚拟化，Network Function Virtualization。即通过使用 x86 的服务器作为物理设备，进而实现基于软件的网络功能。NFV 的实现有效地降低了网络组网中昂贵的路由器和交换机成本。通过分离硬件和软件的功能和抽象的方式，网络设备功能不再依赖于专用硬件资源，可成为新的云中的网络服务部署模式，虚拟网络元件之间的网络，基于实际业务需求自动部署，提供了灵活扩展性，故障隔离和自我愈合。&lt;/p&gt;
+&lt;p&gt;NFV 的网络功能虚拟化就是将原本是物理设备的路由器，交换机，测试仪器，变成软件的形式，作为一个镜像启动，而其功能不变。在云计算的基础设施平台上，部署基于 NFV 可编程网元，这些网元不受物理设备兼容性的限制，在云计算的基础上部署虚拟网元，使得云平台的资源利用率更加充分，但同时也对组网技术提出了更高的要求。&lt;/p&gt;
+&lt;p&gt;本文以 6wind 作为 NFV 虚拟网元设备，将其与基于 linuxbridge 和 vlan 实现的现有网络云平台进行结合，使用 NFV 网元实现云环境中 NAT 和安全组功能 …&lt;/p&gt;</summary><content type="html">&lt;h3&gt;一、简介&lt;/h3&gt;
+&lt;p&gt;NFV，即网络功能虚拟化，Network Function Virtualization。即通过使用 x86 的服务器作为物理设备，进而实现基于软件的网络功能。NFV 的实现有效地降低了网络组网中昂贵的路由器和交换机成本。通过分离硬件和软件的功能和抽象的方式，网络设备功能不再依赖于专用硬件资源，可成为新的云中的网络服务部署模式，虚拟网络元件之间的网络，基于实际业务需求自动部署，提供了灵活扩展性，故障隔离和自我愈合。&lt;/p&gt;
+&lt;p&gt;NFV 的网络功能虚拟化就是将原本是物理设备的路由器，交换机，测试仪器，变成软件的形式，作为一个镜像启动，而其功能不变。在云计算的基础设施平台上，部署基于 NFV 可编程网元，这些网元不受物理设备兼容性的限制，在云计算的基础上部署虚拟网元，使得云平台的资源利用率更加充分，但同时也对组网技术提出了更高的要求。&lt;/p&gt;
+&lt;p&gt;本文以 6wind 作为 NFV 虚拟网元设备，将其与基于 linuxbridge 和 vlan 实现的现有网络云平台进行结合，使用 NFV 网元实现云环境中 NAT 和安全组功能。以及进行网络性能测试。&lt;/p&gt;
+&lt;h3&gt;二、NFV 连接不同网络之间通信&lt;/h3&gt;
+&lt;p&gt;在我们现有网络环境中，不同网络之间通过 vlan 进行隔离，是无法互通的。我们知道在传统网络中，如果要和一个网络通信，只要和其网关相通就可以了。假设现在有两个不同 vlan 的网络 private1 和 private2，若要使两个网络中的虚拟主机进行通信，我们使 NFV 网元作为 Instance 启动，将 NFV 虚拟路由器连接这两个子网，并将分配给它的两个网络接口的 IP 地址配置成两个网络的网关，从而使流量通过 NFV 虚拟网元，实现子网之间的流量通过这个 NFV 虚拟路由器进行转发。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;下面在测试环境进行配置，以实际例子进行说明。首先配置以下三个网络，一个作为外网，两个作为内网。&lt;/p&gt;
+&lt;p&gt;外网：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;3967&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt;&lt;span class="err"&gt;：&lt;/span&gt;&lt;span class="mf"&gt;172.32&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.0&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;内网：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;3965&lt;/span&gt;
+&lt;span class="n"&gt;private1&lt;/span&gt;&lt;span class="err"&gt;：&lt;/span&gt;&lt;span class="mf"&gt;12.12&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;12.0&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;
+&lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;3966&lt;/span&gt;
+&lt;span class="n"&gt;private2&lt;/span&gt;&lt;span class="err"&gt;：&lt;/span&gt;&lt;span class="mf"&gt;172.16&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;10.0&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;2.1 配置不同子网互通&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;使用 6wind 作为镜像创建虚拟机，添加 public, private1, private2 子网，通过 vnc 进入虚拟机，进行 ip 地址，dhcp 服务配置，具体配置在后面介绍。ip 地址配置如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="n"&gt;wind&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;ens3&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;172.32&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.5&lt;/span&gt;
+    &lt;span class="n"&gt;ens4&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;12.12&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;12.1&lt;/span&gt;
+    &lt;span class="n"&gt;ens5&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;172.16&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;10.1&lt;/span&gt;
+    &lt;span class="n"&gt;gateway&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;172.32&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里为方便从外部访问 vrouter，在宿主机 br-3967 网桥上配置了 ip 地址 172.32.0.1，实现从外部宿主机访问虚拟机。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;创建 vm1，添加 private1 子网。创建 vm2，添加 private2 子网。并将两个虚拟机分别创建到不同宿主机上。虚拟机创建成功之后，通过 vnc 进入虚拟机，修改网卡配置文件通过 DHCP 获取 ip 地址。重启 network 服务，查看当前网络信息。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;vm1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; 
+    &lt;span class="n"&gt;eth0&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;12.12&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;12.120&lt;/span&gt;
+    &lt;span class="n"&gt;gateway&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;12.12&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;12.1&lt;/span&gt;
+
+&lt;span class="n"&gt;vm2&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;eth0&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mf"&gt;172.16&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;10.100&lt;/span&gt;
+    &lt;span class="n"&gt;gateway&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;172.16&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;10.1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;到这里为止，在 6wind 没有开启 nat 且禁用 filter 功能情况下，从 vm1 ping vm2，从vm2 ping vm1, 都能够 ping 通，结果符合预期。下面开启 filter 功能，配置 filter 规则满足以上需求。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;整体网络流量走向图如下所示：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img alt="image" src="../images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
+&lt;h4&gt;2.2 开启 filter 功能&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;打开 vrouter filter 功能，不配置任何规则，则从任何地方都无法访问路由器中所有的 ip 地址，故而虚拟机无法 ping 通自己的网关地址， 虚拟机之间也不能互通。验证结果如下，符合预期。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;# 无法从宿主机ping及ssh访问vrouter&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;POD23&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;CLU01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;H028&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;
+&lt;span class="n"&gt;PING&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="mi"&gt;56&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;84&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="o"&gt;^&lt;/span&gt;&lt;span class="n"&gt;C&lt;/span&gt;
+&lt;span class="o"&gt;---&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="n"&gt;statistics&lt;/span&gt; &lt;span class="o"&gt;---&lt;/span&gt;
+&lt;span class="mi"&gt;3&lt;/span&gt; &lt;span class="n"&gt;packets&lt;/span&gt; &lt;span class="n"&gt;transmitted&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="n"&gt;received&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;packet&lt;/span&gt; &lt;span class="n"&gt;loss&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt; &lt;span class="mi"&gt;1999&lt;/span&gt;&lt;span class="n"&gt;ms&lt;/span&gt;
+
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;POD23&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;CLU01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;H028&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ssh&lt;/span&gt; &lt;span class="n"&gt;admin&lt;/span&gt;&lt;span class="mf"&gt;@172.32.0.5&lt;/span&gt;
+&lt;span class="o"&gt;^&lt;/span&gt;&lt;span class="n"&gt;C&lt;/span&gt;
+
+&lt;span class="cp"&gt;# 无法从 vm1 ping 通其默认网关 12.12.12.1,无法 ping 通 vm2&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;配置允许外部流量 ping 及 ssh 访问 vrouter 网关地址。使用此功能实现云环境安全组，不应开放 vrouter ssh 功能。这里配置是为了实验操作方便。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;# FILTER RULES&lt;/span&gt;
+&lt;span class="n"&gt;rule&lt;/span&gt; &lt;span class="mi"&gt;20000&lt;/span&gt; &lt;span class="n"&gt;processing&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt; &lt;span class="n"&gt;ipv4&lt;/span&gt; &lt;span class="n"&gt;protocol&lt;/span&gt; &lt;span class="n"&gt;tcp&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;any&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;22&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="n"&gt;state&lt;/span&gt; &lt;span class="n"&gt;new&lt;/span&gt; &lt;span class="n"&gt;established&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="n"&gt;allow&lt;/span&gt;
+&lt;span class="n"&gt;rule&lt;/span&gt; &lt;span class="mi"&gt;20010&lt;/span&gt; &lt;span class="n"&gt;processing&lt;/span&gt; &lt;span class="n"&gt;output&lt;/span&gt; &lt;span class="n"&gt;ipv4&lt;/span&gt; &lt;span class="n"&gt;protocol&lt;/span&gt; &lt;span class="n"&gt;tcp&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;22&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;any&lt;/span&gt; &lt;span class="n"&gt;state&lt;/span&gt; &lt;span class="n"&gt;new&lt;/span&gt; &lt;span class="n"&gt;established&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="n"&gt;allow&lt;/span&gt;
+&lt;span class="n"&gt;rule&lt;/span&gt; &lt;span class="mi"&gt;20020&lt;/span&gt; &lt;span class="n"&gt;ipv4&lt;/span&gt; &lt;span class="n"&gt;protocol&lt;/span&gt; &lt;span class="n"&gt;icmp&lt;/span&gt; &lt;span class="n"&gt;echo&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;any&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="n"&gt;allow&lt;/span&gt;
+&lt;span class="n"&gt;rule&lt;/span&gt; &lt;span class="mi"&gt;20030&lt;/span&gt; &lt;span class="n"&gt;ipv4&lt;/span&gt; &lt;span class="n"&gt;protocol&lt;/span&gt; &lt;span class="n"&gt;icmp&lt;/span&gt; &lt;span class="n"&gt;echo&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;reply&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;any&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="n"&gt;allow&lt;/span&gt;
+
+&lt;span class="cp"&gt;# 验证如下&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;POD23&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;CLU01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;H028&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;
+&lt;span class="n"&gt;PING&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="mi"&gt;56&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;84&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="mi"&gt;64&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;64&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;0.164&lt;/span&gt; &lt;span class="n"&gt;ms&lt;/span&gt;
+&lt;span class="mi"&gt;64&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="n"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;64&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;0.162&lt;/span&gt; &lt;span class="n"&gt;ms&lt;/span&gt;
+
+&lt;span class="o"&gt;---&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.5&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="n"&gt;statistics&lt;/span&gt; &lt;span class="o"&gt;---&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="n"&gt;packets&lt;/span&gt; &lt;span class="n"&gt;transmitted&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="n"&gt;received&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;packet&lt;/span&gt; &lt;span class="n"&gt;loss&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt; &lt;span class="mi"&gt;999&lt;/span&gt;&lt;span class="n"&gt;ms&lt;/span&gt;
+&lt;span class="n"&gt;rtt&lt;/span&gt; &lt;span class="n"&gt;min&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;avg&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mdev&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.162&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;0.163&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;0.164&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;0.001&lt;/span&gt; &lt;span class="n"&gt;ms&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;POD23&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;CLU01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;H028&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ssh&lt;/span&gt; &lt;span class="n"&gt;admin&lt;/span&gt;&lt;span class="mf"&gt;@172.32.0.5&lt;/span&gt;
+&lt;span class="n"&gt;admin&lt;/span&gt;&lt;span class="mf"&gt;@172.32.0.5&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="nl"&gt;password&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; 
+&lt;span class="n"&gt;Welcome&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;Turbo&lt;/span&gt; &lt;span class="n"&gt;Router&lt;/span&gt; &lt;span class="n"&gt;Embedded&lt;/span&gt; &lt;span class="n"&gt;Edition&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;EE&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mf"&gt;1.6.4&lt;/span&gt;
+
+&lt;span class="n"&gt;Last&lt;/span&gt; &lt;span class="nl"&gt;login&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Sun&lt;/span&gt; &lt;span class="n"&gt;Aug&lt;/span&gt;  &lt;span class="mi"&gt;5&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;05&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;51&lt;/span&gt; &lt;span class="mi"&gt;2018&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.1&lt;/span&gt;
+&lt;span class="n"&gt;router&lt;/span&gt;&lt;span class="p"&gt;{}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;配置 filter 规则，允许外部访问 subnet1: 12.12.12.0/24，subnet2: 172.16.10.0/24，为 vm 开启 allow ping &amp;amp; ssh 规则。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 开启 ping&lt;/span&gt;
+rule &lt;span class="m"&gt;20080&lt;/span&gt; ipv4 protocol icmp echo-request from any to &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20090&lt;/span&gt; ipv4 protocol icmp echo-reply from &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20100&lt;/span&gt; ipv4 protocol icmp echo-request from any to &lt;span class="m"&gt;172&lt;/span&gt;.16.10.0/24 &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20110&lt;/span&gt; ipv4 protocol icmp echo-reply from &lt;span class="m"&gt;172&lt;/span&gt;.16.10.0/24 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+
+&lt;span class="c1"&gt;# 开启 ssh &lt;/span&gt;
+rule &lt;span class="m"&gt;20120&lt;/span&gt; processing forward ipv4 protocol tcp from any to &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20130&lt;/span&gt; processing forward ipv4 protocol tcp from &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20140&lt;/span&gt; processing forward ipv4 protocol tcp from any to &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20150&lt;/span&gt; processing forward ipv4 protocol tcp from &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;配置 filter 规则，开启子网段路由转发功能。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 开放subnet1：12.12.12.0/24 子网段路由转发功能&lt;/span&gt;
+rule &lt;span class="m"&gt;20180&lt;/span&gt; processing forward ipv4 from any to &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20190&lt;/span&gt; processing forward ipv4 from &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20200&lt;/span&gt; processing output ipv4 from &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+rule &lt;span class="m"&gt;20210&lt;/span&gt; processing input ipv4 from any to &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 &lt;span class="k"&gt;do&lt;/span&gt; allow
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;三、配置内外网互相访问&lt;/h3&gt;
+&lt;h4&gt;2.3 开启 NAT 功能&lt;/h4&gt;
+&lt;p&gt;在云网络环境，使用 NAT 功能实现内网访问外网，使内部网络中所有主机均可共享一个合法公网 ip 地址，大大减少公网 ip 的浪费。NAT 分为静态 NAT、动态 NAT 以及网络地址端口转换 NAPT。配置静态 NAT 将私网转换为公网地址，进行一对一映射，实现外网访问内网中某一特定服务，目的地址是固定不变的。配置动态 NAT ，将私网 ip 地址转换为公网 ip 地址，但公网 IP 地址是不确定的，而是随机的，即目的 IP 地址可以配置多个，ip 地址是动态变化的。网络地址端口转换 NAPT 分为 SNAT 源地址转换以及 DNAT 目的地址转换。&lt;/p&gt;
+&lt;h5&gt;2.3.1 绑定 floating ip 到路由器&lt;/h5&gt;
+&lt;ol&gt;
+&lt;li&gt;开启外网地址 NAT 功能，使内网能够访问外网。该功能的实现还需要 filter 开启指定子网段的路由转发功能才能起作用。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 配置filter规则
+# 开放subnet1：12.12.12.0/24 子网段路由转发功能
+rule 20180 processing forward ipv4 from any to 12.12.12.0/24 do allow
+rule 20190 processing forward ipv4 from 12.12.12.0/24 to any do allow
+rule 20200 processing output ipv4 from 12.12.12.0/24 to any do allow
+rule 20210 processing input ipv4 from any to 12.12.12.0/24 do allow
+
+# 开启nat功能
+router{conf:init_turo-nat}public interface ens3
+router{conf:init_turo-nat-ens3}nat enable
+router{conf:init_turo-nat-ens3}save
+router{}apply init_turo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;验证内网访问外网，如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@vm1 ~]# ping -c 2 baidu.com
+PING baidu.com (220.181.57.216) 56(84) bytes of data.
+64 bytes from 220.181.57.216: icmp_seq=1 ttl=55 time=1.94 ms
+64 bytes from 220.181.57.216: icmp_seq=2 ttl=55 time=1.99 ms
+
+--- baidu.com ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 1.949/1.970/1.992/0.049 ms
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;配置静态 NAT 规则， 将私网地址转换为公网地址，通过一对一映射，实现外网访问内网中某一特定服务。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# STATIC MAPPINGS
+static 100 protocol tcp public 172.32.0.5:2222 private 12.12.12.120:22
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;验证静态 NAT ssh 端口转发功能，实现外网访问内网，如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;POD23&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;CLU01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;H028&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ssh&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt; &lt;span class="mi"&gt;2222&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="mf"&gt;@172.32.0.5&lt;/span&gt;
+&lt;span class="n"&gt;The&lt;/span&gt; &lt;span class="n"&gt;authenticity&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;host&lt;/span&gt; &lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;2222&lt;/span&gt; &lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;2222&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;can&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="n"&gt;t&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;established&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="n"&gt;ECDSA&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="n"&gt;fingerprint&lt;/span&gt; &lt;span class="n"&gt;is&lt;/span&gt; &lt;span class="nl"&gt;b0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="nl"&gt;b&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="nl"&gt;c&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="nl"&gt;a&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;a4&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;92&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="nl"&gt;c&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;a8&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;65&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;31&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;76&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mf"&gt;6f&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;b5&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;61&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;d3&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="n"&gt;Are&lt;/span&gt; &lt;span class="n"&gt;you&lt;/span&gt; &lt;span class="n"&gt;sure&lt;/span&gt; &lt;span class="n"&gt;you&lt;/span&gt; &lt;span class="n"&gt;want&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="k"&gt;continue&lt;/span&gt; &lt;span class="n"&gt;connecting&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;yes&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;no&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;yes&lt;/span&gt;
+&lt;span class="nl"&gt;Warning&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Permanently&lt;/span&gt; &lt;span class="n"&gt;added&lt;/span&gt; &lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mf"&gt;172.32.0.5&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;2222&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ECDSA&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;known&lt;/span&gt; &lt;span class="n"&gt;hosts&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="mf"&gt;@172.32.0.5&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="nl"&gt;password&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; 
+&lt;span class="n"&gt;Last&lt;/span&gt; &lt;span class="nl"&gt;login&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Sat&lt;/span&gt; &lt;span class="n"&gt;Aug&lt;/span&gt;  &lt;span class="mi"&gt;4&lt;/span&gt; &lt;span class="mi"&gt;21&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;46&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;02&lt;/span&gt; &lt;span class="mi"&gt;2018&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;client1&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ip&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;
+&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;lo&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;LOOPBACK&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;UP&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;LOWER_UP&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;mtu&lt;/span&gt; &lt;span class="mi"&gt;65536&lt;/span&gt; &lt;span class="n"&gt;qdisc&lt;/span&gt; &lt;span class="n"&gt;noqueue&lt;/span&gt; &lt;span class="n"&gt;state&lt;/span&gt; &lt;span class="n"&gt;UNKNOWN&lt;/span&gt; 
+    &lt;span class="n"&gt;link&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;loopback&lt;/span&gt; &lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt; &lt;span class="n"&gt;brd&lt;/span&gt; &lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;
+    &lt;span class="n"&gt;inet&lt;/span&gt; &lt;span class="mf"&gt;127.0.0.1&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt; &lt;span class="n"&gt;scope&lt;/span&gt; &lt;span class="n"&gt;host&lt;/span&gt; &lt;span class="n"&gt;lo&lt;/span&gt;
+       &lt;span class="n"&gt;valid_lft&lt;/span&gt; &lt;span class="n"&gt;forever&lt;/span&gt; &lt;span class="n"&gt;preferred_lft&lt;/span&gt; &lt;span class="n"&gt;forever&lt;/span&gt;
+    &lt;span class="n"&gt;inet6&lt;/span&gt; &lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;128&lt;/span&gt; &lt;span class="n"&gt;scope&lt;/span&gt; &lt;span class="n"&gt;host&lt;/span&gt; 
+       &lt;span class="n"&gt;valid_lft&lt;/span&gt; &lt;span class="n"&gt;forever&lt;/span&gt; &lt;span class="n"&gt;preferred_lft&lt;/span&gt; &lt;span class="n"&gt;forever&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;eth0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;BROADCAST&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;MULTICAST&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;UP&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;LOWER_UP&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;mtu&lt;/span&gt; &lt;span class="mi"&gt;1500&lt;/span&gt; &lt;span class="n"&gt;qdisc&lt;/span&gt; &lt;span class="n"&gt;pfifo_fast&lt;/span&gt; &lt;span class="n"&gt;state&lt;/span&gt; &lt;span class="n"&gt;UP&lt;/span&gt; &lt;span class="n"&gt;qlen&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;
+    &lt;span class="n"&gt;link&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ether&lt;/span&gt; &lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;25&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;66&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;d7&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;77&lt;/span&gt; &lt;span class="n"&gt;brd&lt;/span&gt; &lt;span class="nl"&gt;ff&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;ff&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;ff&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;ff&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;ff&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;ff&lt;/span&gt;
+    &lt;span class="n"&gt;inet&lt;/span&gt; &lt;span class="mf"&gt;12.12.12.120&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt; &lt;span class="n"&gt;brd&lt;/span&gt; &lt;span class="mf"&gt;12.12.12.255&lt;/span&gt; &lt;span class="n"&gt;scope&lt;/span&gt; &lt;span class="n"&gt;global&lt;/span&gt; &lt;span class="n"&gt;dynamic&lt;/span&gt; &lt;span class="n"&gt;eth0&lt;/span&gt;
+       &lt;span class="n"&gt;valid_lft&lt;/span&gt; &lt;span class="mi"&gt;3170&lt;/span&gt;&lt;span class="n"&gt;sec&lt;/span&gt; &lt;span class="n"&gt;preferred_lft&lt;/span&gt; &lt;span class="mi"&gt;3170&lt;/span&gt;&lt;span class="n"&gt;sec&lt;/span&gt;
+    &lt;span class="n"&gt;inet6&lt;/span&gt; &lt;span class="n"&gt;fe80&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="mi"&gt;212&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mf"&gt;25ff&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="nl"&gt;fe66&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;d777&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;64&lt;/span&gt; &lt;span class="n"&gt;scope&lt;/span&gt; &lt;span class="n"&gt;link&lt;/span&gt; 
+       &lt;span class="n"&gt;valid_lft&lt;/span&gt; &lt;span class="n"&gt;forever&lt;/span&gt; &lt;span class="n"&gt;preferred_lft&lt;/span&gt; &lt;span class="n"&gt;forever&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;2.3.2 绑定 floating ip 到虚拟机&lt;/h5&gt;
+&lt;p&gt;为虚拟机添加 floating ip，配置 ip 地址为 172.32.0.3，网关地址为 172.32.0.1。可从外网宿主机通过 ssh 访问该机器，该机器也能访问外网，如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;POD23&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;CLU01&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;H028&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ssh&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="mf"&gt;@172.32.0.3&lt;/span&gt;
+&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="mf"&gt;@172.32.0.3&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt; &lt;span class="nl"&gt;password&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; 
+&lt;span class="n"&gt;Last&lt;/span&gt; &lt;span class="nl"&gt;login&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Mon&lt;/span&gt; &lt;span class="n"&gt;Aug&lt;/span&gt;  &lt;span class="mi"&gt;6&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;57&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;27&lt;/span&gt; &lt;span class="mi"&gt;2018&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.1&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;vm1&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ip&lt;/span&gt; &lt;span class="n"&gt;route&lt;/span&gt;
+&lt;span class="k"&gt;default&lt;/span&gt; &lt;span class="n"&gt;via&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.1&lt;/span&gt; &lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;eth1&lt;/span&gt; 
+&lt;span class="mf"&gt;12.12.12.0&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt; &lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;eth0&lt;/span&gt;  &lt;span class="n"&gt;proto&lt;/span&gt; &lt;span class="n"&gt;kernel&lt;/span&gt;  &lt;span class="n"&gt;scope&lt;/span&gt; &lt;span class="n"&gt;link&lt;/span&gt;  &lt;span class="n"&gt;src&lt;/span&gt; &lt;span class="mf"&gt;12.12.12.120&lt;/span&gt; 
+&lt;span class="mf"&gt;169.254.0.0&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt; &lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;eth0&lt;/span&gt;  &lt;span class="n"&gt;scope&lt;/span&gt; &lt;span class="n"&gt;link&lt;/span&gt;  &lt;span class="n"&gt;metric&lt;/span&gt; &lt;span class="mi"&gt;1002&lt;/span&gt; 
+&lt;span class="mf"&gt;169.254.0.0&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt; &lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;eth1&lt;/span&gt;  &lt;span class="n"&gt;scope&lt;/span&gt; &lt;span class="n"&gt;link&lt;/span&gt;  &lt;span class="n"&gt;metric&lt;/span&gt; &lt;span class="mi"&gt;1003&lt;/span&gt; 
+&lt;span class="mf"&gt;172.32.0.0&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt; &lt;span class="n"&gt;dev&lt;/span&gt; &lt;span class="n"&gt;eth1&lt;/span&gt;  &lt;span class="n"&gt;proto&lt;/span&gt; &lt;span class="n"&gt;kernel&lt;/span&gt;  &lt;span class="n"&gt;scope&lt;/span&gt; &lt;span class="n"&gt;link&lt;/span&gt;  &lt;span class="n"&gt;src&lt;/span&gt; &lt;span class="mf"&gt;172.32.0.3&lt;/span&gt; 
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;vm1&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="n"&gt;baidu&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt;
+&lt;span class="n"&gt;PING&lt;/span&gt; &lt;span class="n"&gt;baidu&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;220.181.57.216&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="mi"&gt;56&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;84&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="mi"&gt;64&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="mf"&gt;220.181.57.216&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;56&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;1.46&lt;/span&gt; &lt;span class="n"&gt;ms&lt;/span&gt;
+&lt;span class="mi"&gt;64&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="mf"&gt;220.181.57.216&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="n"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;56&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;1.66&lt;/span&gt; &lt;span class="n"&gt;ms&lt;/span&gt;
+
+&lt;span class="o"&gt;---&lt;/span&gt; &lt;span class="n"&gt;baidu&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;com&lt;/span&gt; &lt;span class="n"&gt;ping&lt;/span&gt; &lt;span class="n"&gt;statistics&lt;/span&gt; &lt;span class="o"&gt;---&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="n"&gt;packets&lt;/span&gt; &lt;span class="n"&gt;transmitted&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="n"&gt;received&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;packet&lt;/span&gt; &lt;span class="n"&gt;loss&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt; &lt;span class="mi"&gt;1001&lt;/span&gt;&lt;span class="n"&gt;ms&lt;/span&gt;
+&lt;span class="n"&gt;rtt&lt;/span&gt; &lt;span class="n"&gt;min&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;avg&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;mdev&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1.466&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;1.566&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;1.666&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mf"&gt;0.100&lt;/span&gt; &lt;span class="n"&gt;ms&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里可能会出现如下问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;公网 ip 地址的网关与通过 dhcp 功能分配的子网默认网关配置冲突，网关地址出现抢占。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;四、路由器配置&lt;/h3&gt;
+&lt;h4&gt;4.1 配置 DHCP&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;创建 6wind 虚拟机，加入 public, private1 和 private2 子网，启动虚拟机，可以看到三个网卡。创建 vm1, 加入 private1 子网。创建 vm2, 加入 private2 子网。&lt;/li&gt;
+&lt;li&gt;配置 dhcp 功能，以配置 private2 子网段为例。其中租约时间单位为秒。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server&lt;span class="o"&gt;}&lt;/span&gt;dhcpv4server &lt;span class="nb"&gt;enable&lt;/span&gt;                      &lt;span class="c1"&gt;# 开启dhcp功能&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server&lt;span class="o"&gt;}&lt;/span&gt;subnet &lt;span class="m"&gt;172&lt;/span&gt;.16.10.0/24                    &lt;span class="c1"&gt;# 添加子网段&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;minlease &lt;span class="m"&gt;600&lt;/span&gt;              &lt;span class="c1"&gt;# 设置最小租约&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;maxlease &lt;span class="m"&gt;99000&lt;/span&gt;            &lt;span class="c1"&gt;# 设置最大租约&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;defaultlease &lt;span class="m"&gt;3600&lt;/span&gt;         &lt;span class="c1"&gt;# 设置默认租约&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;domainname auto
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;default-ipv4 &lt;span class="m"&gt;172&lt;/span&gt;.16.10.1              &lt;span class="c1"&gt;# 配置子网默认网关，推送给在此网段的虚拟机&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;range &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100 &lt;span class="m"&gt;172&lt;/span&gt;.16.10.200     &lt;span class="c1"&gt;# 配置子网段范围&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.114.114 primary    &lt;span class="c1"&gt;# 配置dns&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;nameserver &lt;span class="m"&gt;8&lt;/span&gt;.8.8.8 secondary
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server-172.16.10.0/24&lt;span class="o"&gt;}&lt;/span&gt;display 
+    &lt;span class="c1"&gt;# SUBNET&lt;/span&gt;
+      subnet &lt;span class="m"&gt;172&lt;/span&gt;.16.10.0/24
+          minlease &lt;span class="m"&gt;600&lt;/span&gt;
+          maxlease &lt;span class="m"&gt;99000&lt;/span&gt;
+          defaultlease &lt;span class="m"&gt;3600&lt;/span&gt;
+          default-ipv4 &lt;span class="m"&gt;172&lt;/span&gt;.16.10.1
+        &lt;span class="c1"&gt;# RANGES&lt;/span&gt;
+          range &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100 &lt;span class="m"&gt;172&lt;/span&gt;.16.10.200
+        &lt;span class="c1"&gt;# EXCLUDES&lt;/span&gt;
+        &lt;span class="c1"&gt;# HOSTS&lt;/span&gt;
+        &lt;span class="c1"&gt;# NAMESERVERS&lt;/span&gt;
+          nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.114.114 primary
+          nameserver &lt;span class="m"&gt;8&lt;/span&gt;.8.8.8 secondary
+        &lt;span class="c1"&gt;# NTP SERVERS&lt;/span&gt;
+        &lt;span class="c1"&gt;# NETBIOS NAME SERVERS&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;再以同样的方式配置 private1，在添加完以上两个私网后，查看 dhcp 的所有配置。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-dhcpv4server&lt;span class="o"&gt;}&lt;/span&gt;display
+    &lt;span class="c1"&gt;# DHCPSERVER STATEMENTS&lt;/span&gt;
+      dhcpv4server &lt;span class="nb"&gt;enable&lt;/span&gt;
+    &lt;span class="c1"&gt;# SUBNET&lt;/span&gt;
+      subnet &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24
+          minlease &lt;span class="m"&gt;600&lt;/span&gt;
+          maxlease &lt;span class="m"&gt;99000&lt;/span&gt;
+          defaultlease &lt;span class="m"&gt;3600&lt;/span&gt;
+          domainname auto
+          default-ipv4 &lt;span class="m"&gt;12&lt;/span&gt;.12.12.1
+        &lt;span class="c1"&gt;# RANGES&lt;/span&gt;
+          range &lt;span class="m"&gt;12&lt;/span&gt;.12.12.100 &lt;span class="m"&gt;12&lt;/span&gt;.12.12.200
+        &lt;span class="c1"&gt;# EXCLUDES&lt;/span&gt;
+        &lt;span class="c1"&gt;# HOSTS&lt;/span&gt;
+          host client1 &lt;span class="m"&gt;00&lt;/span&gt;:12:25:66:d7:77 &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120       &lt;span class="c1"&gt;# 将vm1网卡mac地址与指定ip进行绑定&lt;/span&gt;
+        &lt;span class="c1"&gt;# NAMESERVERS&lt;/span&gt;
+          nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.114.114 primary
+          nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.115.115 secondary
+        &lt;span class="c1"&gt;# NTP SERVERS&lt;/span&gt;
+        &lt;span class="c1"&gt;# NETBIOS NAME SERVERS&lt;/span&gt;
+
+      subnet &lt;span class="m"&gt;172&lt;/span&gt;.16.10.0/24
+          minlease &lt;span class="m"&gt;600&lt;/span&gt;
+          maxlease &lt;span class="m"&gt;99000&lt;/span&gt;
+          defaultlease &lt;span class="m"&gt;3600&lt;/span&gt;
+          default-ipv4 &lt;span class="m"&gt;172&lt;/span&gt;.16.10.1
+        &lt;span class="c1"&gt;# RANGES&lt;/span&gt;
+          range &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100 &lt;span class="m"&gt;172&lt;/span&gt;.16.10.200
+        &lt;span class="c1"&gt;# EXCLUDES&lt;/span&gt;
+        &lt;span class="c1"&gt;# HOSTS&lt;/span&gt;
+        &lt;span class="c1"&gt;# NAMESERVERS&lt;/span&gt;
+          nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.114.114 primary
+          nameserver &lt;span class="m"&gt;8&lt;/span&gt;.8.8.8 secondary
+        &lt;span class="c1"&gt;# NTP SERVERS&lt;/span&gt;
+        &lt;span class="c1"&gt;# NETBIOS NAME SERVERS&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;通过 vnc 进入 vm1 虚拟机，修改网卡配置文件通过 DHCP 获取 ip 地址。重启 network 服务，查看当前网络信息。可以看到在 DHCP 子网段中配置的 DNS、默认网关以及绑定的 ip 地址都已经被分配到 ip 地址上。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@vm1 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# cat /etc/resolv.conf       &lt;/span&gt;
+&lt;span class="p"&gt;;&lt;/span&gt; generated by /usr/sbin/dhclient-script
+search centos
+nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.114.114
+nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.115.115
+&lt;span class="o"&gt;[&lt;/span&gt;root@vm1 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ip route&lt;/span&gt;
+default via &lt;span class="m"&gt;12&lt;/span&gt;.12.12.1 dev eth0 
+&lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 dev eth0  proto kernel  scope link  src &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120 
+&lt;span class="m"&gt;169&lt;/span&gt;.254.0.0/16 dev eth0  scope link  metric &lt;span class="m"&gt;1002&lt;/span&gt; 
+&lt;span class="o"&gt;[&lt;/span&gt;root@vm1 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# cat /etc/resolv.conf &lt;/span&gt;
+&lt;span class="p"&gt;;&lt;/span&gt; generated by /usr/sbin/dhclient-script
+search centos
+nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.114.114
+nameserver &lt;span class="m"&gt;114&lt;/span&gt;.114.115.115
+&lt;span class="o"&gt;[&lt;/span&gt;root@client1 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ping -c 4 baidu.com&lt;/span&gt;
+PING baidu.com &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;220&lt;/span&gt;.181.57.216&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="m"&gt;56&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;84&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; bytes of data.
+&lt;span class="m"&gt;64&lt;/span&gt; bytes from &lt;span class="m"&gt;220&lt;/span&gt;.181.57.216: &lt;span class="nv"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt; &lt;span class="nv"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;55&lt;/span&gt; &lt;span class="nv"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;.12 ms
+&lt;span class="m"&gt;64&lt;/span&gt; bytes from &lt;span class="m"&gt;220&lt;/span&gt;.181.57.216: &lt;span class="nv"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt; &lt;span class="nv"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;55&lt;/span&gt; &lt;span class="nv"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;.12 ms
+&lt;span class="m"&gt;64&lt;/span&gt; bytes from &lt;span class="m"&gt;220&lt;/span&gt;.181.57.216: &lt;span class="nv"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;3&lt;/span&gt; &lt;span class="nv"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;55&lt;/span&gt; &lt;span class="nv"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;.98 ms
+&lt;span class="m"&gt;64&lt;/span&gt; bytes from &lt;span class="m"&gt;220&lt;/span&gt;.181.57.216: &lt;span class="nv"&gt;icmp_seq&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;4&lt;/span&gt; &lt;span class="nv"&gt;ttl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;55&lt;/span&gt; &lt;span class="nv"&gt;time&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;2&lt;/span&gt;.63 ms
+
+--- baidu.com ping statistics ---
+&lt;span class="m"&gt;4&lt;/span&gt; packets transmitted, &lt;span class="m"&gt;4&lt;/span&gt; received, &lt;span class="m"&gt;0&lt;/span&gt;% packet loss, &lt;span class="nb"&gt;time&lt;/span&gt; 3004ms
+rtt min/avg/max/mdev &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="m"&gt;1&lt;/span&gt;.981/2.215/2.633/0.254 ms
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;到这里 DHCP 服务生效。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;DHCP 租约问题&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;从 DHCP Client 开看，整个租约流程如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;第一次获取 DHCP 租约以及租约失效情况下，需要走 DHCP 获取租约的完整流程，即从发送 DHCPDISCOVER 开始&lt;/li&gt;
+&lt;li&gt;若已经获取到租约之后，每次机器开机会直接发送 DHCPREQUEST，请求使用原来的 IP 地址&lt;/li&gt;
+&lt;li&gt;租约期限到一半时，Client 发送 DHCPREQUEST, 若没有得到 DHCP 服务器的 ACK,仍然会继续使用&lt;/li&gt;
+&lt;li&gt;租约期限到87.5%，Client 继续发送 DHCPREQUEST ，能获取来自 DHCP 服务器的 ACK 则继续使用（ ACK中包含新的租约时间以及其他配置参数 ），如果得不到 ACK 响应或者联系不上，则 Client 会与其他 DHCP 服务器通信（获取新的地址）。如果网络上没有其他 DHCP 服务器，当达到租约期限时，则该 Client 必须停止使用该 IP 地址。然后走 DHCP 获取租约的完整流程，从 DHCPDISCOVER 开始，获取新的 ip 地址。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;综上，当租约期达到一半时，若 client 能联系上之前的 DHCP 服务器（两者均在线），则会获取 ACK 然后进行续约。在租约期内，若有一方不在线，IP 虽然不会被释放，但是没有续约，如果直到达到租约期限依然没有续约上的话，IP 会被释放。&lt;/p&gt;
+&lt;p&gt;如何保证在 vm 未被删除之前，ip 始终保持不变？&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;确保网络中至少有一个 DHCP 服务器&lt;/li&gt;
+&lt;li&gt;当将 MAC 地址与 ip 地址进行绑定&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;4.2、配置 NAT&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;开启 6wind nat 功能，添加静态 nat 规则，将 vrouter 的公网地址 2222 端口映射 client1 的 22 端口，2223 端口映射为 client2 的 22 端口，使外网通过 ssh 访问内网。配置信息如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-nat&lt;span class="o"&gt;}&lt;/span&gt;public interface ens3
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-nat-ens3&lt;span class="o"&gt;}&lt;/span&gt;nat &lt;span class="nb"&gt;enable&lt;/span&gt;
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-nat-ens3&lt;span class="o"&gt;}&lt;/span&gt;static &lt;span class="m"&gt;100&lt;/span&gt; protocol tcp public &lt;span class="m"&gt;172&lt;/span&gt;.32.0.5:2222 private &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120:22
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-nat-ens3&lt;span class="o"&gt;}&lt;/span&gt;static &lt;span class="m"&gt;200&lt;/span&gt; protocol tcp public &lt;span class="m"&gt;172&lt;/span&gt;.32.0.5:2223 private &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100:22
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-nat-ens3&lt;span class="o"&gt;}&lt;/span&gt;display 
+      nat &lt;span class="nb"&gt;enable&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# DYNAMIC MAPPINGS&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# STATIC MAPPINGS&lt;/span&gt;
+      static &lt;span class="m"&gt;100&lt;/span&gt; protocol tcp public &lt;span class="m"&gt;172&lt;/span&gt;.32.0.5:2222 private &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120:22
+      static &lt;span class="m"&gt;200&lt;/span&gt; protocol tcp public &lt;span class="m"&gt;172&lt;/span&gt;.32.0.5:2223 private &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100:22
+
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-nat-ens3&lt;span class="o"&gt;}&lt;/span&gt;save 
+router&lt;span class="o"&gt;{}&lt;/span&gt;apply init_turo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;以 100 rule 为例，验证静态 nat 功能，如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@POD23-CLU01-H028 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ssh -p 2222 root@172.32.0.5&lt;/span&gt;
+The authenticity of host &lt;span class="s1"&gt;&amp;#39;[172.32.0.5]:2222 ([172.32.0.5]:2222)&amp;#39;&lt;/span&gt; can&lt;span class="s1"&gt;&amp;#39;t be established.&lt;/span&gt;
+&lt;span class="s1"&gt;ECDSA key fingerprint is b0:4b:6c:4a:a4:92:9c:a8:65:31:76:6f:b5:61:d3:5e.&lt;/span&gt;
+&lt;span class="s1"&gt;Are you sure you want to continue connecting (yes/no)? yes&lt;/span&gt;
+&lt;span class="s1"&gt;Warning: Permanently added &amp;#39;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;172&lt;/span&gt;.32.0.5&lt;span class="o"&gt;]&lt;/span&gt;:2222&lt;span class="s1"&gt;&amp;#39; (ECDSA) to the list of known hosts.&lt;/span&gt;
+&lt;span class="s1"&gt;root@172.32.0.5&amp;#39;&lt;/span&gt;s password: 
+Last login: Sat Aug  &lt;span class="m"&gt;4&lt;/span&gt; &lt;span class="m"&gt;21&lt;/span&gt;:46:02 &lt;span class="m"&gt;2018&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@client1 ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# ip a&lt;/span&gt;
+&lt;span class="m"&gt;1&lt;/span&gt;: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;65536&lt;/span&gt; qdisc noqueue state UNKNOWN 
+    link/loopback &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00 brd &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00
+    inet &lt;span class="m"&gt;127&lt;/span&gt;.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+&lt;span class="m"&gt;2&lt;/span&gt;: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc pfifo_fast state UP qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;00&lt;/span&gt;:12:25:66:d7:77 brd ff:ff:ff:ff:ff:ff
+    inet &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120/24 brd &lt;span class="m"&gt;12&lt;/span&gt;.12.12.255 scope global dynamic eth0
+       valid_lft 3170sec preferred_lft 3170sec
+    inet6 fe80::212:25ff:fe66:d777/64 scope link 
+       valid_lft forever preferred_lft forever
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;4.3、配置 Filter&lt;/h4&gt;
+&lt;p&gt;配置 iptables filter 规则，实现云环境中安全组功能。6wind 提供的安全组规则，是通过在在路由器上进行配置，实现对整个子网段或者单个虚拟网卡进行配置。6wind 开启 filter 功能之后，会拒绝所有进入进出流量。以下为整个测试过程中配置的 filter 规则。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo&lt;span class="o"&gt;}&lt;/span&gt;fil
+router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-fil&lt;span class="o"&gt;}&lt;/span&gt;display 
+    &lt;span class="c1"&gt;# FILTER RULES&lt;/span&gt;
+      &lt;span class="c1"&gt;# 开放路由器 22 端口&lt;/span&gt;
+      rule &lt;span class="m"&gt;20000&lt;/span&gt; processing input ipv4 protocol tcp from any to &lt;span class="m"&gt;172&lt;/span&gt;.32.0.5&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; state new established &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20010&lt;/span&gt; processing output ipv4 protocol tcp from &lt;span class="m"&gt;172&lt;/span&gt;.32.0.5&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; to any state new established &lt;span class="k"&gt;do&lt;/span&gt; allow
+      &lt;span class="c1"&gt;# 允许外部 ping 路由器网关&lt;/span&gt;
+      rule &lt;span class="m"&gt;20020&lt;/span&gt; ipv4 protocol icmp echo-request from any to &lt;span class="m"&gt;172&lt;/span&gt;.32.0.5 &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20030&lt;/span&gt; ipv4 protocol icmp echo-reply from &lt;span class="m"&gt;172&lt;/span&gt;.32.0.5 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+
+      &lt;span class="c1"&gt;# 允许 ping subnet1:12.12.12.0/24, subnet2: 172.16.10.0/24  (针对整个子网段配置filter规则)&lt;/span&gt;
+      rule &lt;span class="m"&gt;20080&lt;/span&gt; ipv4 protocol icmp echo-request from any to &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20090&lt;/span&gt; ipv4 protocol icmp echo-reply from &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20100&lt;/span&gt; ipv4 protocol icmp echo-request from any to &lt;span class="m"&gt;172&lt;/span&gt;.16.10.0/24 &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20110&lt;/span&gt; ipv4 protocol icmp echo-reply from &lt;span class="m"&gt;172&lt;/span&gt;.16.10.0/24 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+
+      &lt;span class="c1"&gt;# 开放 vm1 eth0的22端口，vm2 eth0的22端口 （针对单个虚拟网卡配置filter规则）&lt;/span&gt;
+      rule &lt;span class="m"&gt;20120&lt;/span&gt; processing forward ipv4 protocol tcp from any to &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20130&lt;/span&gt; processing forward ipv4 protocol tcp from &lt;span class="m"&gt;12&lt;/span&gt;.12.12.120&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20140&lt;/span&gt; processing forward ipv4 protocol tcp from any to &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20150&lt;/span&gt; processing forward ipv4 protocol tcp from &lt;span class="m"&gt;172&lt;/span&gt;.16.10.100&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;22&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+
+      &lt;span class="c1"&gt;# 开放subnet1：12.12.12.0/24 子网段路由转发功能&lt;/span&gt;
+      rule &lt;span class="m"&gt;20180&lt;/span&gt; processing forward ipv4 from any to &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20190&lt;/span&gt; processing forward ipv4 from &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20200&lt;/span&gt; processing output ipv4 from &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 to any &lt;span class="k"&gt;do&lt;/span&gt; allow
+      rule &lt;span class="m"&gt;20210&lt;/span&gt; processing input ipv4 from any to &lt;span class="m"&gt;12&lt;/span&gt;.12.12.0/24 &lt;span class="k"&gt;do&lt;/span&gt; allow
+    &lt;span class="c1"&gt;# RPF RULES&lt;/span&gt;
+    &lt;span class="c1"&gt;# FILTER STATEMENT&lt;/span&gt;
+      filter &lt;span class="nb"&gt;enable&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>6wind 配置 PCI Passthrough</title><link href="https://andiaq.github.io/articles/6wind-pci-passthrough.html" rel="alternate"></link><published>2018-07-25T15:14:00+08:00</published><updated>2018-07-25T15:14:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-07-25:/articles/6wind-pci-passthrough.html</id><summary type="html">&lt;h3&gt;一、前置条件&lt;/h3&gt;
+&lt;p&gt;libvirt pci passthrough 功能需宿主机开启 VT-d 和 IOMMU 功能。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# grep &amp;quot;vmx&amp;quot; /proc/cpuinfo&lt;/span&gt;
+&lt;span class="c1"&gt;# kvm-ok&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;开启 IOMMU，配置验证如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# vim /etc/default/grub &lt;/span&gt;
+...
+&lt;span class="nv"&gt;GRUB_CMDLINE_LINUX&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;crashkernel=auto rhgb quiet intel_iommu …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h3&gt;一、前置条件&lt;/h3&gt;
+&lt;p&gt;libvirt pci passthrough 功能需宿主机开启 VT-d 和 IOMMU 功能。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# grep &amp;quot;vmx&amp;quot; /proc/cpuinfo&lt;/span&gt;
+&lt;span class="c1"&gt;# kvm-ok&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;开启 IOMMU，配置验证如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# vim /etc/default/grub &lt;/span&gt;
+...
+&lt;span class="nv"&gt;GRUB_CMDLINE_LINUX&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;crashkernel=auto rhgb quiet intel_iommu=on&amp;quot;&lt;/span&gt;    &lt;span class="c1"&gt;# 添加intel_iommu=on&lt;/span&gt;
+...
+&lt;span class="c1"&gt;# grub2-mkconfig -o /boot/grub2/grub.cfg 更新内核参数&lt;/span&gt;
+&lt;span class="c1"&gt;# reboot 重启使更改的参数生效&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;二、宿主机配置&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;在物理机上选择需要直通的网卡，使用如下命令查看与网卡相关的 pci 设备及详细信息。这里我们选择使用直通 01:00.0 pci 设备。后续均以此 pci 设备为例进行介绍。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[root@localhost ~]# lspci | grep Eth
+01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+01:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+03:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+03:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;使用 virsh 查看详细信息，同样我们选取 &lt;code&gt;pci_0000_03_00_0&lt;/code&gt; ,查看 bus, slot,和 function 值。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# virsh nodedev-list --tree&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# virsh nodedev-list --tree &lt;/span&gt;
+computer
+  &lt;span class="p"&gt;|&lt;/span&gt;
+  +- net_lo_00_00_00_00_00_00
+  +- pci_0000_00_00_0
+  +- pci_0000_00_01_0
+  &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;
+  &lt;span class="p"&gt;|&lt;/span&gt;   +- pci_0000_01_00_0
+  &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;
+  &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;   +- net_ens20f0_d8_c4_97_0a_39_57
+  &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;     
+  &lt;span class="p"&gt;|&lt;/span&gt;   +- pci_0000_01_00_1
+  &lt;span class="p"&gt;|&lt;/span&gt;       &lt;span class="p"&gt;|&lt;/span&gt;
+  &lt;span class="p"&gt;|&lt;/span&gt;       +- net_ens20f1_d8_c4_97_0a_39_58
+  &lt;span class="p"&gt;|&lt;/span&gt;         
+  +- pci_0000_00_02_0
+  &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;
+  &lt;span class="p"&gt;|&lt;/span&gt;   +- pci_0000_03_00_0
+  &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;
+  &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;   +- net_ens10f0_90_e2_ba_f7_53_10
+  &lt;span class="p"&gt;|&lt;/span&gt;   &lt;span class="p"&gt;|&lt;/span&gt;     
+  &lt;span class="p"&gt;|&lt;/span&gt;   +- pci_0000_03_00_1
+  &lt;span class="p"&gt;|&lt;/span&gt;       &lt;span class="p"&gt;|&lt;/span&gt;
+  &lt;span class="p"&gt;|&lt;/span&gt;       +- net_ens10f1_90_e2_ba_f7_53_11
+
+...
+&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# virsh nodedev-dumpxml pci_0000_03_00_0&lt;/span&gt;
+&amp;lt;device&amp;gt;
+  &amp;lt;name&amp;gt;pci_0000_03_00_0&amp;lt;/name&amp;gt;
+  &amp;lt;path&amp;gt;/sys/devices/pci0000:00/0000:00:02.0/0000:03:00.0&amp;lt;/path&amp;gt;
+  &amp;lt;parent&amp;gt;pci_0000_00_02_0&amp;lt;/parent&amp;gt;
+  &amp;lt;driver&amp;gt;
+    &amp;lt;name&amp;gt;ixgbe&amp;lt;/name&amp;gt;
+  &amp;lt;/driver&amp;gt;
+  &amp;lt;capability &lt;span class="nv"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;pci&amp;#39;&lt;/span&gt;&amp;gt;
+    &amp;lt;domain&amp;gt;0&amp;lt;/domain&amp;gt;
+    &amp;lt;bus&amp;gt;3&amp;lt;/bus&amp;gt;
+    &amp;lt;slot&amp;gt;0&amp;lt;/slot&amp;gt;
+    &amp;lt;&lt;span class="k"&gt;function&lt;/span&gt;&amp;gt;0&amp;lt;/function&amp;gt;
+    &amp;lt;product &lt;span class="nv"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0x10fb&amp;#39;&lt;/span&gt;&amp;gt;82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection&amp;lt;/product&amp;gt;
+    &amp;lt;vendor &lt;span class="nv"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0x8086&amp;#39;&lt;/span&gt;&amp;gt;Intel Corporation&amp;lt;/vendor&amp;gt;
+    &amp;lt;capability &lt;span class="nv"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;virt_functions&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;maxCount&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;63&amp;#39;&lt;/span&gt;/&amp;gt;
+    &amp;lt;iommuGroup &lt;span class="nv"&gt;number&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;44&amp;#39;&lt;/span&gt;&amp;gt;
+      &amp;lt;address &lt;span class="nv"&gt;domain&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0x0000&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;bus&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0x03&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;slot&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0x00&amp;#39;&lt;/span&gt; &lt;span class="k"&gt;function&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0x0&amp;#39;&lt;/span&gt;/&amp;gt;
+    &amp;lt;/iommuGroup&amp;gt;
+    &amp;lt;numa &lt;span class="nv"&gt;node&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0&amp;#39;&lt;/span&gt;/&amp;gt;
+    &amp;lt;pci-express&amp;gt;
+      &amp;lt;link &lt;span class="nv"&gt;validity&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;cap&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;port&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;speed&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;5&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;width&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;8&amp;#39;&lt;/span&gt;/&amp;gt;
+      &amp;lt;link &lt;span class="nv"&gt;validity&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;sta&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;speed&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;5&amp;#39;&lt;/span&gt; &lt;span class="nv"&gt;width&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;8&amp;#39;&lt;/span&gt;/&amp;gt;
+    &amp;lt;/pci-express&amp;gt;
+  &amp;lt;/capability&amp;gt;
+&amp;lt;/device&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;将以上选取的enp6s0网卡从物理机上解除绑定，并更换驱动为pci-stub。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;#lspci -nn | grep 06:00.0，查看vendor_id以及product_id，这里分别是 1137 和 0043&lt;/span&gt;
+&lt;span class="m"&gt;06&lt;/span&gt;:00.0 Ethernet controller &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;0200&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;: Cisco Systems Inc VIC Ethernet NIC &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;1137&lt;/span&gt;:0043&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;rev a2&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 将vendor_id以及product_id写入到driver中&lt;/span&gt;
+&lt;span class="c1"&gt;# echo &amp;quot;1137 0043&amp;quot; &amp;gt; /sys/bus/pci/drivers/pci-stub/new_id&lt;/span&gt;
+&lt;span class="c1"&gt;# echo 0000:03:00.0 &amp;gt; /sys/bus/pci/devices/0000\:03\:00.0/driver/unbind&lt;/span&gt;
+&lt;span class="c1"&gt;# echo 0000:03:00.0 &amp;gt; /sys/bus/pci/drivers/pci-stub/bind&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;配置完可以看到网卡驱动已经换成pci-stub.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;root@localhost ~&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="c1"&gt;# lspci -v -s 03:00.0&lt;/span&gt;
+&lt;span class="m"&gt;03&lt;/span&gt;:00.0 Ethernet controller: Intel Corporation 82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    Subsystem: Intel Corporation Ethernet Server Adapter X520-2
+    Physical Slot: &lt;span class="m"&gt;10&lt;/span&gt;
+    Flags: fast devsel, IRQ &lt;span class="m"&gt;26&lt;/span&gt;, NUMA node &lt;span class="m"&gt;0&lt;/span&gt;
+    Memory at c7180000 &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;64&lt;/span&gt;-bit, non-prefetchable&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;512K&lt;span class="o"&gt;]&lt;/span&gt;
+    I/O ports at &lt;span class="m"&gt;5020&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;32&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+    Memory at c7604000 &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;64&lt;/span&gt;-bit, non-prefetchable&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;16K&lt;span class="o"&gt;]&lt;/span&gt;
+    Capabilities: &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;40&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Power Management version &lt;span class="m"&gt;3&lt;/span&gt;
+    Capabilities: &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;50&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; MSI: Enable- &lt;span class="nv"&gt;Count&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;/1 Maskable+ 64bit+
+    Capabilities: &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;70&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; MSI-X: Enable- &lt;span class="nv"&gt;Count&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;64&lt;/span&gt; Masked-
+    Capabilities: &lt;span class="o"&gt;[&lt;/span&gt;a0&lt;span class="o"&gt;]&lt;/span&gt; Express Endpoint, MSI &lt;span class="m"&gt;00&lt;/span&gt;
+    Capabilities: &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;100&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Advanced Error Reporting
+    Capabilities: &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;140&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Device Serial Number &lt;span class="m"&gt;90&lt;/span&gt;-e2-ba-ff-ff-f7-53-10
+    Capabilities: &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;150&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Alternative Routing-ID Interpretation &lt;span class="o"&gt;(&lt;/span&gt;ARI&lt;span class="o"&gt;)&lt;/span&gt;
+    Capabilities: &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="m"&gt;160&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt; Single Root I/O Virtualization &lt;span class="o"&gt;(&lt;/span&gt;SR-IOV&lt;span class="o"&gt;)&lt;/span&gt;
+    Kernel driver in use: pci-stub
+    Kernel modules: ixgbe
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;将 &lt;code&gt;0000:06:00.0&lt;/code&gt; 设备直通给虚拟机，虚拟机 xml 配置添加信息如下，其中 bus, slot, function 值为从上面查看到的值的 16 进制：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;hostdev&lt;/span&gt; &lt;span class="na"&gt;mode=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;subsystem&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;pci&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;managed=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;yes&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;source&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;address&lt;/span&gt; &lt;span class="na"&gt;domain=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x0000&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;bus=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x03&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;slot=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x00&amp;#39;&lt;/span&gt; &lt;span class="na"&gt;function=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0x0&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/source&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/hostdev&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;开启虚拟机。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;三、直通功能验证&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;进入虚拟机后，查看 pci 设备信息，可以看到所直通的物理网卡设备，如下 00:03:0：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;root@localhost:~# lspci
+&lt;span class="m"&gt;00&lt;/span&gt;:00.0 Host bridge: Intel Corporation 440FX - 82441FX PMC &lt;span class="o"&gt;[&lt;/span&gt;Natoma&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;02&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;00&lt;/span&gt;:01.0 ISA bridge: Intel Corporation 82371SB PIIX3 ISA &lt;span class="o"&gt;[&lt;/span&gt;Natoma/Triton II&lt;span class="o"&gt;]&lt;/span&gt;
+&lt;span class="m"&gt;00&lt;/span&gt;:01.1 IDE interface: Intel Corporation 82371SB PIIX3 IDE &lt;span class="o"&gt;[&lt;/span&gt;Natoma/Triton II&lt;span class="o"&gt;]&lt;/span&gt;
+&lt;span class="m"&gt;00&lt;/span&gt;:01.2 USB controller: Intel Corporation 82371SB PIIX3 USB &lt;span class="o"&gt;[&lt;/span&gt;Natoma/Triton II&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;00&lt;/span&gt;:01.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;03&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;00&lt;/span&gt;:02.0 VGA compatible controller: Cirrus Logic GD &lt;span class="m"&gt;5446&lt;/span&gt;
+&lt;span class="m"&gt;00&lt;/span&gt;:03.0 Ethernet controller: Intel Corporation 82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;00&lt;/span&gt;:04.0 SCSI storage controller: Red Hat, Inc Virtio SCSI
+&lt;span class="m"&gt;00&lt;/span&gt;:05.0 Communication controller: Red Hat, Inc Virtio console
+&lt;span class="m"&gt;00&lt;/span&gt;:06.0 Unclassified device &lt;span class="o"&gt;[&lt;/span&gt;00ff&lt;span class="o"&gt;]&lt;/span&gt;: Red Hat, Inc Virtio memory balloon
+
+root@localhost:~# lspci -mm &lt;span class="p"&gt;|&lt;/span&gt; grep &lt;span class="m"&gt;00&lt;/span&gt;:03.0
+&lt;span class="m"&gt;00&lt;/span&gt;:03.0 &lt;span class="s2"&gt;&amp;quot;Ethernet controller&amp;quot;&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;Intel Corporation&amp;quot;&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;82599ES 10-Gigabit SFI/SFP+ Network Connection&amp;quot;&lt;/span&gt; -r01 &lt;span class="s2"&gt;&amp;quot;Intel Corporation&amp;quot;&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;Ethernet Server Adapter X520-2&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;脚本请移步：https://github.com/DPDK/dpdk/blob/v1.8.0/tools/dpdk_nic_bind.py&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="nd"&gt;@router&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="c1"&gt;# python dpdk_nic_bind.py --status&lt;/span&gt;
+
+&lt;span class="n"&gt;Network&lt;/span&gt; &lt;span class="n"&gt;devices&lt;/span&gt; &lt;span class="n"&gt;using&lt;/span&gt; &lt;span class="n"&gt;DPDK&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;compatible&lt;/span&gt; &lt;span class="n"&gt;driver&lt;/span&gt;
+&lt;span class="o"&gt;============================================&lt;/span&gt;
+&lt;span class="mo"&gt;0000&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mf"&gt;03.0&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;82599ES 10-Gigabit SFI/SFP+ Network Connection&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;drv&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;igb_uio&lt;/span&gt; &lt;span class="n"&gt;unused&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;ixgbe&lt;/span&gt;
+&lt;span class="mo"&gt;0000&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mo"&gt;00&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mf"&gt;07.0&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;82599ES 10-Gigabit SFI/SFP+ Network Connection&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;drv&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;igb_uio&lt;/span&gt; &lt;span class="n"&gt;unused&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;ixgbe&lt;/span&gt;
+
+&lt;span class="n"&gt;Network&lt;/span&gt; &lt;span class="n"&gt;devices&lt;/span&gt; &lt;span class="n"&gt;using&lt;/span&gt; &lt;span class="n"&gt;kernel&lt;/span&gt; &lt;span class="n"&gt;driver&lt;/span&gt;
+&lt;span class="o"&gt;===================================&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;none&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+
+&lt;span class="n"&gt;Other&lt;/span&gt; &lt;span class="n"&gt;network&lt;/span&gt; &lt;span class="n"&gt;devices&lt;/span&gt;
+&lt;span class="o"&gt;=====================&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;none&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;另外补充内容，查看网卡是否支持DPDK，可以进行如下验证：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# 查看网卡的设备id&lt;/span&gt;
+&lt;span class="c1"&gt;# cat /sys/bus/pci/devices/0000\:03\:00.0/device &lt;/span&gt;
+0x0043
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用以上输出内容进入&lt;a href="http://doc.dpdk.org/api-2.2/rte__pci__dev__ids_8h_source.html"&gt;rte_pci_dev_ids.h&lt;/a&gt;文章中找。如果能找到，说明网卡支持 DPDK。&lt;/p&gt;
+&lt;h3&gt;四、6wind 配置及 nat 验证&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;ip 配置&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;这里测试使用了两张网卡进行直通。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;root@router:~# lspci &lt;span class="p"&gt;|&lt;/span&gt; grep Eth
+&lt;span class="m"&gt;00&lt;/span&gt;:03.0 Ethernet controller: Intel Corporation 82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="m"&gt;00&lt;/span&gt;:07.0 Ethernet controller: Intel Corporation 82599ES &lt;span class="m"&gt;10&lt;/span&gt;-Gigabit SFI/SFP+ Network Connection &lt;span class="o"&gt;(&lt;/span&gt;rev &lt;span class="m"&gt;01&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;创建vlan接口，并配置ip地址：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;root@router:~# ip a
+&lt;span class="m"&gt;1&lt;/span&gt;: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;65536&lt;/span&gt; qdisc noqueue state UNKNOWN group default qlen &lt;span class="m"&gt;1&lt;/span&gt;
+    link/loopback &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00 brd &lt;span class="m"&gt;00&lt;/span&gt;:00:00:00:00:00
+    inet &lt;span class="m"&gt;127&lt;/span&gt;.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+&lt;span class="m"&gt;4&lt;/span&gt;: fpn0: &amp;lt;BROADCAST,MULTICAST,NOARP,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;65536&lt;/span&gt; qdisc noqueue state UNKNOWN group default qlen &lt;span class="m"&gt;1&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;00&lt;/span&gt;:00:46:50:4e:00 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::200:46ff:fe50:4e00/64 scope link 
+       valid_lft forever preferred_lft forever
+&lt;span class="m"&gt;5&lt;/span&gt;: ens3: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc mq state UP group default qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;90&lt;/span&gt;:e2:ba:f7:53:10 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::92e2:baff:fef7:5310/64 scope link 
+       valid_lft forever preferred_lft forever
+&lt;span class="m"&gt;6&lt;/span&gt;: ens7: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc mq state UP group default qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;90&lt;/span&gt;:e2:ba:f7:53:11 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::92e2:baff:fef7:5311/64 scope link 
+       valid_lft forever preferred_lft forever
+&lt;span class="m"&gt;7&lt;/span&gt;: vlan401@ens3: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc noqueue state UP group default qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;02&lt;/span&gt;:09:c0:9e:47:f8 brd ff:ff:ff:ff:ff:ff
+    inet &lt;span class="m"&gt;10&lt;/span&gt;.128.120.65/22 brd &lt;span class="m"&gt;10&lt;/span&gt;.128.123.255 scope global vlan401
+       valid_lft forever preferred_lft forever
+    inet6 fe80::9:c0ff:fe9e:47f8/64 scope link 
+       valid_lft forever preferred_lft forever
+&lt;span class="m"&gt;8&lt;/span&gt;: vlan2388@ens7: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc noqueue state UP group default qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+    link/ether &lt;span class="m"&gt;02&lt;/span&gt;:09:c0:8b:ec:90 brd ff:ff:ff:ff:ff:ff
+    inet &lt;span class="m"&gt;18&lt;/span&gt;.23.120.65/8 brd &lt;span class="m"&gt;18&lt;/span&gt;.255.255.255 scope global vlan2388
+       valid_lft forever preferred_lft forever
+    inet6 fe80::9:c0ff:fe8b:ec90/64 scope link 
+       valid_lft forever preferred_lft forever
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ip 信息配置如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;router&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;ens3&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;18.23&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;120.65&lt;/span&gt;
+    &lt;span class="n"&gt;ens4&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;10.128&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;120.65&lt;/span&gt;
+    &lt;span class="n"&gt;gateway&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;18.23&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;120.10&lt;/span&gt;
+
+&lt;span class="n"&gt;client1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; 
+    &lt;span class="n"&gt;eth0&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;10.128&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;120.77&lt;/span&gt;
+    &lt;span class="n"&gt;gateway&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;10.128&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;120.65&lt;/span&gt;
+
+&lt;span class="n"&gt;client2&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;eth0&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;18.23&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;120.88&lt;/span&gt;
+    &lt;span class="n"&gt;gateway&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;18.23&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;120.10&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;nat 配置&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turbo-nat&lt;span class="o"&gt;}&lt;/span&gt;display 
+    &lt;span class="c1"&gt;# NAT STATEMENTS&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# NAT PUBLIC INTERFACES&lt;/span&gt;
+      public interface vlan2388
+        nat &lt;span class="nb"&gt;enable&lt;/span&gt;
+
+      &lt;span class="c1"&gt;# DYNAMIC MAPPINGS&lt;/span&gt;
+        dynamic &lt;span class="m"&gt;100&lt;/span&gt; &lt;span class="m"&gt;10&lt;/span&gt;.128.120.77/8 to &lt;span class="m"&gt;18&lt;/span&gt;.23.120.65
+
+      &lt;span class="c1"&gt;# STATIC MAPPINGS&lt;/span&gt;
+        static &lt;span class="m"&gt;100&lt;/span&gt; protocol tcp public &lt;span class="m"&gt;18&lt;/span&gt;.23.120.65:2222 private &lt;span class="m"&gt;10&lt;/span&gt;.128.120.77:22
+        static &lt;span class="m"&gt;200&lt;/span&gt; protocol tcp public &lt;span class="m"&gt;18&lt;/span&gt;.23.120.65:5201 private &lt;span class="m"&gt;10&lt;/span&gt;.128.120.77:5201
+
+       &lt;span class="nb"&gt;exit&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# NAT timeouts&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# LOG&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;测试验证&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;wan to lan:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;client1 &lt;span class="c1"&gt;# iperf3 -s&lt;/span&gt;
+client2 &lt;span class="c1"&gt;# iperf3 -c 18.23.120.65 -l 1518 -t 20 -P 10 -i 20 -f m&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;lan to wan:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;client1# iperf3 -c &lt;span class="m"&gt;18&lt;/span&gt;.23.120.88 -l &lt;span class="m"&gt;1518&lt;/span&gt; -t &lt;span class="m"&gt;20&lt;/span&gt; -P &lt;span class="m"&gt;10&lt;/span&gt; -i &lt;span class="m"&gt;20&lt;/span&gt; -f m
+client2# iperf3 -s
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>OpenStack环境虚拟机打快照分析</title><link href="https://andiaq.github.io/articles/create-snapshots.html" rel="alternate"></link><published>2017-03-17T10:29:00+08:00</published><updated>2017-03-17T10:29:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2017-03-17:/articles/create-snapshots.html</id><summary type="html">&lt;p&gt;本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。&lt;/p&gt;
 &lt;p&gt;用法：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;usage: nova image-create &lt;span class="o"&gt;[&lt;/span&gt;--metadata &amp;lt;&lt;span class="nv"&gt;key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;value&amp;gt;&lt;span class="o"&gt;]&lt;/span&gt;
                          &lt;span class="o"&gt;[&lt;/span&gt;--show&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;--poll&lt;span class="o"&gt;]&lt;/span&gt;

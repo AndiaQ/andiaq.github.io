@@ -1,0 +1,405 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+    <meta name="author" content="Yuwei Wang" />
+    <meta name="description" content="" />
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:type" content="blog"/>
+<meta property="og:title" content="Andia"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash;     Posts by Yuwei Wang
+:</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+
+
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/ha-az.html#ha-az">Availability Zones 及 Host Aggregate</a></h2>
+    <p>
+          Posted on 2017-03-13(星期一) 18:30 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h2>Availability zones</h2>
+<p><code>Availability zones</code>和<code>host aggregates</code>是在region和cell基础上提出的进一步的划分（segregation）概念。</p>
+<p><code>Availability zone</code>致力于通过逻辑划分提供某种形式上的物理隔离。也就是说，通过位置可用性来将服务器进行逻辑上的分组。用户可以某些可用性上的区别来指定az，从而选择所起虚拟机的“位置”。</p>
+<p>一般对于规模较大的集群比如跨数据中心，可以根据地理位置来定义az。比如：bj，sh。或是同一数据中心的不同机房，或是在同一机房的几个相邻的机架，同样可以通过位置来定义，从而保证不同az之间具有某些特性上的冗余性，比如供电系统、网络设备等。而不影响其他的 Availability Zones 上节点运行的虚拟机，通过这种划分来提高 OpenStack 的可用性。</p>
+<p><code>Host Aggregates</code> 是在 <code>Availability Zones</code> 的基础上更进一步地进行逻辑的分组和隔离。例如我们可以根据不同的 computes 节点的物理硬件配置将具有相同共性的物理资源规划在同一 <code>Host Aggregate</code> 之下，或者根据用户的具体需求将几个 computes …</p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/ha-az.html#ha-az">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/linux-cpu-architecture.html#linux-cpu-architecture">linux 服务器架构</a></h2>
+    <p>
+          Posted on 2017-03-13(星期一) 18:00 in <a href="https://andiaq.github.io/category/linux.html">Linux</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p><strong>商用服务器的系统架构大致可以分为三类：</strong>
+<code>SMP</code> <code>NUMA</code> <code>MMP</code></p>
+<h2>SMP</h2>
+<p>SMP即<code>Symmetric Multi-Processor</code>，对称多处理器架构。
+所谓对称多处理器架构，是指服务器中的多个CPU对称工作，无主次和从属关系。各CPU共享相同的物理内存，每个CPU访问内存中的任何地址所需的时间都是相同的，因此SMP也被称为一致存储器访问结构。对SMP服务器进行扩展的方式包括：增加内存； 使用更快的CPU；增加CPU数量；扩充I/O(槽口数和总线数)；以及添加更多的外部设备(通常是磁盘存储)。</p>
+<p>SMP服务器的主要特征是共享，系统中的所有资源(CPU、内存、I/O等)都是共享的。也正是由于这种特征，导致了SMP服务器的主要问题，那就是它得扩展能力非常有限。</p>
+<p>对于SMP服务器而言，每一个共享的环节都可能造成SMP服务器扩展时的瓶颈，而最受限制的则是内存。由于每个CPU必须通过相同的内存总线访问相同的内存资源，因此随着CPU数量的增加，内存访问冲突将迅速增加，最终会造成CPU资源的浪费，使 CPU性能的有效性大大降低。实验证明，SMP服务器CPU利用率最好的情况是2至4个CPU。 </p>
+<h2>NUMA</h2>
+<p>NUMA即<code>Non-Uniform Memory Access …</code></p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/linux-cpu-architecture.html#linux-cpu-architecture">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/git-usage.html#git-usage">Git常用操作</a></h2>
+    <p>
+          Posted on 2016-12-11(星期日) 20:24 in <a href="https://andiaq.github.io/category/tools.html">Tools</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。</p>
+<h2>git log</h2>
+<ul>
+<li>显示所有历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log</span>
+</pre></div>
+
+
+<ul>
+<li>显示最近N条历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log -N </span>
+</pre></div>
+
+
+<ul>
+<li>显示详细历史记录，包括代码改动内容</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log -p </span>
+</pre></div>
+
+
+<ul>
+<li>只显示一行，哈希值和提交说明</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=oneline</span>
+</pre></div>
+
+
+<ul>
+<li>显示提交历史记录的简单图形</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># glog</span>
+<span class="c1"># git log --pretty=format:&quot;%H %s&quot; --graph</span>
+</pre></div>
+
+
+<ul>
+<li>自定义格式显示历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=format:&quot; &quot;</span>
+</pre></div>
+
+
+<p>常用的格式占位符写法及其代表的意义如下：</p>
+<div class="highlight"><pre><span></span>选项   说明
+%H  提交对象（commit）的完整哈希字串
+%h  提交对象的简短哈希字串
+%T  树对象（tree）的完整哈希字串 …</pre></div>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/git-usage.html#git-usage">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/networking-guide.html#networking-guide">OpenStack Networking Guide</a></h2>
+    <p>
+          Posted on 2016-12-11(星期日) 20:24 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>该系列文章基本翻译于社区的Networking Guide，个人理解，原创翻译，仅供学习参考。</p>
+<h3>一、网络绪论</h3>
+<p>OpenStack 网络服务提供了 API 接口，用户可以建立和自定义网络的拓扑结构并且访问云网络。这个网络服务的项目代码是 Neutron，OpenStack 网络服务操作着虚拟网络设施的创建和管理，这些虚拟网络设施包括网络，交换机，子网，以及为 openstack 计算服务（nova）所管理的设备提供的路由，还包括一些高级服务比如防火墙，虚拟专用网络 VPN 等等。</p>
+<p>OpenStack 网络是由 neutron-server 组件，持久化存储的数据库，以及很多 plugin,agent 组成的。这些 agent 提供了一些其他的服务，比如与原生的 linux 网络机制，外部设备，或者 SDN controller 进行交互等等。</p>
+<p>OpenStack 网络是完全独立的服务 …</p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/networking-guide.html#networking-guide">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/python-eventlet.html#python-eventlet">python eventlet及其在OpenStack中的应用</a></h2>
+    <p>
+          Posted on 2016-11-16(星期三) 17:34 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>一直迷糊于操作系统的进程线程协程等概念及其切换，本文从基础开始梳理，旨在学习python的eventlet,及其在OpenStack中的应用。</p>
+<h3>一、简介</h3>
+<p>eventlet是一个python的并发网络库，采用<code>epoll/pool/select</code>等异步 IO，并结合 greenlet 协程库实现并发。简单来说，eventlet是帮助实现并发的python库，不一定并行，但是也可以并行；在讲究高并发与分布式的今天，同步和阻塞就慢，异步和非阻塞就快。</p>
+<p>协程是一种运行在线程中的执行单位，同一个线程中可以同时运行多个协程，注意：该同时运行并不是真正意义上的并行，同时拥有CPU时间片的只有一个当前协程，其它的协程处于挂起状态。不要觉得这样”协程”就没有意义，因为有另一类协程，当前需要的不是CPU而是IO。众所周知，CPU是很快的，而IO很慢，所以当一些协程都在挂起等待IO的时候，一些协程则在用CPU，在同一个线程中跑多个协程的就可以更充分地利用硬件资源，极大的提高服务的响应能力。不同于线程和进程由内核来调度并分配时间片，协程需要在代码层显式地控制与转换。</p>
+<p>eventlet又将协程称为绿色线程(GreenThread)。所谓的并发，就是创建多个greenthread,并对其进行管理，以实现非阻塞式的I/O …</p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/python-eventlet.html#python-eventlet">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/periodic-task.html#periodic-task">Nova中定时任务解析</a></h2>
+    <p>
+          Posted on 2016-11-02(星期三) 23:00 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h3>一、periodic_task</h3>
+<h4>1.1 what is periodic_task</h4>
+<p>在Nova中，nova-compute, nova-scheduler, nova-cell, network都有自己的周期性任务，通过nova的代码结构可以发现，它们都统一由各自模块下的manager.py中periodic_task管理。其中，periodic_task首先实现了一个装饰器，所有的周期性任务都是通过添加该装饰器实现，而周期性任务的启动伴随着每个服务的start也同步开始。</p>
+<p>首先装饰器实现如下(<code>oslo_service/periodic_task.py</code>)，我们阅读后会发现，该方法主要定义了周期性任务（为True），以及周期性任务的名称，间隔时间（默认间隔时间是60s），运行方式等。实际上，此方法也只是定义了上述内容，添加了几个属性，并没有做其他的什么操作。由这些参数作为周期性任务的标记，保存到kwargs。</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">periodic_task</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>          <span class="c1"># f为被装饰的函数</span>
+        <span class="c1"># Test for old style invocation</span>
+        <span class="k">if …</span></pre></div>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/periodic-task.html#periodic-task">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/rabbitmq-code-snippets.html#rabbitmq-code-snippets">rabbitmq code snippets</a></h2>
+    <p>
+          Posted on 2016-10-11(星期二) 12:00 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>RabbitMQ是一个支持多种通信协议的消息通信中间件，其核心原理即：接收和发送消息，是AMQP的典型应用。以下分模块列出与之相关的demo。</p>
+<h3>一、Hello World</h3>
+<p>以下实例实现了发送消息到一个已知队列中，并从该队列中接收消息。 send.py会发送一个消息到队列中，但是首先需要建立到RabbitMQ服务器的连接。</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+
+<span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span>
+        <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">5672</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>                       <span class="c1">#建立一个到RabbitMQ服务器的连接</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>                 <span class="c1">#申明一个队列，消息将被发送到这个队列中</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>                   <span class="c1">#exchange=&#39;&#39;表示使用默认的交换机，由该默认交换机来指定某条消息需要投递</span>
+<span class="c1">#到哪个队列，routing_key指定队列的名称</span>
+                      <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span>
+                      <span class="n">body</span><span class="o">=</span><span class="s1">&#39;Hello …</span></pre></div>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/rabbitmq-code-snippets.html#rabbitmq-code-snippets">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/qemu-guest-agent.html#qemu-guest-agent">qemu-guest-agent</a></h2>
+    <p>
+          Posted on 2016-10-09(星期日) 14:14 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h3>一、背景</h3>
+<p>最近在OpenStack环境中分析给虚拟机打快照的过程。发现OpenStack默认打快照的方式是cold snapshot，在打快照的过程中，要么会把虚拟机关机（save状态），要么会将实例的文件系统静默。具体的情况下次解析。此文主要分析rbd做后端存储时使用qemu-guest-agent来静默文件系统。</p>
+<h3>二、简介</h3>
+<p>在KVM系统中，qemu-guest-agent（即qga）是一个运行在虚拟机内部的常驻进程。其功能类似vmware-tools，即实现宿主机和虚拟机的通信，这种方式不依赖于网络，而是依赖于virtio-serial（默认首选方式）或者isa-serial。OpenStack中，QEMU则提供了串口设备的模拟及数据交换的channel，最终呈现出来的是一个虚拟机内部的串口设备和宿主机上对应该虚拟机的unix socket文件。qga则通过读写串口设备和socket进行通信，通信协议为QMP（QEMU Machine Protocol）。QMP是一种基于json格式的传输协议，我们能利用它与从外部控制QEMU虚拟机实例，例如查询，更改虚拟机的状态，获取设备信息等等。</p>
+<h3>三、使用方式</h3>
+<h4>3.1 前提条件</h4>
+<p>1） 使用ceph做后端存储时，为了实现Nova、Glance、Cinder统一存储快速创建虚拟机，必须使用raw格式的镜像，如果使用qcow2会导致创建虚拟机过程很慢（Nova会先下载镜像后台转成raw格式再启动 …</p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/qemu-guest-agent.html#qemu-guest-agent">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/articles/make-rpm-package.html#make-rpm-package">make rpm package</a></h2>
+    <p>
+          Posted on 2016-10-07(星期五) 14:48 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。</p>
+<h3>一、简介</h3>
+<p>RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。</p>
+<h3>二、RPM常用命令</h3>
+<p>常用命令组合：</p>
+<div class="highlight"><pre><span></span>-ivh  # 安装显示安装进度 --install--verbose--hash
+-Uvh  # 升级软件包 --Update;
+-qpl  # 列出RPM软件包内的文件信息 [Query Package list];
+-qpi  # 列出RPM软件包的描述信息 [Query Package install package(s)];
+-qf   # 查找指定文件属于哪个RPM软件包 [Query File];
+-Va   # 校验所有的RPM软件包，查找丢失的文件 [View Lost];
+-e    # 删除包  
+</pre></div>
+
+
+<p>更多命令可以通过 …</p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/articles/make-rpm-package.html#make-rpm-package">    Continue reading
+</a>
+  </div>
+</article>
+
+  <div class="pagination">
+    <a class="btn float-right" href="https://andiaq.github.io/author/yuwei-wang.html">
+          Newer Posts
+ <i class="fa fa-angle-right"></i>
+    </a>
+  </div>
+
+
+
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

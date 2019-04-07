@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="本实验基于 OVS 构建 Overlay 的 VxLAN 网络。在实验过程中，建立对 VXLAN 的基本认识，以及了解如何建立并进行配置 VxLAN 隧道网络，从而实现相同网段和不同网段之间的通信。 一、对 VxLAN 的认识 VXLAN ( Virtual eXtensible Local Area Network ) 一种网络虚拟化技术，通过将 VM 或物理服务器发出的数据包封装在 UDP 中，并使用物理网络的 IP/MAC 作为报文头进行封装，然后在 IP 网络上传输，到达目的地后由隧道终结点解封装并将数据发送给目标虚拟机或物理服务器。 1.1 VxLAN 封装和包格式 VxLAN 是将二层建立在三层上的网络。通过将二层数据封装到 UDP 的方式来扩展数据中心的二层网段数量。传输协议是 IP …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="OpenvSwitch + VxLAN 实现"/>
+<meta property="og:description" content="本实验基于 OVS 构建 Overlay 的 VxLAN 网络。在实验过程中，建立对 VXLAN 的基本认识，以及了解如何建立并进行配置 VxLAN 隧道网络，从而实现相同网段和不同网段之间的通信。 一、对 VxLAN 的认识 VXLAN ( Virtual eXtensible Local Area Network ) 一种网络虚拟化技术，通过将 VM 或物理服务器发出的数据包封装在 UDP 中，并使用物理网络的 IP/MAC 作为报文头进行封装，然后在 IP 网络上传输，到达目的地后由隧道终结点解封装并将数据发送给目标虚拟机或物理服务器。 1.1 VxLAN 封装和包格式 VxLAN 是将二层建立在三层上的网络。通过将二层数据封装到 UDP 的方式来扩展数据中心的二层网段数量。传输协议是 IP …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/articles/openvswitch-vxlan.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2018-09-25 10:12:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="network"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; OpenvSwitch + VxLAN 实现</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="openvswitch-vxlan">OpenvSwitch + VxLAN 实现</h1>
+    <p>
+          Posted on 2018-09-25(星期二) 10:12 in <a href="https://andiaq.github.io/category/network.html">network</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>本实验基于 OVS 构建 Overlay 的 VxLAN 网络。在实验过程中，建立对 VXLAN 的基本认识，以及了解如何建立并进行配置 VxLAN 隧道网络，从而实现相同网段和不同网段之间的通信。</p>
+<h3>一、对  VxLAN 的认识</h3>
+<p>VXLAN ( Virtual eXtensible Local Area Network ) 一种网络虚拟化技术，通过将 VM 或物理服务器发出的数据包封装在 UDP 中，并使用物理网络的 IP/MAC 作为报文头进行封装，然后在 IP 网络上传输，到达目的地后由隧道终结点解封装并将数据发送给目标虚拟机或物理服务器。</p>
+<h4>1.1 VxLAN 封装和包格式</h4>
+<p>VxLAN 是将二层建立在三层上的网络。通过将二层数据封装到 UDP 的方式来扩展数据中心的二层网段数量。传输协议是 IP + UDP。
+VxLAN 是一种在现有物理网络设施中支持大规模多租户网络环境的解决方案。</p>
+<p>VxLAN 定义了一个 MAC-in-UDP 的封装格式。
+在原始的 Layer 2 网络包前加上 VxLAN header，然后放到 UDP 和 IP 包中。
+通过 MAC-in-UDP 封装，VxLAN 能够在 Layer 3 网络上建立起了一条 Layer 2 的隧道。</p>
+<p>VxLAN 包的格式如下：</p>
+<p><img alt="image" src="../images/network/ovs-vxlan-1.png"></p>
+<p>如上图所示，VxLAN 引入了 8-byte VxLAN header，其中 VNI 占 24-bit。
+VxLAN 和原始的 L2 frame 被封装到 UDP 包中。</p>
+<p>这 24-bit 的 VNI 用于标示不同的二层网段，能够支持 16777216 个 LAN。不同 VxLAN 段的虚拟机不能直接二层相互通信。</p>
+<h4>1.2 VxLAN Tunnel Endpoint</h4>
+<p>VxLAN 使用 VxLAN tunnel endpoint (VTEP) 设备处理 VxLAN 的封装和解封。
+每个 VTEP 有一个 IP interface，并配置了一个 IP 地址作为该服务器上的 VxLAN 隧道端点。VTEP 使用该 IP 封装 Layer 2 frame，
+并通过该 IP interface 传输和接收封装后的 VxLAN 数据包。</p>
+<p>VxLAN 独立于底层的网络拓扑；
+反过来，两个 VTEP 之间的底层 IP 网络也独立于 VxLAN。
+VxLAN 数据包是根据外层的 IP header 路由的，该 header 将两端的 VTEP IP 作为源和目标 IP。</p>
+<p>后面通过详细的实验进行说明。</p>
+<h3>二、数据报文转发</h3>
+<p>VM 之间的通信模式主要有3种：同 VNI 下的不同 VM（分布在同一实体和不同实体两种），不同 VNI 下的跨网访问，VxLAN 和非 VxLAN 之间的访问。</p>
+<p>VxLAN 网关分为：</p>
+<ul>
+<li>
+<p><strong>二层网关</strong>：位于同一网段的终端用户通信，L2 网关收到用户报文后，根据报文中包含的目的 MAC 类型，报文转发流程分为：</p>
+<ol>
+<li>MAC 地址为 BUM（broadcast&amp;unknown-unicast&amp;multicast）地址，按照 BUM 报文转发流程进行处理</li>
+<li>MAC 地址为已知单播地址，按照已知单播报文转发流程进行处理</li>
+</ol>
+</li>
+<li>
+<p><strong>三层网关</strong>：用于非同一网段的终端用户通信或 VxLAN 和非 VxLAN 用户间的通信。</p>
+</li>
+</ul>
+<h4>2.1 相同 VNI VM 之间的通信</h4>
+<p>对于相同 VNI 的 VxLAN，属于同一个二层网络段。对于同网段主机的通信而言，报文通过查询 MAC 表进行二层转发。
+以下实验的二层网关即 tep0。</p>
+<p>相同 VNI vm 之间互访拓扑图如下：</p>
+<p><img alt="image" src="../images/network/ovs-vxlan-2.png"></p>
+<p>在两个物理机上分别配置 VNI 为1000，配置如下：</p>
+<div class="highlight"><pre><span></span>host1 配置:
+<span class="c1"># ovs-vsctl add-br br0</span>
+<span class="c1"># ovs-vsctl add-port br0 ens10f1</span>
+<span class="c1"># ovs-vsctl add-port br0 tep0 -- set interface tep0 type=internal</span>
+<span class="c1"># ip addr add 192.168.0.10/24 dev tep0</span>
+<span class="c1"># ovs-vsctl add-br br1</span>
+<span class="c1"># ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.20 options:key=1000 options:dst_port=4789</span>
+
+host2 配置：
+<span class="c1"># ovs-vsctl add-br br0</span>
+<span class="c1"># ovs-vsctl add-port br0 ens10f1</span>
+<span class="c1"># ovs-vsctl add-port br0 tep0 -- set interface tep0 type=internal</span>
+<span class="c1"># ip addr add 192.168.0.20/24 dev tep0</span>
+<span class="c1"># ip link set tep0 up</span>
+<span class="c1"># ovs-vsctl add-br br1</span>
+<span class="c1"># ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.10 options:key=1000 options:dst_port=4789</span>
+</pre></div>
+
+
+<p>vm 网卡配置信息如下：</p>
+<div class="highlight"><pre><span></span>    <span class="nt">&lt;interface</span> <span class="na">type=</span><span class="s">&#39;bridge&#39;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;mac</span> <span class="na">address=</span><span class="s">&#39;e2:2e:54:67:c3:22&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;source</span> <span class="na">bridge=</span><span class="s">&#39;br1&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;virtualport</span> <span class="na">type=</span><span class="s">&#39;openvswitch&#39;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;parameters</span> <span class="na">interfaceid=</span><span class="s">&#39;d3cc9fef-ff8d-4432-a1b9-87e231f9dc1e&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/virtualport&gt;</span>
+      <span class="nt">&lt;target</span> <span class="na">dev=</span><span class="s">&#39;tap-vm1&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;model</span> <span class="na">type=</span><span class="s">&#39;virtio&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;address</span> <span class="na">type=</span><span class="s">&#39;pci&#39;</span> <span class="na">domain=</span><span class="s">&#39;0x0000&#39;</span> <span class="na">bus=</span><span class="s">&#39;0x00&#39;</span> <span class="na">slot=</span><span class="s">&#39;0x03&#39;</span> <span class="na">function=</span><span class="s">&#39;0x0&#39;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/interface&gt;</span>
+</pre></div>
+
+
+<p>按照以上配置，在 host1 上创建 vm1, 且配置 vm1 ip 地址为 12.12.12.14/24；host1 上创建 vm2, 且配置 vm2 ip 地址为 12.12.12.12/24.</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@POD23-CLU02-H006 ~<span class="o">]</span><span class="c1"># ovs-vsctl show</span>
+0611578f-a3e2-4df1-927c-d8ec139084a1
+    Bridge <span class="s2">&quot;br0&quot;</span>
+        Port <span class="s2">&quot;tep0&quot;</span>
+            Interface <span class="s2">&quot;tep0&quot;</span>
+                type: internal
+        Port <span class="s2">&quot;br0&quot;</span>
+            Interface <span class="s2">&quot;br0&quot;</span>
+                type: internal
+        Port <span class="s2">&quot;ens10f1&quot;</span>
+            Interface <span class="s2">&quot;ens10f1&quot;</span>
+    Bridge <span class="s2">&quot;br1&quot;</span>
+        Port <span class="s2">&quot;br1&quot;</span>
+            Interface <span class="s2">&quot;br1&quot;</span>
+                type: internal
+        Port <span class="s2">&quot;tap-vm1&quot;</span>
+            Interface <span class="s2">&quot;tap-vm1&quot;</span>
+        Port <span class="s2">&quot;vx1&quot;</span>
+            Interface <span class="s2">&quot;vx1&quot;</span>
+                type: vxlan
+                options: <span class="o">{</span><span class="nv">dst_port</span><span class="o">=</span><span class="s2">&quot;4789&quot;</span>, <span class="nv">key</span><span class="o">=</span><span class="s2">&quot;1000&quot;</span>, <span class="nv">remote_ip</span><span class="o">=</span><span class="s2">&quot;192.168.0.10&quot;</span><span class="o">}</span>
+</pre></div>
+
+
+<p>对 vm1 (12.12.12.14) ping vm2 (12.12.12.12) 进行抓包分析，结果如下。可以清楚的看到配置的 VNI 值，以及 overlay 和 underlay ip 地址信息。</p>
+<p><img alt="image" src="../images/network/ovs-vxlan-3.png"></p>
+<p>选择使用 VxLAN 网络模式时，每个租户网络使用一个 VNI，处于一个租户下的 vm 之间可以二层互访。不同租户之间即不同 VxLAN 段不能直接二层通信，也就是说通过 VNI ID 实现租户隔离。VNI 数量和 VLAN ID 数量远远不能相比，所以使用 VxLAN 大大解决了租户 vlan 的数量限制。</p>
+<p>实现租户隔离之后，如果再想实现租户内网络二层隔离，这时候可以再结合使用 VLAN tag，从而实现本地隔离。</p>
+<h4>2.2 不同 VNI VM 之间的通信</h4>
+<p>实现不同 VNI 下的跨网访问，需要配置三层网关。以下实验通过增加路由虚拟机，将配置子网网关地址到路由虚拟机上，从而实现跨网访问。</p>
+<p>不同子网拓扑图实现如下：</p>
+<p><img alt="image" src="../images/network/ovs-vxlan-4.png"></p>
+<p>如图所示，vm1 和 vm2 分别属于 10.10.10.0/24 网段和 12.12.12.0/24 网段，且分别属于 VNI 1000 和 VNI 2000。vm1 和 vm2 对应的三层网关分别是 vrouter 上 NIC_0 和 NIC_1 的 IP 地址。vrouter上存在到 10.10.10.0/24 网段和 12.12.12.0/24 网段的路由。此时，vm1 想与 vm2 进行通信。</p>
+<p>host1 配置如下：</p>
+<div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.20 options:key=1000 options:dst_port=4789</span>
+<span class="c1"># ovs-vsctl add-port br2 vx2 -- set interface vx2 type=vxlan options:remote_ip=192.168.0.30 options:key=2000 options:dst_port=4789</span>
+</pre></div>
+
+
+<p>host2 配置如下:</p>
+<div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.10 options:key=1000 options:dst_port=4789</span>
+</pre></div>
+
+
+<p>host3 配置如下:</p>
+<div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.10 options:key=2000 options:dst_port=4789</span>
+</pre></div>
+
+
+<p>由于是首次进行通信，且 vm1 和 vm2 处于不同网段，vm1 需要先发送 ARP 广播报文请求网关 vrouter（NIC_0）的MAC，获得网关的 MAC 后，vm1 先将数据报文发送给网关；之后网关也将发送 ARP 广播报文请求 vm2 的 MAC，获得 vm2 的 MAC 后，网关再将数据报文发送给 vm2。</p>
+<h4>2.3 VM 和外部服务器的通信</h4>
+<h5>2.3.1 绑定 floating ip 到虚拟机</h5>
+<p>若要直接将 floating ip 绑定到虚拟机，首先我们需要一个 floating ip 段，并且该子网段中有一个 ip 地址作为子网的网关。然后从以上 floating ip 子网段中分配一个 ip 地址给虚拟机。</p>
+<p>在本实验中，由于没有公网 ip 可用，我们可以在计算节点配置一个 11.11.11.1/24 子网段作为 floating ip 段。并将网关地址 11.11.11.1 配置到计算节点上。通过计算节点上 ip 转发以及路由功能，将 floating ip 映射到公网。</p>
+<p>以 host2 为例，配置之前 ovs 信息如下：</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@POD23-CLU02-H006 ~<span class="o">]</span><span class="c1"># ovs-vsctl show</span>
+0611578f-a3e2-4df1-927c-d8ec139084a1
+    Bridge <span class="s2">&quot;br0&quot;</span>
+        Port <span class="s2">&quot;tep0&quot;</span>
+            Interface <span class="s2">&quot;tep0&quot;</span>
+                type: internal
+        Port <span class="s2">&quot;br0&quot;</span>
+            Interface <span class="s2">&quot;br0&quot;</span>
+                type: internal
+        Port <span class="s2">&quot;ens10f1&quot;</span>
+            Interface <span class="s2">&quot;ens10f1&quot;</span>
+    Bridge <span class="s2">&quot;br1&quot;</span>
+        Port <span class="s2">&quot;br1&quot;</span>
+            Interface <span class="s2">&quot;br1&quot;</span>
+                type: internal
+        Port <span class="s2">&quot;tap-vm1&quot;</span>
+            tag: <span class="m">100</span>
+            Interface <span class="s2">&quot;tap-vm1&quot;</span>
+        Port <span class="s2">&quot;vx1&quot;</span>
+            Interface <span class="s2">&quot;vx1&quot;</span>
+                type: vxlan
+                options: <span class="o">{</span><span class="nv">dst_port</span><span class="o">=</span><span class="s2">&quot;4789&quot;</span>, <span class="nv">key</span><span class="o">=</span><span class="s2">&quot;1000&quot;</span>, <span class="nv">remote_ip</span><span class="o">=</span><span class="s2">&quot;192.168.0.10&quot;</span><span class="o">}</span>
+</pre></div>
+
+
+<p>我们对虚拟机的网卡 tap-vm1 设备打上了 tag=100, 用来模拟 vlan 模型的外部网络。接着做如下配置：</p>
+<div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl add-port br1 tap-gateway -- set interface tap-gateway type=internal</span>
+<span class="c1"># ovs-vsctl set port tap-gateway tag=100</span>
+<span class="c1"># ip link set tap-gateway up</span>
+<span class="c1"># ip addr add 11.11.11.1/24 dev tap-gateway</span>
+</pre></div>
+
+
+<p>以上步骤完成 floating ip 子网段和网关地址的配置，我们还需要在计算节点开启 ip 转发和路由转发。</p>
+<div class="highlight"><pre><span></span><span class="c1"># cat /etc/sysctl.d/99-sysctl.conf </span>
+net.ipv4.ip_forward <span class="o">=</span> <span class="m">1</span>
+<span class="c1"># sysctl -p</span>
+
+<span class="c1"># iptables -t nat -A POSTROUTING -s 11.11.11.0/24 -j SNAT --to-source 18.23.120.66</span>
+</pre></div>
+
+
+<p>以下配置是开启计算节点 dns 服务端口：</p>
+<div class="highlight"><pre><span></span><span class="c1"># iptables -A OUTPUT -p udp --dport 53 -j ACCEPT</span>
+<span class="c1"># iptables -A OUTPUT -p udp --sport 53 -j ACCEPT</span>
+<span class="c1"># iptables -A INPUT -p udp --sport 53 -j ACCEPT</span>
+<span class="c1"># iptables -A INPUT -p udp --dport 53 -j ACCEPT</span>
+<span class="c1"># iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited</span>
+<span class="c1"># iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited</span>
+</pre></div>
+
+
+<p>结果如下：</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@wangyuwei-1 ~<span class="o">]</span><span class="c1"># ip a</span>
+<span class="m">1</span>: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span class="m">65536</span> qdisc noqueue state UNKNOWN 
+    link/loopback <span class="m">00</span>:00:00:00:00:00 brd <span class="m">00</span>:00:00:00:00:00
+    inet <span class="m">127</span>.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+<span class="m">2</span>: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc pfifo_fast state UP qlen <span class="m">1000</span>
+    link/ether <span class="m">52</span>:54:00:7d:e8:37 brd ff:ff:ff:ff:ff:ff
+    inet <span class="m">11</span>.11.11.12/24 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::5054:ff:fe7d:e837/64 scope link 
+       valid_lft forever preferred_lft forever
+<span class="o">[</span>root@wangyuwei-1 ~<span class="o">]</span><span class="c1"># ping -c 2 baidu.com</span>
+PING baidu.com <span class="o">(</span><span class="m">123</span>.125.115.110<span class="o">)</span> <span class="m">56</span><span class="o">(</span><span class="m">84</span><span class="o">)</span> bytes of data.
+<span class="m">64</span> bytes from <span class="m">123</span>.125.115.110: <span class="nv">icmp_seq</span><span class="o">=</span><span class="m">1</span> <span class="nv">ttl</span><span class="o">=</span><span class="m">52</span> <span class="nv">time</span><span class="o">=</span><span class="m">2</span>.40 ms
+<span class="m">64</span> bytes from <span class="m">123</span>.125.115.110: <span class="nv">icmp_seq</span><span class="o">=</span><span class="m">2</span> <span class="nv">ttl</span><span class="o">=</span><span class="m">52</span> <span class="nv">time</span><span class="o">=</span><span class="m">2</span>.37 ms
+
+--- baidu.com ping statistics ---
+<span class="m">2</span> packets transmitted, <span class="m">2</span> received, <span class="m">0</span>% packet loss, <span class="nb">time</span> 1001ms
+rtt min/avg/max/mdev <span class="o">=</span> <span class="m">2</span>.376/2.391/2.407/0.051 ms
+</pre></div>
+
+
+<p>以上测试只能作为基础功能实验，理解访问外网的过程，但是并没有做隔离。
+如果环境中事先已经准备了一个 floating ip 池，则不需要该 floating ip 池开启 DHCP 功能，只需要按需分配并挂载到虚拟机上。</p>
+<p>如果仅从分配 ip 地址角度来说，在没有路由器参与时，若是分配内网 ip 地址，以上场景可以将虚拟机 ip 地址配置成 dhcp，且可以使用 namespace 实现隔离。</p>
+<h5>2.3.2 绑定 floating ip 到路由器</h5>
+<p>这里路由器有两种实现方式：
+1. 使用 namespace 实现
+2. 使用虚拟机，比如 vyos 或者 6wind 等自带路由，DHCP 等功能的 vrouter</p>
+<p>这里如果使用虚拟机实现 vrouter, 那么绑定 floating ip 到路由器也意味着绑定 floating ip 到虚拟机。过程及原理和上述绑定 floating ip 到虚拟机类似。</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

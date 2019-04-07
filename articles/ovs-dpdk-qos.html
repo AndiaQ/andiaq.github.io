@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="在使用 DPDK datapath 时，可以同时设置入口流量限制和出口流量限制。这些分别称为 QoS 和速率限制。 一、QoS (Egress Policing) 在 OVS-DPDK 环境中配置 QoS，仅在从 vSwitch 上的端口发送的出口流量上进行限制。 使用如下命令查看 OVS port 支持的 QoS 类型。目前 ovs-dpdk 只支持 egress-policer，随着版本更新可能会支持其他的 QoS 类型。 # ovs-appctl -t ovs-vswitchd qos/show-types dpdkvhostuserclient0 QoS type: egress-policer egress-policer 是 OVS-DPDK 支持的 QoS 类型。 一旦在接口上超过指定的传输速率（由 token …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="OVS-DPDK QoS 实现"/>
+<meta property="og:description" content="在使用 DPDK datapath 时，可以同时设置入口流量限制和出口流量限制。这些分别称为 QoS 和速率限制。 一、QoS (Egress Policing) 在 OVS-DPDK 环境中配置 QoS，仅在从 vSwitch 上的端口发送的出口流量上进行限制。 使用如下命令查看 OVS port 支持的 QoS 类型。目前 ovs-dpdk 只支持 egress-policer，随着版本更新可能会支持其他的 QoS 类型。 # ovs-appctl -t ovs-vswitchd qos/show-types dpdkvhostuserclient0 QoS type: egress-policer egress-policer 是 OVS-DPDK 支持的 QoS 类型。 一旦在接口上超过指定的传输速率（由 token …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/articles/ovs-dpdk-qos.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2018-09-04 15:16:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="network"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; OVS-DPDK QoS 实现</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="ovs-dpdk-qos">OVS-DPDK QoS 实现</h1>
+    <p>
+          Posted on 2018-09-04(星期二) 15:16 in <a href="https://andiaq.github.io/category/network.html">network</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>在使用 DPDK datapath 时，可以同时设置入口流量限制和出口流量限制。这些分别称为 QoS 和速率限制。</p>
+<h3>一、QoS (Egress Policing)</h3>
+<p>在 OVS-DPDK 环境中配置 QoS，仅在从 vSwitch 上的端口发送的出口流量上进行限制。</p>
+<p>使用如下命令查看 OVS port 支持的 QoS 类型。目前 ovs-dpdk 只支持 egress-policer，随着版本更新可能会支持其他的 QoS 类型。</p>
+<div class="highlight"><pre><span></span># ovs-appctl -t ovs-vswitchd qos/show-types dpdkvhostuserclient0
+QoS type: egress-policer
+</pre></div>
+
+
+<p><code>egress-policer</code> 是 OVS-DPDK 支持的 QoS 类型。</p>
+<p>一旦在接口上超过指定的传输速率（由 token bucket 实现），<code>egress policer</code> 就会丢弃数据包。 对于物理设备来说，它将丢弃通过 NIC 从主机传输的流量。 对于虚拟接口来说，即 DPDK vhost-user，它将丢弃从 vSwitch 传输到 guest 虚拟机的流量，也就是限制了该端口上 guest 虚拟机的流量接收速率。 </p>
+<p>使用如下命令对 dpdkvhostuserclient1 进行配置，将发送速率限制为 10Mbps。10Mbps = 10,000,000bps = 1250000Bps，即 cir 的值大小。</p>
+<div class="highlight"><pre><span></span># ovs-vsctl set port dpdkvhostuserclient1 qos=@newqos -- --id=@newqos create qos type=egress-policer other-config:cir=1250000 other-config:cbs=2048
+</pre></div>
+
+
+<ul>
+<li>cir：（Committed Information Rate，承诺信息速率）, 端口允许发送的最大速率，单位为Bytes/s.</li>
+<li>cbs：（Committed Burst Size，承诺突发尺寸），以 bytes 为单位，为令牌桶的容量，即每次突发所允许的最大的流量尺寸。设置的突发尺寸必须大于最大报文长度，即至少要比 MTU 的值大。</li>
+</ul>
+<p>使用如下命令查看端口上的 QoS 信息：</p>
+<div class="highlight"><pre><span></span># ovs-appctl -t ovs-vswitchd qos/show dpdkvhostuserclient1
+</pre></div>
+
+
+<p>使用如下命令从 ovsdb 和 port 上清除 QoS 配置：</p>
+<div class="highlight"><pre><span></span># ovs-vsctl destroy QoS dpdkvhostuserclient1 -- clear Port dpdkvhostuserclient1 qos
+</pre></div>
+
+
+<h3>二、Rate Limiting (Ingress Policing)</h3>
+<p>与 QoS 功能作用链路相反，Rate limiting 对 vSwitch 上的端口接收的入口流量进行限制。</p>
+<p>使用如下命令对 dpdkvhostuserclient0 进行配置，将接收速率限制为 10Mbps.</p>
+<div class="highlight"><pre><span></span># ovs-vsctl set interface dpdkvhostuserclient0 ingress_policing_rate=10000 ingress_policing_burst=1000
+</pre></div>
+
+
+<ul>
+<li>ingress_policing_rate: 允许 VM 可发送的最大速率（以Kbps为单位）。对于创建入口流量策略限制，此值是必需的。 如果未指定任何值，则不会修改现有的速率限制配置。</li>
+<li>ingress_policing_burst: 以kb为单位，表示令牌桶的容量。 这个参数最小值应不小于接口的MTU值。 如果未指定任何值，则默认值为 1000 kb。通常设置为 ingress_policing_rate 的 10% 更有利于 tcp 实现全速率。 这是因为 TCP 在丢弃数据包时如果传输交互不好，这会导致数据包重新传输出现问题。</li>
+</ul>
+<p>使用如下命令查看端口上的速率限制配置信息：</p>
+<div class="highlight"><pre><span></span># ovs-vsctl list interface dpdkvhostuserclient0
+</pre></div>
+
+
+<p>使用如下命令清除端口上的速率限制：</p>
+<div class="highlight"><pre><span></span># ovs-vsctl set interface dpdkvhostuserclient0 ingress_policing_rate=0
+</pre></div>
+
+
+<h4>2.1 实验结果</h4>
+<p><strong>未限速之前：</strong></p>
+<p><img alt="image" src="../images/network/ovs-dpdk-qos-1.png"></p>
+<p>设置限速到 4Mbps，即 rate 设置为 4000kbps.</p>
+<div class="highlight"><pre><span></span>ovs-vsctl set interface dpdkvhostuserclient2 ingress_policing_rate=4000 ingress_policing_burst=1000
+</pre></div>
+
+
+<p><img alt="image" src="../images/network/ovs-dpdk-qos-2.png"></p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>
