@@ -390,7 +390,7 @@ f4bb4728-d9d6-43e9-be9a-cc8b2cdb10b1
 <h3>三、测试过程</h3>
 <h4>3.1 测试拓扑</h4>
 <p>测试使用的拓扑图如下：</p>
-<p><img alt="image" src="images/network/ovs-dpdk-1.png"></p>
+<p><img alt="image" src="/images/network/ovs-dpdk-1.png"></p>
 <p>使用 dpdkgen 的 p0 作为发包端口，p1 作为收包端口。</p>
 <p>配置 6wind:</p>
 <div class="highlight"><pre><span></span><span class="n">eth0</span><span class="o">:</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="o">/</span><span class="mi">24</span>
@@ -417,11 +417,11 @@ Pktgen&gt; start <span class="m">0</span>
 <ol>
 <li>将发包字节设置为64字节，发包速率设置10%时，几乎不存在丢包现象。</li>
 </ol>
-<p><img alt="image" src="images/network/ovs-dpdk-2.png"></p>
+<p><img alt="image" src="/images/network/ovs-dpdk-2.png"></p>
 <ol>
 <li>将p0发包速率设置20%时，存在丢包现象。将p1发包速率设置为15%，收发数据差不多。</li>
 </ol>
-<p><img alt="image" src="images/network/ovs-dpdk-3.png"></p>
+<p><img alt="image" src="/images/network/ovs-dpdk-3.png"></p>
   </div>
   <div class="tag-cloud">
     <p>

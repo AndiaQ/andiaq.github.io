@@ -123,7 +123,7 @@ VxLAN 是一种在现有物理网络设施中支持大规模多租户网络环�
 在原始的 Layer 2 网络包前加上 VxLAN header，然后放到 UDP 和 IP 包中。
 通过 MAC-in-UDP 封装，VxLAN 能够在 Layer 3 网络上建立起了一条 Layer 2 的隧道。</p>
 <p>VxLAN 包的格式如下：</p>
-<p><img alt="image" src="images/network/ovs-vxlan-1.png"></p>
+<p><img alt="image" src="/images/network/ovs-vxlan-1.png"></p>
 <p>如上图所示，VxLAN 引入了 8-byte VxLAN header，其中 VNI 占 24-bit。
 VxLAN 和原始的 L2 frame 被封装到 UDP 包中。</p>
 <p>这 24-bit 的 VNI 用于标示不同的二层网段，能够支持 16777216 个 LAN。不同 VxLAN 段的虚拟机不能直接二层相互通信。</p>
@@ -154,7 +154,7 @@ VxLAN 数据包是根据外层的 IP header 路由的，该 header 将两端的 
 <p>对于相同 VNI 的 VxLAN，属于同一个二层网络段。对于同网段主机的通信而言，报文通过查询 MAC 表进行二层转发。
 以下实验的二层网关即 tep0。</p>
 <p>相同 VNI vm 之间互访拓扑图如下：</p>
-<p><img alt="image" src="images/network/ovs-vxlan-2.png"></p>
+<p><img alt="image" src="/images/network/ovs-vxlan-2.png"></p>
 <p>在两个物理机上分别配置 VNI 为1000，配置如下：</p>
 <div class="highlight"><pre><span></span>host1 配置:
 <span class="c1"># ovs-vsctl add-br br0</span>
@@ -215,13 +215,13 @@ host2 配置：
 
 
 <p>对 vm1 (12.12.12.14) ping vm2 (12.12.12.12) 进行抓包分析，结果如下。可以清楚的看到配置的 VNI 值，以及 overlay 和 underlay ip 地址信息。</p>
-<p><img alt="image" src="images/network/ovs-vxlan-3.png"></p>
+<p><img alt="image" src="/images/network/ovs-vxlan-3.png"></p>
 <p>选择使用 VxLAN 网络模式时，每个租户网络使用一个 VNI，处于一个租户下的 vm 之间可以二层互访。不同租户之间即不同 VxLAN 段不能直接二层通信，也就是说通过 VNI ID 实现租户隔离。VNI 数量和 VLAN ID 数量远远不能相比，所以使用 VxLAN 大大解决了租户 vlan 的数量限制。</p>
 <p>实现租户隔离之后，如果再想实现租户内网络二层隔离，这时候可以再结合使用 VLAN tag，从而实现本地隔离。</p>
 <h4>2.2 不同 VNI VM 之间的通信</h4>
 <p>实现不同 VNI 下的跨网访问，需要配置三层网关。以下实验通过增加路由虚拟机，将配置子网网关地址到路由虚拟机上，从而实现跨网访问。</p>
 <p>不同子网拓扑图实现如下：</p>
-<p><img alt="image" src="images/network/ovs-vxlan-4.png"></p>
+<p><img alt="image" src="/images/network/ovs-vxlan-4.png"></p>
 <p>如图所示，vm1 和 vm2 分别属于 10.10.10.0/24 网段和 12.12.12.0/24 网段，且分别属于 VNI 1000 和 VNI 2000。vm1 和 vm2 对应的三层网关分别是 vrouter 上 NIC_0 和 NIC_1 的 IP 地址。vrouter上存在到 10.10.10.0/24 网段和 12.12.12.0/24 网段的路由。此时，vm1 想与 vm2 进行通信。</p>
 <p>host1 配置如下：</p>
 <div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.20 options:key=1000 options:dst_port=4789</span>

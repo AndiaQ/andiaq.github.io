@@ -119,7 +119,7 @@
 <p>本文以 6wind 作为 NFV 虚拟网元设备，将其与基于 linuxbridge 和 vlan 实现的现有网络云平台进行结合，使用 NFV 网元实现云环境中 NAT 和安全组功能。以及进行网络性能测试。</p>
 <h3>二、NFV 连接不同网络之间通信</h3>
 <p>在我们现有网络环境中，不同网络之间通过 vlan 进行隔离，是无法互通的。我们知道在传统网络中，如果要和一个网络通信，只要和其网关相通就可以了。假设现在有两个不同 vlan 的网络 private1 和 private2，若要使两个网络中的虚拟主机进行通信，我们使 NFV 网元作为 Instance 启动，将 NFV 虚拟路由器连接这两个子网，并将分配给它的两个网络接口的 IP 地址配置成两个网络的网关，从而使流量通过 NFV 虚拟网元，实现子网之间的流量通过这个 NFV 虚拟路由器进行转发。</p>
-<p><img alt="image" src="images/network/6wind-nfv-1.png"></p>
+<p><img alt="image" src="/images/network/6wind-nfv-1.png"></p>
 <p>下面在测试环境进行配置，以实际例子进行说明。首先配置以下三个网络，一个作为外网，两个作为内网。</p>
 <p>外网：</p>
 <div class="highlight"><pre><span></span><span class="n">vlan</span><span class="o">:</span><span class="mi">3967</span>
@@ -165,7 +165,7 @@
 <ol>
 <li>整体网络流量走向图如下所示：</li>
 </ol>
-<p><img alt="image" src="images/network/6wind-nfv-1.png"></p>
+<p><img alt="image" src="/images/network/6wind-nfv-1.png"></p>
 <h4>2.2 开启 filter 功能</h4>
 <ol>
 <li>打开 vrouter filter 功能，不配置任何规则，则从任何地方都无法访问路由器中所有的 ip 地址，故而虚拟机无法 ping 通自己的网关地址， 虚拟机之间也不能互通。验证结果如下，符合预期。</li>

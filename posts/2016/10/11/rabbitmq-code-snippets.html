@@ -209,7 +209,7 @@
 <p>注意：当所有的worker处于繁忙状态时，消息队列会被填满，此时可以添加更多的worker或采用其他方式解决。</p>
 <h3>三、发布/订阅</h3>
 <p>前两部分都是将一个message发送给一个consumer，现在我们尝试将一个message发送给多个consumer（即broadcast）。每个consumer收到消息后都可以做不同的处理。例如接下来我们要做一个简单的logging system，productor发送一个log，一个receiver负责存在硬盘里，一个receiver负责显示在屏幕上。工作模型如下：</p>
-<p><img alt="image" src="images/publish.png"></p>
+<p><img alt="image" src="/images/publish.png"></p>
 <p>send.py:</p>
 <div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># -*- coding=utf-8 -*-</span>
@@ -271,7 +271,7 @@ python receive.py
 
 <h3>四、路由（直接匹配）</h3>
 <p>第三部分实现了exchange给与它绑定的所有queue广播消息，这里实现发送端指定接收的queue。原理很简单,将一个queue和一个exchange绑定时，可以指定一个路由键(binding key)。发送端发送消息时，设定相应的路由键(routing key)，这样，当message到达exchange时，就根据路由键，将message发送给相应的queue。这里继上一篇，发送端指定info、warning、error三种级别的信息，由exchange发送到不同的接收端。工作模型如下:</p>
-<p><img alt="image" src="images/direct-exchange.png"></p>
+<p><img alt="image" src="/images/direct-exchange.png"></p>
 <h4>4.1 绑定时指定路由键</h4>
 <div class="highlight"><pre><span></span>channel.queue_bind(exchange=exchange_name,
                    queue=queue_name,
@@ -294,7 +294,7 @@ python receive.py
 
 <h4>4.3 多重绑定</h4>
 <p>多个queue与exchange绑定时，可以有相同的binding key，这样，当一个routing key与这个binding key相同时，message会发送给相应的多个queue，实现类似组播的功能。效果如图:</p>
-<p><img alt="image" src="images/direct-exchange-multiple.png"></p>
+<p><img alt="image" src="/images/direct-exchange-multiple.png"></p>
 <p>具体实现</p>
 <div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># -*- coding=utf-8 -*-</span>
@@ -356,7 +356,7 @@ python receive.py
 2. 从命令行接收binding key参数，从而在绑定时使用</p>
 <h3>五、主题交换机（模糊匹配）</h3>
 <p>由上可以看出，直连交换机可以有选择性的接收日志，但是无法基于多个标准执行路由操作。主题交换机的作用就是为了该目的来实现，大大提高了灵活性。 主题交换机的路由键是一个由.分隔开的词语列表，比如“a.b.c”, "a.d.e", "e.z.c"。 以下用图来说明： </p>
-<p><img alt="image" src="images/topic_exchange.png"></p>
+<p><img alt="image" src="/images/topic_exchange.png"></p>
 <p>这三个绑定键被可以总结为： Q1 对所有的桔黄色动物都感兴趣。 Q2 则是对所有的兔子和所有懒惰的动物感兴趣。 两个通配符： '': 匹配前一个字符一次或多次 '#': 匹配前一个字符0次或多次 例： a. ，匹配的有a., a.b等等 a.#，匹配的有a,a., a.b....</p>
 <p>emit_log_topic.py:</p>
 <div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
@@ -504,7 +504,7 @@ shell4 $ ./receive_logs_topic.py &quot;*.error&quot;                        #接
 
 
 <h3>七、总结</h3>
-<p><img alt="image" src="images/rpc.png"></p>
+<p><img alt="image" src="/images/rpc.png"></p>
 <p>RPC的工作机制如下： </p>
 <p>客户端启动时，会创建一个匿名独享的回调队列； 在RPC请求中，客户端通过basic_publish发送带有两个属性的消息：一个是设置回调队列的 reply_to属性，另一个是设置唯一值的 correlation_id 属性； 以上请求会发送到rpc_queue队列中； RPC服务器端会等待请求发送到这个队列中。当请求出现时，服务器端执行他的工作并将带有执行结果的消息发送给reply_to字段指定的队列； 客户端等待回调队列里的数据，当消息出现时，它会检查correlation_id属性，若此属性值与请求匹配，就将其返回给应用。</p>
 <h3>八、参考文档</h3>

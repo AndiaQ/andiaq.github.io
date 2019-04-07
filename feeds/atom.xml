@@ -24,7 +24,7 @@
 &lt;p&gt;与 linuxbridge 不同的是，ovs 能支持一些高级特性比如 OpenFlow 协议, VLAN tag, QOS, ACL ,Flow 等，是一个高质量的多层虚拟交换机，具备三层交换功能，相比来说更适合 SDN，但是也因此不如 linuxbridge 简单高效易理解。&lt;/p&gt;
 &lt;p&gt;OVS 支持 OpenFlow 协议，我们就可以使用任何支持 OpenFlow 协议的控制器来对 OVS 进行远程管理，但这并不意味着 OVS 必须要有一个控制器才能工作。在不连接外部控制器情况下，OVS 作为一个二层虚拟交换机，自身也可以依靠 MAC 地址学习实现二层数据包转发功能，就像 Linuxbridge。&lt;/p&gt;
 &lt;h4&gt;1.1 OVS 核心组件及其关联关系&lt;/h4&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-openflow.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-openflow.png"&gt;&lt;/p&gt;
 &lt;p&gt;ovs 在实现中分为用户空间和内核空间两部分，用户空间主要负责实现数据交换和 Openflow 流表功能，以及一些管理工具。内核空间主要负责流表查找的快速通道。&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -322,7 +322,7 @@ VxLAN 是一种在现有物理网络设施中支持大规模多租户网络环�
 在原始的 Layer 2 网络包前加上 VxLAN header，然后放到 UDP 和 IP 包中。
 通过 MAC-in-UDP 封装，VxLAN 能够在 Layer 3 网络上建立起了一条 Layer 2 的隧道。&lt;/p&gt;
 &lt;p&gt;VxLAN 包的格式如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-vxlan-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-vxlan-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;如上图所示，VxLAN 引入了 8-byte VxLAN header，其中 VNI 占 24-bit。
 VxLAN 和原始的 L2 frame 被封装到 UDP 包中。&lt;/p&gt;
 &lt;p&gt;这 24-bit 的 VNI 用于标示不同的二层网段，能够支持 16777216 个 LAN。不同 VxLAN 段的虚拟机不能直接二层相互通信。&lt;/p&gt;
@@ -353,7 +353,7 @@ VxLAN 数据包是根据外层的 IP header 路由的，该 header 将两端的 
 &lt;p&gt;对于相同 VNI 的 VxLAN，属于同一个二层网络段。对于同网段主机的通信而言，报文通过查询 MAC 表进行二层转发。
 以下实验的二层网关即 tep0。&lt;/p&gt;
 &lt;p&gt;相同 VNI vm 之间互访拓扑图如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-vxlan-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-vxlan-2.png"&gt;&lt;/p&gt;
 &lt;p&gt;在两个物理机上分别配置 VNI 为1000，配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;host1 配置:
 &lt;span class="c1"&gt;# ovs-vsctl add-br br0&lt;/span&gt;
@@ -414,13 +414,13 @@ host2 配置：
 
 
 &lt;p&gt;对 vm1 (12.12.12.14) ping vm2 (12.12.12.12) 进行抓包分析，结果如下。可以清楚的看到配置的 VNI 值，以及 overlay 和 underlay ip 地址信息。&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-vxlan-3.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-vxlan-3.png"&gt;&lt;/p&gt;
 &lt;p&gt;选择使用 VxLAN 网络模式时，每个租户网络使用一个 VNI，处于一个租户下的 vm 之间可以二层互访。不同租户之间即不同 VxLAN 段不能直接二层通信，也就是说通过 VNI ID 实现租户隔离。VNI 数量和 VLAN ID 数量远远不能相比，所以使用 VxLAN 大大解决了租户 vlan 的数量限制。&lt;/p&gt;
 &lt;p&gt;实现租户隔离之后，如果再想实现租户内网络二层隔离，这时候可以再结合使用 VLAN tag，从而实现本地隔离。&lt;/p&gt;
 &lt;h4&gt;2.2 不同 VNI VM 之间的通信&lt;/h4&gt;
 &lt;p&gt;实现不同 VNI 下的跨网访问，需要配置三层网关。以下实验通过增加路由虚拟机，将配置子网网关地址到路由虚拟机上，从而实现跨网访问。&lt;/p&gt;
 &lt;p&gt;不同子网拓扑图实现如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-vxlan-4.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-vxlan-4.png"&gt;&lt;/p&gt;
 &lt;p&gt;如图所示，vm1 和 vm2 分别属于 10.10.10.0/24 网段和 12.12.12.0/24 网段，且分别属于 VNI 1000 和 VNI 2000。vm1 和 vm2 对应的三层网关分别是 vrouter 上 NIC_0 和 NIC_1 的 IP 地址。vrouter上存在到 10.10.10.0/24 网段和 12.12.12.0/24 网段的路由。此时，vm1 想与 vm2 进行通信。&lt;/p&gt;
 &lt;p&gt;host1 配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.20 options:key=1000 options:dst_port=4789&lt;/span&gt;
@@ -593,13 +593,13 @@ QoS type: egress-policer
 
 &lt;h4&gt;2.1 实验结果&lt;/h4&gt;
 &lt;p&gt;&lt;strong&gt;未限速之前：&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-qos-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-dpdk-qos-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;设置限速到 4Mbps，即 rate 设置为 4000kbps.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ovs-vsctl set interface dpdkvhostuserclient2 ingress_policing_rate=4000 ingress_policing_burst=1000
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-qos-2.png"&gt;&lt;/p&gt;</content></entry><entry><title>OpenvSwitch + DPDK 实现</title><link href="https://andiaq.github.io/posts/2018/08/29/openvswitch-dpdk.html" rel="alternate"></link><published>2018-08-29T09:36:00+08:00</published><updated>2018-08-29T09:36:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-29:/posts/2018/08/29/openvswitch-dpdk.html</id><summary type="html">&lt;p&gt;本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-dpdk-qos-2.png"&gt;&lt;/p&gt;</content></entry><entry><title>OpenvSwitch + DPDK 实现</title><link href="https://andiaq.github.io/posts/2018/08/29/openvswitch-dpdk.html" rel="alternate"></link><published>2018-08-29T09:36:00+08:00</published><updated>2018-08-29T09:36:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-29:/posts/2018/08/29/openvswitch-dpdk.html</id><summary type="html">&lt;p&gt;本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。&lt;/p&gt;
 &lt;p&gt;使用了 DPDK 库的 OVS 运行在用户空间，可以直接将用户态的数据，不经过内核直接转发到网卡，从而实现加速目的。&lt;/p&gt;
 &lt;h3&gt;一、OVS + DPDK 编译部署&lt;/h3&gt;
 &lt;p&gt;在部署过程中，各个组件版本之间有一些依赖，版本不对很有可能会出现安装失败或者虚拟机无法开机，推荐使用以下版本。&lt;/p&gt;
@@ -885,7 +885,7 @@ f4bb4728-d9d6-43e9-be9a-cc8b2cdb10b1
 &lt;h3&gt;三、测试过程&lt;/h3&gt;
 &lt;h4&gt;3.1 测试拓扑&lt;/h4&gt;
 &lt;p&gt;测试使用的拓扑图如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-dpdk-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;使用 dpdkgen 的 p0 作为发包端口，p1 作为收包端口。&lt;/p&gt;
 &lt;p&gt;配置 6wind:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;eth0&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;10.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;
@@ -912,11 +912,11 @@ Pktgen&amp;gt; start &lt;span class="m"&gt;0&lt;/span&gt;
 &lt;ol&gt;
 &lt;li&gt;将发包字节设置为64字节，发包速率设置10%时，几乎不存在丢包现象。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-dpdk-2.png"&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;将p0发包速率设置20%时，存在丢包现象。将p1发包速率设置为15%，收发数据差不多。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-3.png"&gt;&lt;/p&gt;</content></entry><entry><title>Pktgen-DPDK 网络性能测试</title><link href="https://andiaq.github.io/posts/2018/08/20/pktgen-dpdk.html" rel="alternate"></link><published>2018-08-20T09:51:00+08:00</published><updated>2018-08-20T09:51:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-20:/posts/2018/08/20/pktgen-dpdk.html</id><summary type="html">&lt;p&gt;在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/ovs-dpdk-3.png"&gt;&lt;/p&gt;</content></entry><entry><title>Pktgen-DPDK 网络性能测试</title><link href="https://andiaq.github.io/posts/2018/08/20/pktgen-dpdk.html" rel="alternate"></link><published>2018-08-20T09:51:00+08:00</published><updated>2018-08-20T09:51:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-20:/posts/2018/08/20/pktgen-dpdk.html</id><summary type="html">&lt;p&gt;在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。&lt;/p&gt;
 &lt;h2&gt;一、环境部署&lt;/h2&gt;
 &lt;h3&gt;1.1 安装DPDK&lt;/h3&gt;
 &lt;p&gt;DPDK 可以将用户态的数据不经过内核直接转发到网卡，同样网卡数据也不经过内核直接映射到用户态内存实现加速目的。&lt;/p&gt;
@@ -999,7 +999,7 @@ Pktgen&amp;gt; start &lt;span class="m"&gt;0&lt;/span&gt;
 &lt;ol&gt;
 &lt;li&gt;执行结果&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/pktgen-dpdk-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/pktgen-dpdk-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;以上结果符合预期，Port 0 进行发包，Port 1 进行收包。这两个网卡属于同一块物理网卡的 VF ，所以万兆网卡带宽进行了均分。&lt;/p&gt;
 &lt;h4&gt;2.2. 虚拟机与 NAT 网关互打流量&lt;/h4&gt;
 &lt;p&gt;&lt;strong&gt;环境说明：&lt;/strong&gt;&lt;/p&gt;
@@ -1020,7 +1020,7 @@ Address                  HWtype  HWaddress           Flags Mask            Iface
 
 
 &lt;p&gt;测试拓扑图：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;测试脚本&lt;/li&gt;
 &lt;/ol&gt;
@@ -1051,7 +1051,7 @@ average cycles/packets received from NIC: 209 (458989044/2186254)
 
 
 &lt;p&gt;dpdkgen结果如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
 &lt;p&gt;从以上结果可以看到，在使用 6wind 一个 core 情况下，64 字节线速发包能力为 9914Mbps ，包转发性能为 14Mpps，接近物理网卡极限。&lt;/p&gt;</content></entry><entry><title>6wind 配置 SRIOV</title><link href="https://andiaq.github.io/posts/2018/08/14/6wind-sriov.html" rel="alternate"></link><published>2018-08-14T09:34:00+08:00</published><updated>2018-08-14T09:34:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-14:/posts/2018/08/14/6wind-sriov.html</id><summary type="html">&lt;p&gt;本文主要是介绍 6wind 配置 SRIOV 相关过程，在测试过程中进行学习，先产生感性认识，后期更深入了解原理后补充。&lt;/p&gt;
 &lt;h3&gt;一、前置条件&lt;/h3&gt;
 &lt;p&gt;SRIOV 功能需宿主机开启 VT-d 和 IOMMU 功能。&lt;/p&gt;
@@ -1249,7 +1249,7 @@ Hugepagesize:       &lt;span class="m"&gt;2048&lt;/span&gt; kB
 &lt;p&gt;本文以 6wind 作为 NFV 虚拟网元设备，将其与基于 linuxbridge 和 vlan 实现的现有网络云平台进行结合，使用 NFV 网元实现云环境中 NAT 和安全组功能。以及进行网络性能测试。&lt;/p&gt;
 &lt;h3&gt;二、NFV 连接不同网络之间通信&lt;/h3&gt;
 &lt;p&gt;在我们现有网络环境中，不同网络之间通过 vlan 进行隔离，是无法互通的。我们知道在传统网络中，如果要和一个网络通信，只要和其网关相通就可以了。假设现在有两个不同 vlan 的网络 private1 和 private2，若要使两个网络中的虚拟主机进行通信，我们使 NFV 网元作为 Instance 启动，将 NFV 虚拟路由器连接这两个子网，并将分配给它的两个网络接口的 IP 地址配置成两个网络的网关，从而使流量通过 NFV 虚拟网元，实现子网之间的流量通过这个 NFV 虚拟路由器进行转发。&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;下面在测试环境进行配置，以实际例子进行说明。首先配置以下三个网络，一个作为外网，两个作为内网。&lt;/p&gt;
 &lt;p&gt;外网：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;3967&lt;/span&gt;
@@ -1295,7 +1295,7 @@ Hugepagesize:       &lt;span class="m"&gt;2048&lt;/span&gt; kB
 &lt;ol&gt;
 &lt;li&gt;整体网络流量走向图如下所示：&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img alt="image" src="images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
 &lt;h4&gt;2.2 开启 filter 功能&lt;/h4&gt;
 &lt;ol&gt;
 &lt;li&gt;打开 vrouter filter 功能，不配置任何规则，则从任何地方都无法访问路由器中所有的 ip 地址，故而虚拟机无法 ping 通自己的网关地址， 虚拟机之间也不能互通。验证结果如下，符合预期。&lt;/li&gt;
@@ -2212,7 +2212,7 @@ rbd image &lt;span class="s1"&gt;&amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&a
 &lt;p&gt;一般对于规模较大的集群比如跨数据中心，可以根据地理位置来定义az。比如：bj，sh。或是同一数据中心的不同机房，或是在同一机房的几个相邻的机架，同样可以通过位置来定义，从而保证不同az之间具有某些特性上的冗余性，比如供电系统、网络设备等。而不影响其他的 Availability Zones 上节点运行的虚拟机，通过这种划分来提高 OpenStack 的可用性。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;Host Aggregates&lt;/code&gt; 是在 &lt;code&gt;Availability Zones&lt;/code&gt; 的基础上更进一步地进行逻辑的分组和隔离。例如我们可以根据不同的 computes 节点的物理硬件配置将具有相同共性的物理资源规划在同一 &lt;code&gt;Host Aggregate&lt;/code&gt; 之下，或者根据用户的具体需求将几个 computes 节点规划在具有相同用途的同一 &lt;code&gt;Host Aggregate&lt;/code&gt; 之下，通过这样的划分有利于提高 OpenStack 资源的使用效率。&lt;code&gt;Host Aggregates&lt;/code&gt; 可以通过 nova client 或 API 来创建和配置。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;图 1.Availability Zones 与 Host Aggregates 的关系&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/hz_az.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/hz_az.png"&gt;&lt;/p&gt;
 &lt;h2&gt;配置&lt;/h2&gt;
 &lt;p&gt;我们可以通过对 nova.conf 文件的配置来定义不同的 Availability zones。相关配置项为：&lt;/p&gt;
 &lt;ul&gt;
@@ -2243,7 +2243,7 @@ rbd image &lt;span class="s1"&gt;&amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&a
 
 
 &lt;p&gt;&lt;strong&gt;面板方式：&lt;/strong&gt;
-&lt;img alt="image" src="images/az2.png"&gt;&lt;/p&gt;
+&lt;img alt="image" src="/images/az2.png"&gt;&lt;/p&gt;
 &lt;h2&gt;Host Aggregate&lt;/h2&gt;
 &lt;p&gt;从具体实现上来看，&lt;code&gt;Host aggregate&lt;/code&gt;指一组拥有关联metadata的计算节点，metadata中描述了该组计算节点所拥有的特性，比如高速网卡、GPU、SSD存储、属于特定租户、Qos等。也就是说，Host Aggregate被设计用于按能力对服务器进行分组。这些能力，通过metadata自定义。&lt;code&gt;nova-scheduler&lt;/code&gt;能够过滤不满足某些特性的主机，从而只选择只具备某些特性的主机，比如只选择配置ssd的主机或者只选择具有GPU加速的主机等。&lt;/p&gt;
 &lt;p&gt;所有的&lt;code&gt;nova availability zones&lt;/code&gt;的部署都是基于&lt;code&gt;host aggregate&lt;/code&gt;实现的（尽管不是所有的宿主机聚合都叫可用区域）。&lt;/p&gt;
@@ -2472,7 +2472,7 @@ Host compute-bj-1-withlvm.novalocal has been successfully added &lt;span class="
 &lt;h2&gt;NUMA&lt;/h2&gt;
 &lt;p&gt;NUMA即&lt;code&gt;Non-Uniform Memory Access&lt;/code&gt;，非一致性内存架构。
 NUMA架构产生的原因之一，就是为了解决SMP在扩展能力上的限制。利用NUMA技术，可以把几十个CPU(甚至上百个CPU)组合在一个服务器内。其CPU模块结构如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/numa_cpu.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/numa_cpu.png"&gt;&lt;/p&gt;
 &lt;p&gt;NUMA服务器的基本特征是具有多个CPU模块，每个CPU模块由多个CPU(如4个)组成，并且具有独立的本地内存、I/O槽口等。由于其节点之间可以通过互联模块(如称为Crossbar Switch)进行连接和信息交互，因此每个CPU可以访问整个系统的内存(这是NUMA系统与MPP系统的重要差别)。显然，访问本地内存的速度将远远高于访问远地内存(系统内其它节点的内存)的速度，这也是非一致存储访问NUMA的由来。由于这个特点，为了更好地发挥系统性能，开发应用程序时需要尽量减少不同CPU模块之间的信息交互。利用NUMA技术，可以较好地解决原来SMP系统的扩展问题，在一个物理服务器内可以支持上百个CPU。比较典型的NUMA服务器的例子包括HP的Superdome、SUN15K、IBMp690等。&lt;/p&gt;
 &lt;p&gt;但NUMA技术同样有一定缺陷，由于访问远地内存的延时远远超过本地内存，因此当CPU数量增加时，系统性能无法线性增加。如HP公司发布Superdome服务器时，曾公布了它与HP其它UNIX服务器的相对性能值，结果发现，64路CPU的Superdome(NUMA结构)的相对性能值是20，而8路N4000(共享的SMP结构)的相对性能值是6.3。从这个结果可以看到，8倍数量的CPU换来的只是3倍性能的提升。 &lt;/p&gt;
 &lt;h2&gt;MPP&lt;/h2&gt;
@@ -3345,7 +3345,7 @@ TCP服务器在端口上被监听，比如，SSH服务器在22号端口被监听
 &lt;p&gt;注意：当所有的worker处于繁忙状态时，消息队列会被填满，此时可以添加更多的worker或采用其他方式解决。&lt;/p&gt;
 &lt;h3&gt;三、发布/订阅&lt;/h3&gt;
 &lt;p&gt;前两部分都是将一个message发送给一个consumer，现在我们尝试将一个message发送给多个consumer（即broadcast）。每个consumer收到消息后都可以做不同的处理。例如接下来我们要做一个简单的logging system，productor发送一个log，一个receiver负责存在硬盘里，一个receiver负责显示在屏幕上。工作模型如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/publish.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/publish.png"&gt;&lt;/p&gt;
 &lt;p&gt;send.py:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env python&lt;/span&gt;
 &lt;span class="c1"&gt;# -*- coding=utf-8 -*-&lt;/span&gt;
@@ -3407,7 +3407,7 @@ python receive.py
 
 &lt;h3&gt;四、路由（直接匹配）&lt;/h3&gt;
 &lt;p&gt;第三部分实现了exchange给与它绑定的所有queue广播消息，这里实现发送端指定接收的queue。原理很简单,将一个queue和一个exchange绑定时，可以指定一个路由键(binding key)。发送端发送消息时，设定相应的路由键(routing key)，这样，当message到达exchange时，就根据路由键，将message发送给相应的queue。这里继上一篇，发送端指定info、warning、error三种级别的信息，由exchange发送到不同的接收端。工作模型如下:&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/direct-exchange.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/direct-exchange.png"&gt;&lt;/p&gt;
 &lt;h4&gt;4.1 绑定时指定路由键&lt;/h4&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;channel.queue_bind(exchange=exchange_name,
                    queue=queue_name,
@@ -3430,7 +3430,7 @@ python receive.py
 
 &lt;h4&gt;4.3 多重绑定&lt;/h4&gt;
 &lt;p&gt;多个queue与exchange绑定时，可以有相同的binding key，这样，当一个routing key与这个binding key相同时，message会发送给相应的多个queue，实现类似组播的功能。效果如图:&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/direct-exchange-multiple.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/direct-exchange-multiple.png"&gt;&lt;/p&gt;
 &lt;p&gt;具体实现&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env python&lt;/span&gt;
 &lt;span class="c1"&gt;# -*- coding=utf-8 -*-&lt;/span&gt;
@@ -3492,7 +3492,7 @@ python receive.py
 2. 从命令行接收binding key参数，从而在绑定时使用&lt;/p&gt;
 &lt;h3&gt;五、主题交换机（模糊匹配）&lt;/h3&gt;
 &lt;p&gt;由上可以看出，直连交换机可以有选择性的接收日志，但是无法基于多个标准执行路由操作。主题交换机的作用就是为了该目的来实现，大大提高了灵活性。 主题交换机的路由键是一个由.分隔开的词语列表，比如“a.b.c”, "a.d.e", "e.z.c"。 以下用图来说明： &lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="images/topic_exchange.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/topic_exchange.png"&gt;&lt;/p&gt;
 &lt;p&gt;这三个绑定键被可以总结为： Q1 对所有的桔黄色动物都感兴趣。 Q2 则是对所有的兔子和所有懒惰的动物感兴趣。 两个通配符： '': 匹配前一个字符一次或多次 '#': 匹配前一个字符0次或多次 例： a. ，匹配的有a., a.b等等 a.#，匹配的有a,a., a.b....&lt;/p&gt;
 &lt;p&gt;emit_log_topic.py:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env python&lt;/span&gt;
@@ -3640,7 +3640,7 @@ shell4 $ ./receive_logs_topic.py &amp;quot;*.error&amp;quot;                    
 
 
 &lt;h3&gt;七、总结&lt;/h3&gt;
-&lt;p&gt;&lt;img alt="image" src="images/rpc.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="/images/rpc.png"&gt;&lt;/p&gt;
 &lt;p&gt;RPC的工作机制如下： &lt;/p&gt;
 &lt;p&gt;客户端启动时，会创建一个匿名独享的回调队列； 在RPC请求中，客户端通过basic_publish发送带有两个属性的消息：一个是设置回调队列的 reply_to属性，另一个是设置唯一值的 correlation_id 属性； 以上请求会发送到rpc_queue队列中； RPC服务器端会等待请求发送到这个队列中。当请求出现时，服务器端执行他的工作并将带有执行结果的消息发送给reply_to字段指定的队列； 客户端等待回调队列里的数据，当消息出现时，它会检查correlation_id属性，若此属性值与请求匹配，就将其返回给应用。&lt;/p&gt;
 &lt;h3&gt;八、参考文档&lt;/h3&gt;

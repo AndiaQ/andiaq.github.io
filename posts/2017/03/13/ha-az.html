@@ -119,7 +119,7 @@
 <p>一般对于规模较大的集群比如跨数据中心，可以根据地理位置来定义az。比如：bj，sh。或是同一数据中心的不同机房，或是在同一机房的几个相邻的机架，同样可以通过位置来定义，从而保证不同az之间具有某些特性上的冗余性，比如供电系统、网络设备等。而不影响其他的 Availability Zones 上节点运行的虚拟机，通过这种划分来提高 OpenStack 的可用性。</p>
 <p><code>Host Aggregates</code> 是在 <code>Availability Zones</code> 的基础上更进一步地进行逻辑的分组和隔离。例如我们可以根据不同的 computes 节点的物理硬件配置将具有相同共性的物理资源规划在同一 <code>Host Aggregate</code> 之下，或者根据用户的具体需求将几个 computes 节点规划在具有相同用途的同一 <code>Host Aggregate</code> 之下，通过这样的划分有利于提高 OpenStack 资源的使用效率。<code>Host Aggregates</code> 可以通过 nova client 或 API 来创建和配置。</p>
 <p><strong>图 1.Availability Zones 与 Host Aggregates 的关系</strong></p>
-<p><img alt="image" src="images/hz_az.png"></p>
+<p><img alt="image" src="/images/hz_az.png"></p>
 <h2>配置</h2>
 <p>我们可以通过对 nova.conf 文件的配置来定义不同的 Availability zones。相关配置项为：</p>
 <ul>
@@ -150,7 +150,7 @@
 
 
 <p><strong>面板方式：</strong>
-<img alt="image" src="images/az2.png"></p>
+<img alt="image" src="/images/az2.png"></p>
 <h2>Host Aggregate</h2>
 <p>从具体实现上来看，<code>Host aggregate</code>指一组拥有关联metadata的计算节点，metadata中描述了该组计算节点所拥有的特性，比如高速网卡、GPU、SSD存储、属于特定租户、Qos等。也就是说，Host Aggregate被设计用于按能力对服务器进行分组。这些能力，通过metadata自定义。<code>nova-scheduler</code>能够过滤不满足某些特性的主机，从而只选择只具备某些特性的主机，比如只选择配置ssd的主机或者只选择具有GPU加速的主机等。</p>
 <p>所有的<code>nova availability zones</code>的部署都是基于<code>host aggregate</code>实现的（尽管不是所有的宿主机聚合都叫可用区域）。</p>
