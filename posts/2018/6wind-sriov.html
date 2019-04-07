@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="本文主要是介绍 6wind 配置 SRIOV 相关过程，在测试过程中进行学习，先产生感性认识，后期更深入了解原理后补充。 一、前置条件 SRIOV 功能需宿主机开启 VT-d 和 IOMMU 功能。 VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。 # grep &#34;vmx&#34; /proc/cpuinfo # kvm-ok 开启 IOMMU，配置验证如下： # vim /etc/default/grub …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="6wind 配置 SRIOV"/>
+<meta property="og:description" content="本文主要是介绍 6wind 配置 SRIOV 相关过程，在测试过程中进行学习，先产生感性认识，后期更深入了解原理后补充。 一、前置条件 SRIOV 功能需宿主机开启 VT-d 和 IOMMU 功能。 VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。 # grep &#34;vmx&#34; /proc/cpuinfo # kvm-ok 开启 IOMMU，配置验证如下： # vim /etc/default/grub …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/posts/2018/6wind-sriov.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2018-08-14 09:34:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="network"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; 6wind 配置 SRIOV</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="6wind-sriov">6wind 配置 SRIOV</h1>
+    <p>
+          Posted on 2018-08-14 09:34 in <a href="https://andiaq.github.io/category/network.html">network</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>本文主要是介绍 6wind 配置 SRIOV 相关过程，在测试过程中进行学习，先产生感性认识，后期更深入了解原理后补充。</p>
+<h3>一、前置条件</h3>
+<p>SRIOV 功能需宿主机开启 VT-d 和 IOMMU 功能。</p>
+<ol>
+<li>VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。</li>
+</ol>
+<div class="highlight"><pre><span></span># grep &quot;vmx&quot; /proc/cpuinfo
+# kvm-ok
+</pre></div>
+
+
+<ol>
+<li>开启 IOMMU，配置验证如下：</li>
+</ol>
+<div class="highlight"><pre><span></span># vim /etc/default/grub 
+...
+GRUB_CMDLINE_LINUX=&quot;crashkernel=auto rhgb quiet intel_iommu=on&quot;    # 添加intel_iommu=on
+...
+# grub2-mkconfig -o /boot/grub2/grub.cfg 更新内核参数
+# reboot 重启使更改的参数生效
+</pre></div>
+
+
+<h3>二、SRIOV 配置</h3>
+<p>以下是 SRIOV 配置过程，如果需要以下配置参数永久生效，需要将设置命令行加入开启启动脚本。</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># modprobe ixgbe max_vfs=2</span>
+<span class="c1"># 查看网卡可支持的最大VF数</span>
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># cat /sys/class/net/ens10f0/device/sriov_totalvfs</span>
+<span class="m">63</span>
+<span class="c1"># 查看网卡当前的VF数</span>
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># cat /sys/class/net/ens10f0/device/sriov_numvfs</span>
+<span class="m">0</span>
+<span class="c1"># 配置ens10f0网卡VF数为2</span>
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># echo 2 &gt; /sys/class/net/ens10f0/device/sriov_numvfs</span>
+
+<span class="c1"># 查看当前的物理网卡和VF设备， 可以看到VF为03:10.0，03:10.2</span>
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># lspci  | grep Eth</span>
+<span class="m">01</span>:00.0 Ethernet controller: Intel Corporation 82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+<span class="m">01</span>:00.1 Ethernet controller: Intel Corporation 82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+<span class="m">03</span>:00.0 Ethernet controller: Intel Corporation 82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+<span class="m">03</span>:00.1 Ethernet controller: Intel Corporation 82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+<span class="m">03</span>:10.0 Ethernet controller: Intel Corporation <span class="m">82599</span> Ethernet Controller Virtual Function <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+<span class="m">03</span>:10.2 Ethernet controller: Intel Corporation <span class="m">82599</span> Ethernet Controller Virtual Function <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+</pre></div>
+
+
+<h3>三、6wind 配置</h3>
+<p>若要获取最佳性能，需要将 6wind 的 vcpu 与物理机的 cpu 进行绑定，且绑定的物理 cpu 需要在同一个物理 socket 上。另外，6wind 使用的物理网卡也需要在与其使用的 cpu 所在的 socket 相同。</p>
+<h4>3.1. 6wind vcpu 绑定</h4>
+<ol>
+<li>查看物理机 cpu 信息，这里我们使用 numa node0 上的物理 cpu，将其分配给 6wind 虚拟机。</li>
+</ol>
+<div class="highlight"><pre><span></span>[root@localhost ~]# lscpu
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                72
+On-line CPU(s) list:   0-71
+Thread(s) per core:    2
+Core(s) per socket:    18
+Socket(s):             2
+NUMA node(s):          2
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 79
+Model name:            Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz
+Stepping:              1
+CPU MHz:               3599.949
+BogoMIPS:              4595.21
+Virtualization:        VT-x
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              256K
+L3 cache:              46080K
+NUMA node0 CPU(s):     0-17,36-53
+NUMA node1 CPU(s):     18-35,54-71
+</pre></div>
+
+
+<ol>
+<li>配置 6wind cpu 绑定，xml 添加如下配置：</li>
+</ol>
+<div class="highlight"><pre><span></span>  <span class="nt">&lt;cputune&gt;</span>
+    <span class="nt">&lt;vcpupin</span> <span class="na">vcpu=</span><span class="s">&#39;0&#39;</span> <span class="na">cpuset=</span><span class="s">&#39;36&#39;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;vcpupin</span> <span class="na">vcpu=</span><span class="s">&#39;1&#39;</span> <span class="na">cpuset=</span><span class="s">&#39;37&#39;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/cputune&gt;</span>
+</pre></div>
+
+
+<h4>3.2. 6wind 网卡中断绑定</h4>
+<ol>
+<li>我们将物理网卡 ens10f1 进行 SRIOV 配置，将生成的 PCI 设备给 6wind 使用，网卡信息如下：</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># ip link show</span>
+<span class="m">1</span>: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span class="m">65536</span> qdisc noqueue state UNKNOWN mode DEFAULT qlen <span class="m">1</span>
+    link/loopback <span class="m">00</span>:00:00:00:00:00 brd <span class="m">00</span>:00:00:00:00:00
+<span class="m">2</span>: ens20f0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc mq state UP mode DEFAULT qlen <span class="m">1000</span>
+    link/ether d8:c4:97:0a:39:57 brd ff:ff:ff:ff:ff:ff
+<span class="m">3</span>: ens20f1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc mq state UP mode DEFAULT qlen <span class="m">1000</span>
+    link/ether d8:c4:97:0a:39:58 brd ff:ff:ff:ff:ff:ff
+<span class="m">4</span>: ens10f0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc mq state UP mode DEFAULT qlen <span class="m">1000</span>
+    link/ether <span class="m">90</span>:e2:ba:f7:53:10 brd ff:ff:ff:ff:ff:ff
+<span class="m">5</span>: ens10f1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc mq state UP mode DEFAULT qlen <span class="m">1000</span>
+    link/ether <span class="m">90</span>:e2:ba:f7:53:11 brd ff:ff:ff:ff:ff:ff
+    vf <span class="m">0</span> MAC <span class="m">00</span>:00:00:00:00:00, spoof checking on, link-state auto, trust off
+    vf <span class="m">1</span> MAC <span class="m">00</span>:00:00:00:00:00, spoof checking on, link-state auto, trust off
+
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># ip link set ens10f1 vf 0 mac 02:09:c0:cc:0f:8b</span>
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># ip link set ens10f1 vf 1 mac 02:09:c0:48:95:d2</span>
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># ip link show ens10f1</span>
+<span class="m">5</span>: ens10f1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc mq state UP mode DEFAULT qlen <span class="m">1000</span>
+    link/ether <span class="m">90</span>:e2:ba:f7:53:11 brd ff:ff:ff:ff:ff:ff
+    vf <span class="m">0</span> MAC <span class="m">02</span>:09:c0:cc:0f:8b, spoof checking on, link-state auto, trust off
+    vf <span class="m">1</span> MAC <span class="m">02</span>:09:c0:48:95:d2, spoof checking on, link-state auto, trust off
+</pre></div>
+
+
+<ol>
+<li>查看 ens10f1 网卡中断绑定信息：</li>
+</ol>
+<div class="highlight"><pre><span></span>[root@localhost ~]# cat /proc/interrupts | grep ens10f1
+ 239:          0     117768          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0    2527729          0          0          0      76586          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1-TxRx-0
+ 240:          0       2071          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0      41424          0          0          0       1445          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1-TxRx-1
+ 241:          0       2473          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0      45597          0          0          0       1599          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1-TxRx-2
+ 242:          0       2722          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0      51584          0          0          0       1858          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1-TxRx-3
+ 243:          0        106          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0        325          0          0          0         64          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0  IR-PCI-MSI-edge      ens10f1
+</pre></div>
+
+
+<p>第一列为中断号，查看中断绑定的 cpu 信息如下：</p>
+<div class="highlight"><pre><span></span>[root@localhost ~]# cat /proc/irq/239/smp_affinity_list 
+36
+[root@localhost ~]# cat /proc/irq/240/smp_affinity_list 
+37
+[root@localhost ~]# cat /proc/irq/241/smp_affinity_list 
+38
+[root@localhost ~]# cat /proc/irq/242/smp_affinity_list 
+39
+[root@localhost ~]# cat /proc/irq/243/smp_affinity_list 
+40
+</pre></div>
+
+
+<h4>3.2. 配置 hugepages</h4>
+<ol>
+<li>根据分配给虚拟机的内存大小配置满足需要的 hugepages，这里我们给 6wind 分配了 6G 内存。
+则HugePages_Free * Hugepagesize &gt;= 6wind内存 KB 大小。</li>
+</ol>
+<div class="highlight"><pre><span></span>mount -t hugetlbfs hugetlbfs /dev/hugepages
+sysctl vm.nr_hugepages=4096
+</pre></div>
+
+
+<ol>
+<li>6wind hugepages 配置：</li>
+</ol>
+<div class="highlight"><pre><span></span>  &lt;memoryBacking&gt;
+    &lt;hugepages/&gt;
+  &lt;/memoryBacking&gt;
+</pre></div>
+
+
+<p>开启虚拟机，查看当前 hugepages:</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># cat /proc/meminfo | grep Huge</span>
+AnonHugePages:     <span class="m">75776</span> kB
+HugePages_Total:    <span class="m">4096</span>
+HugePages_Free:     <span class="m">1024</span>
+HugePages_Rsvd:        <span class="m">0</span>
+HugePages_Surp:        <span class="m">0</span>
+Hugepagesize:       <span class="m">2048</span> kB
+</pre></div>
+
+
+<h3>四、测试</h3>
+<p>测试过程见：Pktgen-DPDK 网络性能测试</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

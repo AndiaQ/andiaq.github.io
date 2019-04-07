@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+    <meta name="author" content="Yuwei Wang" />
+    <meta name="description" content="" />
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:type" content="blog"/>
+<meta property="og:title" content="Andia"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash;     Category OpenStack
+</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+
+
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/posts/2016/rabbitmq-code-snippets.html#rabbitmq-code-snippets">rabbitmq code snippets</a></h2>
+    <p>
+          Posted on 2016-10-11 12:00 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>RabbitMQ是一个支持多种通信协议的消息通信中间件，其核心原理即：接收和发送消息，是AMQP的典型应用。以下分模块列出与之相关的demo。</p>
+<h3>一、Hello World</h3>
+<p>以下实例实现了发送消息到一个已知队列中，并从该队列中接收消息。 send.py会发送一个消息到队列中，但是首先需要建立到RabbitMQ服务器的连接。</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">pika</span>
+
+<span class="n">connection</span> <span class="o">=</span> <span class="n">pika</span><span class="o">.</span><span class="n">BlockingConnection</span><span class="p">(</span><span class="n">pika</span><span class="o">.</span><span class="n">ConnectionParameters</span><span class="p">(</span>
+        <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">5672</span><span class="p">))</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">()</span>                       <span class="c1">#建立一个到RabbitMQ服务器的连接</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>                 <span class="c1">#申明一个队列，消息将被发送到这个队列中</span>
+
+<span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>                   <span class="c1">#exchange=&#39;&#39;表示使用默认的交换机，由该默认交换机来指定某条消息需要投递</span>
+<span class="c1">#到哪个队列，routing_key指定队列的名称</span>
+                      <span class="n">routing_key</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span>
+                      <span class="n">body</span><span class="o">=</span><span class="s1">&#39;Hello …</span></pre></div>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/posts/2016/rabbitmq-code-snippets.html#rabbitmq-code-snippets">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/posts/2016/qemu-guest-agent.html#qemu-guest-agent">qemu-guest-agent</a></h2>
+    <p>
+          Posted on 2016-10-09 14:14 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h3>一、背景</h3>
+<p>最近在OpenStack环境中分析给虚拟机打快照的过程。发现OpenStack默认打快照的方式是cold snapshot，在打快照的过程中，要么会把虚拟机关机（save状态），要么会将实例的文件系统静默。具体的情况下次解析。此文主要分析rbd做后端存储时使用qemu-guest-agent来静默文件系统。</p>
+<h3>二、简介</h3>
+<p>在KVM系统中，qemu-guest-agent（即qga）是一个运行在虚拟机内部的常驻进程。其功能类似vmware-tools，即实现宿主机和虚拟机的通信，这种方式不依赖于网络，而是依赖于virtio-serial（默认首选方式）或者isa-serial。OpenStack中，QEMU则提供了串口设备的模拟及数据交换的channel，最终呈现出来的是一个虚拟机内部的串口设备和宿主机上对应该虚拟机的unix socket文件。qga则通过读写串口设备和socket进行通信，通信协议为QMP（QEMU Machine Protocol）。QMP是一种基于json格式的传输协议，我们能利用它与从外部控制QEMU虚拟机实例，例如查询，更改虚拟机的状态，获取设备信息等等。</p>
+<h3>三、使用方式</h3>
+<h4>3.1 前提条件</h4>
+<p>1） 使用ceph做后端存储时，为了实现Nova、Glance、Cinder统一存储快速创建虚拟机，必须使用raw格式的镜像，如果使用qcow2会导致创建虚拟机过程很慢（Nova会先下载镜像后台转成raw格式再启动 …</p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/posts/2016/qemu-guest-agent.html#qemu-guest-agent">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/posts/2016/make-rpm-package.html#make-rpm-package">make rpm package</a></h2>
+    <p>
+          Posted on 2016-10-07 14:48 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。</p>
+<h3>一、简介</h3>
+<p>RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。</p>
+<h3>二、RPM常用命令</h3>
+<p>常用命令组合：</p>
+<div class="highlight"><pre><span></span>-ivh  # 安装显示安装进度 --install--verbose--hash
+-Uvh  # 升级软件包 --Update;
+-qpl  # 列出RPM软件包内的文件信息 [Query Package list];
+-qpi  # 列出RPM软件包的描述信息 [Query Package install package(s)];
+-qf   # 查找指定文件属于哪个RPM软件包 [Query File];
+-Va   # 校验所有的RPM软件包，查找丢失的文件 [View Lost];
+-e    # 删除包  
+</pre></div>
+
+
+<p>更多命令可以通过 …</p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/posts/2016/make-rpm-package.html#make-rpm-package">    Continue reading
+</a>
+  </div>
+</article>
+
+  <div class="pagination">
+    <a class="btn float-right" href="https://andiaq.github.io/category/openstack.html">
+          Newer Posts
+ <i class="fa fa-angle-right"></i>
+    </a>
+  </div>
+
+
+
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

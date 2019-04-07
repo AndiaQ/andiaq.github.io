@@ -46,8 +46,7 @@
 <meta property="og:url" content="https://andiaq.github.io"/>
 <meta property="og:image" content="/images/head.jpg">
 
-  <title>Andia &ndash;     Category OpenStack
-</title>
+  <title>Andia</title>
 
 </head>
 <body>
@@ -99,38 +98,6 @@
 
 <article>
   <header>
-    <h2><a href="https://andiaq.github.io/posts/2017/create-snapshots.html#create-snapshots">OpenStack环境虚拟机打快照分析</a></h2>
-    <p>
-          Posted on 2017-03-17 10:29 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
-
-
-
-    </p>
-  </header>
-  <div>
-      <p>本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。</p>
-<p>用法：</p>
-<div class="highlight"><pre><span></span>usage: nova image-create <span class="o">[</span>--metadata &lt;<span class="nv">key</span><span class="o">=</span>value&gt;<span class="o">]</span>
-                         <span class="o">[</span>--show<span class="o">]</span> <span class="o">[</span>--poll<span class="o">]</span>
-                         &lt;server&gt; &lt;name&gt;
-</pre></div>
-
-
-<p><strong>从volume启动的虚拟机，可以对[ACTIVE, STOPPED, SUSPEND]虚拟机进行快照操作。</strong></p>
-<ol>
-<li>
-<p>nova-api接收到请求之后，首先会从nova数据库中获取instance_system_metadata表中image metadata properties.删除不能被继承的properties(通过<code>non_inheritable_image_properties</code>参数配置)。在获取虚拟机的image properties之后，nova-api只会先生成一个类似只有image properties（比如block device mapping, kernel and ramdisk IDs)）的bucket,实际大小设置为0。</p>
-</li>
-<li>
-<p>如果虚拟机处于ACTIVE状态，会通过发送异步RPC调用nova-compute，然后调用libvirt对虚拟机执行quiesce操作来静默文件系统，禁止磁盘继续读写，从而保证磁盘快照的一致性（执行该操作需要安装qemu-guest-agent）。在quiesce之后，获取虚拟机上挂载的所有磁盘，包括根磁盘，调用cinder-api依次对这些volume卷进行打快照 …</p></li></ol>
-        <br>
-        <a class="btn" href="https://andiaq.github.io/posts/2017/create-snapshots.html#create-snapshots">    Continue reading
-</a>
-  </div>
-  <hr />
-</article>
-<article>
-  <header>
     <h2><a href="https://andiaq.github.io/posts/2017/ha-az.html#ha-az">Availability Zones 及 Host Aggregate</a></h2>
     <p>
           Posted on 2017-03-13 18:30 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
@@ -147,6 +114,99 @@
 <p><code>Host Aggregates</code> 是在 <code>Availability Zones</code> 的基础上更进一步地进行逻辑的分组和隔离。例如我们可以根据不同的 computes 节点的物理硬件配置将具有相同共性的物理资源规划在同一 <code>Host Aggregate</code> 之下，或者根据用户的具体需求将几个 computes …</p>
         <br>
         <a class="btn" href="https://andiaq.github.io/posts/2017/ha-az.html#ha-az">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/posts/2017/linux-cpu-architecture.html#linux-cpu-architecture">linux 服务器架构</a></h2>
+    <p>
+          Posted on 2017-03-13 18:00 in <a href="https://andiaq.github.io/category/linux.html">Linux</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p><strong>商用服务器的系统架构大致可以分为三类：</strong>
+<code>SMP</code> <code>NUMA</code> <code>MMP</code></p>
+<h2>SMP</h2>
+<p>SMP即<code>Symmetric Multi-Processor</code>，对称多处理器架构。
+所谓对称多处理器架构，是指服务器中的多个CPU对称工作，无主次和从属关系。各CPU共享相同的物理内存，每个CPU访问内存中的任何地址所需的时间都是相同的，因此SMP也被称为一致存储器访问结构。对SMP服务器进行扩展的方式包括：增加内存； 使用更快的CPU；增加CPU数量；扩充I/O(槽口数和总线数)；以及添加更多的外部设备(通常是磁盘存储)。</p>
+<p>SMP服务器的主要特征是共享，系统中的所有资源(CPU、内存、I/O等)都是共享的。也正是由于这种特征，导致了SMP服务器的主要问题，那就是它得扩展能力非常有限。</p>
+<p>对于SMP服务器而言，每一个共享的环节都可能造成SMP服务器扩展时的瓶颈，而最受限制的则是内存。由于每个CPU必须通过相同的内存总线访问相同的内存资源，因此随着CPU数量的增加，内存访问冲突将迅速增加，最终会造成CPU资源的浪费，使 CPU性能的有效性大大降低。实验证明，SMP服务器CPU利用率最好的情况是2至4个CPU。 </p>
+<h2>NUMA</h2>
+<p>NUMA即<code>Non-Uniform Memory Access …</code></p>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/posts/2017/linux-cpu-architecture.html#linux-cpu-architecture">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="https://andiaq.github.io/posts/2016/git-usage.html#git-usage">Git常用操作</a></h2>
+    <p>
+          Posted on 2016-12-11 20:24 in <a href="https://andiaq.github.io/category/tools.html">Tools</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <p>对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。</p>
+<h2>git log</h2>
+<ul>
+<li>显示所有历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log</span>
+</pre></div>
+
+
+<ul>
+<li>显示最近N条历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log -N </span>
+</pre></div>
+
+
+<ul>
+<li>显示详细历史记录，包括代码改动内容</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log -p </span>
+</pre></div>
+
+
+<ul>
+<li>只显示一行，哈希值和提交说明</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=oneline</span>
+</pre></div>
+
+
+<ul>
+<li>显示提交历史记录的简单图形</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># glog</span>
+<span class="c1"># git log --pretty=format:&quot;%H %s&quot; --graph</span>
+</pre></div>
+
+
+<ul>
+<li>自定义格式显示历史记录</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># git log --pretty=format:&quot; &quot;</span>
+</pre></div>
+
+
+<p>常用的格式占位符写法及其代表的意义如下：</p>
+<div class="highlight"><pre><span></span>选项   说明
+%H  提交对象（commit）的完整哈希字串
+%h  提交对象的简短哈希字串
+%T  树对象（tree）的完整哈希字串 …</pre></div>
+        <br>
+        <a class="btn" href="https://andiaq.github.io/posts/2016/git-usage.html#git-usage">    Continue reading
 </a>
   </div>
   <hr />
@@ -193,37 +253,16 @@
         <a class="btn" href="https://andiaq.github.io/posts/2016/python-eventlet.html#python-eventlet">    Continue reading
 </a>
   </div>
-  <hr />
-</article>
-<article>
-  <header>
-    <h2><a href="https://andiaq.github.io/posts/2016/periodic-task.html#periodic-task">Nova中定时任务解析</a></h2>
-    <p>
-          Posted on 2016-11-02 23:00 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
-
-
-
-    </p>
-  </header>
-  <div>
-      <h3>一、periodic_task</h3>
-<h4>1.1 what is periodic_task</h4>
-<p>在Nova中，nova-compute, nova-scheduler, nova-cell, network都有自己的周期性任务，通过nova的代码结构可以发现，它们都统一由各自模块下的manager.py中periodic_task管理。其中，periodic_task首先实现了一个装饰器，所有的周期性任务都是通过添加该装饰器实现，而周期性任务的启动伴随着每个服务的start也同步开始。</p>
-<p>首先装饰器实现如下(<code>oslo_service/periodic_task.py</code>)，我们阅读后会发现，该方法主要定义了周期性任务（为True），以及周期性任务的名称，间隔时间（默认间隔时间是60s），运行方式等。实际上，此方法也只是定义了上述内容，添加了几个属性，并没有做其他的什么操作。由这些参数作为周期性任务的标记，保存到kwargs。</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">periodic_task</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>          <span class="c1"># f为被装饰的函数</span>
-        <span class="c1"># Test for old style invocation</span>
-        <span class="k">if …</span></pre></div>
-        <br>
-        <a class="btn" href="https://andiaq.github.io/posts/2016/periodic-task.html#periodic-task">    Continue reading
-</a>
-  </div>
 </article>
 
   <div class="pagination">
-    <a class="btn float-left" href="https://andiaq.github.io/category/openstack/page/2/">
+    <a class="btn float-left" href="https://andiaq.github.io/page/4/">
       <i class="fa fa-angle-left"></i>     Older Posts
 
+    </a>
+    <a class="btn float-right" href="https://andiaq.github.io/page/2/">
+          Newer Posts
+ <i class="fa fa-angle-right"></i>
     </a>
   </div>
 

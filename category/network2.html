@@ -46,7 +46,8 @@
 <meta property="og:url" content="https://andiaq.github.io"/>
 <meta property="og:image" content="/images/head.jpg">
 
-  <title>Andia</title>
+  <title>Andia &ndash;     Category network
+</title>
 
 </head>
 <body>
@@ -202,46 +203,10 @@
         <a class="btn" href="https://andiaq.github.io/articles/6wind-pci-passthrough.html#6wind-pci-passthrough">    Continue reading
 </a>
   </div>
-  <hr />
-</article>
-<article>
-  <header>
-    <h2><a href="https://andiaq.github.io/articles/create-snapshots.html#create-snapshots">OpenStack环境虚拟机打快照分析</a></h2>
-    <p>
-          Posted on 2017-03-17(星期五) 10:29 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
-
-
-
-    </p>
-  </header>
-  <div>
-      <p>本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。</p>
-<p>用法：</p>
-<div class="highlight"><pre><span></span>usage: nova image-create <span class="o">[</span>--metadata &lt;<span class="nv">key</span><span class="o">=</span>value&gt;<span class="o">]</span>
-                         <span class="o">[</span>--show<span class="o">]</span> <span class="o">[</span>--poll<span class="o">]</span>
-                         &lt;server&gt; &lt;name&gt;
-</pre></div>
-
-
-<p><strong>从volume启动的虚拟机，可以对[ACTIVE, STOPPED, SUSPEND]虚拟机进行快照操作。</strong></p>
-<ol>
-<li>
-<p>nova-api接收到请求之后，首先会从nova数据库中获取instance_system_metadata表中image metadata properties.删除不能被继承的properties(通过<code>non_inheritable_image_properties</code>参数配置)。在获取虚拟机的image properties之后，nova-api只会先生成一个类似只有image properties（比如block device mapping, kernel and ramdisk IDs)）的bucket,实际大小设置为0。</p>
-</li>
-<li>
-<p>如果虚拟机处于ACTIVE状态，会通过发送异步RPC调用nova-compute，然后调用libvirt对虚拟机执行quiesce操作来静默文件系统，禁止磁盘继续读写，从而保证磁盘快照的一致性（执行该操作需要安装qemu-guest-agent）。在quiesce之后，获取虚拟机上挂载的所有磁盘，包括根磁盘，调用cinder-api依次对这些volume卷进行打快照 …</p></li></ol>
-        <br>
-        <a class="btn" href="https://andiaq.github.io/articles/create-snapshots.html#create-snapshots">    Continue reading
-</a>
-  </div>
 </article>
 
   <div class="pagination">
-    <a class="btn float-left" href="https://andiaq.github.io/index3.html">
-      <i class="fa fa-angle-left"></i>     Older Posts
-
-    </a>
-    <a class="btn float-right" href="https://andiaq.github.io/index.html">
+    <a class="btn float-right" href="https://andiaq.github.io/category/network.html">
           Newer Posts
  <i class="fa fa-angle-right"></i>
     </a>

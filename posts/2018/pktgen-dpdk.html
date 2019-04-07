@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。 一、环境部署 1.1 安装DPDK DPDK 可以将用户态的数据不经过内核直接转发到网卡，同样网卡数据也不经过内核直接映射到用户态内存实现加速目的。 使用 pktgen-dpdk 工具，需要先安装 DPDK 环境。下面内容以 18.05 版本的 DPDK …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="Pktgen-DPDK 网络性能测试"/>
+<meta property="og:description" content="在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。 一、环境部署 1.1 安装DPDK DPDK 可以将用户态的数据不经过内核直接转发到网卡，同样网卡数据也不经过内核直接映射到用户态内存实现加速目的。 使用 pktgen-dpdk 工具，需要先安装 DPDK 环境。下面内容以 18.05 版本的 DPDK …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/posts/2018/pktgen-dpdk.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2018-08-20 09:51:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="network"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; Pktgen-DPDK 网络性能测试</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="pktgen-dpdk">Pktgen-DPDK 网络性能测试</h1>
+    <p>
+          Posted on 2018-08-20 09:51 in <a href="https://andiaq.github.io/category/network.html">network</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。</p>
+<h2>一、环境部署</h2>
+<h3>1.1 安装DPDK</h3>
+<p>DPDK 可以将用户态的数据不经过内核直接转发到网卡，同样网卡数据也不经过内核直接映射到用户态内存实现加速目的。</p>
+<p>使用 pktgen-dpdk 工具，需要先安装 DPDK 环境。下面内容以 18.05 版本的 DPDK 为例进行简要介绍。获取安装包地址请移步：<a href="http://core.dpdk.org/download/">DPDK Download</a></p>
+<ol>
+<li>添加环境变量。这里把环境变量添加到 <code>/root/.bashrc</code>，使环境变量永久生效。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">RTE_SDK</span><span class="o">=</span>&lt;DPDKInstallDir&gt;
+<span class="nb">export</span> <span class="nv">RTE_TARGET</span><span class="o">=</span>x86_64-native-linuxapp-gcc
+</pre></div>
+
+
+<ol>
+<li>安装所需依赖包。需要注意 kernel 相关安装包版本必须要和操作系统内核版本一致，否则会出现安装失败。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="c1"># yum install gcc-c++ gcc glib-devel numactl-devel numactl-libs </span>
+<span class="c1"># yum install kernel-headers kernel-devel</span>
+</pre></div>
+
+
+<ol>
+<li>使用脚本安装 DPDK 环境。具体每一步这里不详细描述，可参考其他资料。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@vm1 ~<span class="o">]</span><span class="c1"># cd dpdk-18.05</span>
+<span class="o">[</span>root@vm1 dpdk-18.05<span class="o">]</span><span class="c1"># ./usertools/dpdk-setup.sh</span>
+
+<span class="c1"># 需执行的步骤如下</span>
+<span class="o">[</span><span class="m">15</span><span class="o">]</span> x86_64-native-linuxapp-gcc                     <span class="c1"># 下载环境</span>
+<span class="o">[</span><span class="m">18</span><span class="o">]</span> Insert IGB UIO module                          <span class="c1"># 加载igb_uio驱动</span>
+<span class="o">[</span><span class="m">21</span><span class="o">]</span> Setup hugepage mappings <span class="k">for</span> non-NUMA systems   <span class="c1"># 配置大页内存</span>
+<span class="o">[</span><span class="m">24</span><span class="o">]</span> Bind Ethernet/Crypto device to IGB UIO module  <span class="c1"># 绑定要使用DPDK的网卡</span>
+
+<span class="c1"># 查看配置信息</span>
+<span class="o">[</span><span class="m">23</span><span class="o">]</span> Display current Ethernet/Crypto device settings
+<span class="o">[</span><span class="m">29</span><span class="o">]</span> List hugepage info from /proc/meminfo
+</pre></div>
+
+
+<h3>1.2 安装 pktgen-dpdk</h3>
+<p>下面简单介绍该工具的安装步骤。获取安装包请移步：<a href="http://git.dpdk.org/apps/pktgen-dpdk">pktgen-dpdk</a>
+1. 环境编译。在编译结束之后，目录<code>app/build/pktgen</code>就是编译出来的程序。</p>
+<div class="highlight"><pre><span></span>[root@vm1 ~]# cd pktgen-dpdk
+[root@vm1 pktgen-dpdk]# make
+</pre></div>
+
+
+<ol>
+<li>在安装过程中若出现如下错误，需要给 lua 源码打 patch。
+错误信息如下：</li>
+</ol>
+<div class="highlight"><pre><span></span>No rule to make target `/root/pktgen-dpdk-pktgen-3.5.1/app/../lib/lua/src/x86_64-native-linuxapp-gcc/lib/librte_lua.a&#39;
+</pre></div>
+
+
+<p>解决办法：</p>
+<div class="highlight"><pre><span></span>[root@vm1 lua]# pwd
+/root/pktgen-dpdk/lib/lua
+[root@wangyuwei-1 lua]# patch -p0 &lt; lua-5.3.4.patch   安装补丁
+</pre></div>
+
+
+<h2>二、测试过程</h2>
+<p>学会使用一个工具最好的方式就是通过 help 查看帮助文档。这里不对使用方式进行详细说明，将只介绍在之后测试中我使用到的参数。</p>
+<h3>2.1  网卡之间互打流量</h3>
+<p>以该测试为例，对使用 pktgen-dpdk 工具先产生感性认识，比较容易理解该工具的主要功能和基本的使用方式。然后再通过编写 lua 脚本构造数据包，实现自己真正需要测试的内容和获取的信息结果。</p>
+<p><strong>环境说明：</strong></p>
+<p>使用 SRIOV 配置多个 VF 网卡，将其中的三个 VF 网卡配置给虚拟机，一个 VF 绑定可访问的 ip 地址，将另外两个 VF 绑定为使用 igb_uio 驱动。</p>
+<p>另外，使用 pktgen-dpdk 管理的网卡内核是看不到的，所以无法使用 ip command 对其进行查看或者操作。事实上，作为 traffic gen 也没有必要配置接口 ip 地址。</p>
+<ol>
+<li>测试脚本</li>
+</ol>
+<div class="highlight"><pre><span></span># ./app/build/pktgen -l 2-10 -n 4 --proc-type auto --socket-mem 1024 -- -P -m &quot;[3-4:5-6].0,[7-8:9-10].1&quot; -f themes/black-yellow.theme
+</pre></div>
+
+
+<ol>
+<li>执行结果</li>
+</ol>
+<p><img alt="image" src="../images/network/pktgen-dpdk-1.png"></p>
+<p>以上结果符合预期，Port 0 进行发包，Port 1 进行收包。这两个网卡属于同一块物理网卡的 VF ，所以万兆网卡带宽进行了均分。</p>
+<h4>2.2. 虚拟机与 NAT 网关互打流量</h4>
+<p><strong>环境说明：</strong></p>
+<ol>
+<li>在物理机 Host01 上，使用 PCI passthrough 将两个物理网卡透传给虚拟机 DPDKGEN vm1 。进入虚拟机，将两个物理网卡配置成 DPDK 驱动。</li>
+<li>在物理机 Host02 上，使用 PCI passthrough 将两个物理网卡透传给虚拟机 6wind，进行如下配置。</li>
+</ol>
+<div class="highlight"><pre><span></span># 1. 配置ip地址
+6wind:
+    ens3: 10.0.0.1
+    ens7: 20.0.0.1
+
+# 2. 配置arp，将发包机指定的目的ip地址与dpdkgen p1 mac地址进行绑定
+root@router:~# arp -n
+Address                  HWtype  HWaddress           Flags Mask            Iface
+20.0.0.2                 ether   90:e2:ba:f7:58:59   CM                    eth1
+</pre></div>
+
+
+<p>测试拓扑图：</p>
+<p><img alt="image" src="../images/network/pktgen-dpdk-2.png"></p>
+<ol>
+<li>测试脚本</li>
+</ol>
+<div class="highlight"><pre><span></span># ./app/build/pktgen -l 2-10 -n 4 --proc-type auto --socket-mem 1024 -- -P -m &quot;[3-4:5-6].0,[7-8,9-10].1&quot;
+
+Pktgen:/&gt; set 0 src ip 10.0.0.2/24              # 虚拟一个与6wind ens3 同网段的ip地址
+Pktgen:/&gt; set 0 src mac 90:e2:ba:f7:58:58       # dpdkgen p0 mac 地址
+Pktgen:/&gt; set 0 dst ip 20.0.0.2                 # 虚拟一个与6wind ens7 同网段的ip地址，注意做arp配置
+Pktgen:/&gt; set 0 dst mac 90:e2:ba:f7:53:10       # 6wind ens3 mac 地址
+Pktgen:/&gt; set 0 proto udp                       # 配置64字节udp数据包
+Pktgen:/&gt; set 0 size 64
+Pktgen:/&gt; start 0
+</pre></div>
+
+
+<ol>
+<li>执行结果</li>
+</ol>
+<p>6wind cpu 利用率：</p>
+<div class="highlight"><pre><span></span>root@router:~# fp-cpu-usage 
+Fast path CPU usage:
+cpu: %busy     cycles   cycles/packet   cycles/ic pkt
+  1:   &lt;1%     156790            8537               0
+  2:  100%  458889164             209               0
+  3:   &lt;1%      75228            5761               0
+average cycles/packets received from NIC: 209 (458989044/2186254)
+</pre></div>
+
+
+<p>dpdkgen结果如下：</p>
+<p><img alt="image" src="../images/network/pktgen-dpdk-2.png"></p>
+<p>从以上结果可以看到，在使用 6wind 一个 core 情况下，64 字节线速发包能力为 9914Mbps ，包转发性能为 14Mpps，接近物理网卡极限。</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>
