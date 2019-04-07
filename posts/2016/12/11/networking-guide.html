@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="该系列文章基本翻译于社区的Networking Guide，个人理解，原创翻译，仅供学习参考。 一、网络绪论 OpenStack 网络服务提供了 API 接口，用户可以建立和自定义网络的拓扑结构并且访问云网络。这个网络服务的项目代码是 Neutron，OpenStack 网络服务操作着虚拟网络设施的创建和管理，这些虚拟网络设施包括网络，交换机，子网，以及为 openstack 计算服务（nova）所管理的设备提供的路由，还包括一些高级服务比如防火墙，虚拟专用网络 VPN 等等。 OpenStack 网络是由 neutron-server 组件，持久化存储的数据库，以及很多 plugin,agent 组成的。这些 agent 提供了一些其他的服务，比如与原生的 linux 网络机制，外部设备，或者 SDN controller 进行交互等等。 OpenStack 网络是完全独立的服务 …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="OpenStack Networking Guide"/>
+<meta property="og:description" content="该系列文章基本翻译于社区的Networking Guide，个人理解，原创翻译，仅供学习参考。 一、网络绪论 OpenStack 网络服务提供了 API 接口，用户可以建立和自定义网络的拓扑结构并且访问云网络。这个网络服务的项目代码是 Neutron，OpenStack 网络服务操作着虚拟网络设施的创建和管理，这些虚拟网络设施包括网络，交换机，子网，以及为 openstack 计算服务（nova）所管理的设备提供的路由，还包括一些高级服务比如防火墙，虚拟专用网络 VPN 等等。 OpenStack 网络是由 neutron-server 组件，持久化存储的数据库，以及很多 plugin,agent 组成的。这些 agent 提供了一些其他的服务，比如与原生的 linux 网络机制，外部设备，或者 SDN controller 进行交互等等。 OpenStack 网络是完全独立的服务 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/posts/2016/12/11/networking-guide.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-12-11 20:24:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="OpenStack"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; OpenStack Networking Guide</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="networking-guide">OpenStack Networking Guide</h1>
+    <p>
+          Posted on 2016-12-11 20:24 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>该系列文章基本翻译于社区的Networking Guide，个人理解，原创翻译，仅供学习参考。</p>
+<h3>一、网络绪论</h3>
+<p>OpenStack 网络服务提供了 API 接口，用户可以建立和自定义网络的拓扑结构并且访问云网络。这个网络服务的项目代码是 Neutron，OpenStack 网络服务操作着虚拟网络设施的创建和管理，这些虚拟网络设施包括网络，交换机，子网，以及为 openstack 计算服务（nova）所管理的设备提供的路由，还包括一些高级服务比如防火墙，虚拟专用网络 VPN 等等。</p>
+<p>OpenStack 网络是由 neutron-server 组件，持久化存储的数据库，以及很多 plugin,agent 组成的。这些 agent 提供了一些其他的服务，比如与原生的 linux 网络机制，外部设备，或者 SDN controller 进行交互等等。</p>
+<p>OpenStack 网络是完全独立的服务，可以部署到一个专用的节点。如果我们的部署使用了一个控制节点来运行核心的计算组件（NOVA），那么我们可以把网络服务部署到另一个专用节点上。</p>
+<p>OpenStack 网络已与多种OpenStack组件整合：</p>
+<ul>
+<li>身份认证服务(Keystone)：进行用户验证和授权API请求。</li>
+<li>计算服务(Nova)：为虚拟机提供虚拟网卡。</li>
+<li>控制面板(horizon)：管理员和租户可以通过一个基于web的图形界面来创建和管理网络。</li>
+</ul>
+<h4>1.1 网络基础</h4>
+<p><strong>以太网</strong></p>
+<p>以太网是一种具有IEEE802.3标准特性的网络协议。<strong>大多数的物理网卡都是通过以太网来通信。</strong></p>
+<p>在OSI模型的网络协议中，以太网在第二层，也被称为数据链路层。说到以太网，我们常听到以下几种词语，比如局域网，二层网，L2，链路层和数据链路层等等。</p>
+<p>在以太网中，连接到网络中的主机通过<strong>交换帧</strong>来通信。以太网中的每一个主机唯一地被MAC地址所标识。在一个 OpenStack 环境中，每个虚拟机实例都有一个独一无二的 MAC 地址，不同于计算节点上的 MAC 地址。一个 MAC 地址有 48bits，是十六进制字符串的典型代表，比如<code>08:00:27:b9:88:74</code>。MAC地址是由制造商通过硬编码到网卡上，但是现代的网卡允许你通过程序来改变MAC地址。在linux中，你可以使用ip命令来获取网卡的MAC地址。</p>
+<div class="highlight"><pre><span></span><span class="c1"># ip link show eth0</span>
+<span class="m">2</span>: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc pfifo_fast state UP mode DEFAULT qlen <span class="m">1000</span>
+    link/ether fa:16:3e:5a:34:50 brd ff:ff:ff:ff:ff:ff
+</pre></div>
+
+
+<p>从概念上讲，你可以把以太网想象成一个每个网络上的主键都可以连接的单总线。在早期实现中，一个以太网包含了一条同轴电缆，主机可以因此连接网络。而现代的以太网络不使用这个方法，取而代之的是，每个网络主机都可以直接连到一个被称为交换机的网络设备。这个概念模型非常的有用。在OpenStack网络拓扑中，以太网通常被描述得类似是一条单总线。你会经常听到一个以太网被称为二层网络段。</p>
+<p>在以太网中，网络中的每个主机都可以向其他主机直接发送帧。以太网也支持广播，因此一个主机可以通过发送一个特殊的MAC地址<code>ff:ff:ff:ff:ff:ff</code>，通过这个地址发送一个数据帧到网络中的每一台主机。ARP和DHCP是使用以太网广播的两个著名的协议，你可能也会听到一个以太网络被称为一个广播域。</p>
+<p>当一个网卡接收到一个以太网帧，默认情况下网卡会检查目的 MAC 地址是否与网卡（或者广播）的地址相匹配，如果 MAC 地址不匹配，以太网帧就会被丢掉。对计算节点来说，这一行为是不被容忍的，因为这个帧可能会被用于某个实例。NIC可以被配置为混杂模式，在混杂模式中，NIC 会把所有的以太网帧传到操作系统，即使MAC地址并不匹配。计算节点也应该经常为混杂模式配置合适的 NICs。</p>
+<p>正如上面所提到的，现代以太网络使用交换机来使网络中的主机互相连接。交换机是一个拥有很多端口的网络硬件盒，将以太网帧从一个已连接的主机发送到另一台主机。当主机第一次在交换机上发送以太网帧时，交换机并不知道是哪一个MAC地址与这个端口相对应。如果一个以太网帧发往的是一个未知的MAC地址，交换机会将帧广播到所有的端口。端口通过观察流量来知道哪个MAC地址对应于哪个端口。一旦知道端口对应的MAC地址，它就将以太网帧发送到正确的端口而不是采取广播的方式。交换机在一个转发表或者转发信息库中保存了MAC地址到交换机端口的映射关系。多个交换机呈菊链状地连接在一起，交换机和主机的连接后的表现得像是单一的网络。</p>
+<p><strong>VLAN</strong></p>
+<p>VLAN 是一个可以使单个交换机表现得像是多个独立的交换机的网络技术。主要特点在于，连接到同一个交换机上但不是同一个局域网的两个主机观察不到对方的流量。OpenStack能够充分利用虚拟局域网隔离不同租户网络的优势，即使租户碰巧在同一个宿主机上运行着多个虚拟机实例。每一个虚拟局域网都被在1到4095中分配了一个ID。我们说“VLAN 15”指的就是ID号为15的虚拟局域网。</p>
+<p>为了理解VLANs如何工作，让我们来思考在传统IT环境中VLAN的应用，所谓的传统IT环境，即多台物理主机被连接到一台物理交换机，不涉及到虚拟化技术。设想这样一种方案，即你需要三个独立的网络，但是你只有一个物理交换机。网络管理员可能会选择三个VLAN ID，比如10,11,12，再配置交换机将交换机端口与VLAN ID相连接。比如交换机2号端口可能会与10号的VLAN相连，交换机3号端口可能会与11号的VLAN相连等等。当一个交换机端口为一个特殊的VLAN所配置，则这个端口被称为访问端口。交换机负责的就是确保网络流量在VLANs中被隔离。</p>
+<p>现在来考虑这样一种方案：第一个交换机的所有端口都被占用，因此机构购买了第二个交换机并将其与第一个交换机相连，以扩展可用的端口的数量。第二个交换机同样被配置成支持ID号为10,11,12的VLAN。现在设想与第一个交换机上被配置成10号VLAN的端口相连的主机A，欲打算向与第二个交换机上被配置成10号VLAN的端口相连的主机B发送一个以太网帧，当第一个交换机转发一个以太网帧到第二个交换机时，它必须表明这个帧与10号VLAN相关。</p>
+<p>如果两个交换机被连接到了一起，配置好了VLAN，则被用来连接两个交换机的端口必须被配置成允许来自任何VLAN的以太网帧都可以被转发到其他的交换机。另外，发送方交换机必须用VLAN号来标记每个以太网帧，因此接收方的交换机便可以确保只有VLAN匹配的主机才能接受帧。</p>
+<p>当一个交换机端口被配置成可以传输来自所有VLANs的以太网帧，并将它们用VLAN号做了标记，这种端口被称为传输端口。IEEE802.1Q是一种描述了当使用传输端口时，VLAN标记是如何被编码到以太网帧的网络协议。</p>
+<p>注意，如果你在你的物理交换机上使用VLANs来实现你的OpenStack云中的租户隔离，你就必须保证你所有的交换机端口都被配置成传输端口。</p>
+<p>在你当前网络基础设施中选择一个未被使用的VLAN地址范围是非常重要的。比如，如果你估计你的云必须最大可以支持100个项目，选择一个超出这个最大值的VLAN范围，比如200-299号的VLAN。处理租户网络的OpenStack和所有的物理网络基础设施都必须支持这个VLAN范围。</p>
+<p>传输端口可以被用来连接不同的交换机。每个传输端口使用一个标记来表明哪些VLAN被使用，这便确保了在同一个VLAN的交换机可以相互通信。</p>
+<p><strong>Subnets and ARP</strong></p>
+<p>网卡使用MAC地址找到网络主机，而TCP/IP层使用的是IP地址。地址解析协议ARP通过将IP地址转换成MAC地址在以太网和IP层之间建起了桥。 IP地址被分为两个部分：网络号和主机号。如果两个主机有相同的网络号就说明他们在同一个子网上。回想之前所说如果两个主机在同一个子网上，它们便可以直接在以太网上通信。ARP假定在同一个子网的所有的机器都在同一个本地局域网。网络管理员必须关系给主机分配IP地址和子网掩码，确保在同一个子网上的任何两台主机都在同一个本地局域网，否则ARP不会正常工作。</p>
+<p>为了计算一个IP地址的网络号，你必须知道与这个IP地址相关的子网掩码。子网掩码表明了在一个32位的IP地址中有多少位被用来组成网络号。 表示一个子网掩码有以下两种标记法： - 点分四位 - 无分类域间路由CIDR</p>
+<p>有一个IP地址为192.168.1.5，其前24位为网络号。在点分四位标记法中，这个子网掩码可以被写成255.255.255.0。CIDR标记法包括IP地址和子网掩码，可以被写成192.168.1.5/24。</p>
+<p>【注】：一个包括多播地址或者回环地址的CIDR子网掩码不能在OpenStack环境中被使用。比如，不支持使用224.0.0.0/16或者127.0.1.0/24作为子网。</p>
+<p>有时候我们想使用一个子网，但是在这个子网上没有任何特殊的IP地址，一个常遵循的惯例就是设置主机标识符全0来指向一个子网。比如，如果一个主机的IP地址为10.10.53.24/16，我们可以说其子网为10.10.0.0/16。</p>
+<p>为了理解ARP是如何将IP地址转换成MAC地址，我们可以看以下例子。假设主机A的IP地址是192.168.1.5/24， MAC地址是fc:99:47:49:d4:a0， 想向IP地址为192.168.1.7的主机B发送一个数据包。注意两个的主机有相同的子网号，所以主机A可以直接向主机B发送数据帧。</p>
+<p>主机A第一次试图和主机B通信，但是目的MAC地址未知。主机A便向局域网发出一个ARP请求，这个请求带有如下信息的广播：</p>
+<p>To：所有主机(ff:ff:ff:ff:ff:ff)，我在寻找IP地址为192.168.1.7的主机。我的MAC地址是fc:99:47:49:d4:a0。 主机B回复如下的响应报文： To：fc:99:47:49:d4:a0，我的IP地址是192.168.1.7。我的MAC地址是54:78:1a:86:00:a5。 然后主机A便向主机B发送以太网帧。 你可以使用arping命令手动发起一个ARP请求。</p>
+<div class="highlight"><pre><span></span>➜  ~ arping -I eth0 <span class="m">172</span>.16.1.6
+ARPING <span class="m">172</span>.16.1.6 from <span class="m">172</span>.16.1.5 eth0
+Unicast reply from <span class="m">172</span>.16.1.6 <span class="o">[</span>FA:16:3E:6B:47:D8<span class="o">]</span>  <span class="m">1</span>.829ms
+Unicast reply from <span class="m">172</span>.16.1.6 <span class="o">[</span>FA:16:3E:6B:47:D8<span class="o">]</span>  <span class="m">1</span>.981ms
+Unicast reply from <span class="m">172</span>.16.1.6 <span class="o">[</span>FA:16:3E:6B:47:D8<span class="o">]</span>  <span class="m">0</span>.903ms
+Unicast reply from <span class="m">172</span>.16.1.6 <span class="o">[</span>FA:16:3E:6B:47:D8<span class="o">]</span>  <span class="m">0</span>.970ms
+Unicast reply from <span class="m">172</span>.16.1.6 <span class="o">[</span>FA:16:3E:6B:47:D8<span class="o">]</span>  <span class="m">0</span>.832ms
+^CSent <span class="m">5</span> probes <span class="o">(</span><span class="m">1</span> broadcast<span class="o">(</span>s<span class="o">))</span>
+Received <span class="m">5</span> response<span class="o">(</span>s<span class="o">)</span>
+</pre></div>
+
+
+<p>为了减少ARP请求的数量，操作系统会保留一个包含IP地址和MAC地址映射的ARP缓存。在linux机器上，你可以使用arp命令来查看ARP缓存的内容。</p>
+<div class="highlight"><pre><span></span>➜  ~ arp -n
+Address                  HWtype  HWaddress           Flags Mask            Iface
+<span class="m">172</span>.16.1.1               ether   fa:16:3e:d7:2f:5e   C                     eth0
+<span class="m">172</span>.16.1.6               ether   fa:16:3e:6b:47:d8   C                     eth0
+<span class="m">172</span>.16.1.7               ether   fa:16:3e:f9:fa:7c   C                     eth0
+<span class="m">172</span>.16.1.4               ether   fa:16:3e:f6:1a:64   C                     eth0
+</pre></div>
+
+
+<p><strong>动态主机控制协议DHCP</strong></p>
+<p>连接到网络上的主机可以使用动态主机控制协议来自动获取IP地址。由DHCP服务器分发IP地址给网络上的主机，这些主机即DHCP client。 DHCP client通过从68号端口发送UDP数据包到67号端口的255.255.255.255地址来确定DHCP server的位置。255.255.255.255是局域网的广播地址：在本地局域网的所有的主机都可以查看到发往这个地址的UDP数据包。然而，这种数据包不会被转发到其他的网络上。因此，DHCP server和DHCP client必须在一个局域网内，否则DHCP server将接收不到广播包。DHCP server通过从67号端口往client的68号端口发送一个UDP数据包作为回应。交换过程如下：
+1. 客户端发送一个discover（“我是MAC地址为08:00:27:b9:88:74的客户端，我需要一个IP地址”
+2. 服务端发送一个offer（“好的，我可以提供的IP地址是10.10.0.112”）
+3. 客户端发送一个request（“服务器10.10.0.131，我想要10.10.0.112这个IP地址”）
+4. 服务端发送一个acknowledgement（“好的，08:00:27:b9:88:74，10.10.0.112这个IP地址就是你的了。”）</p>
+<p>OpenStack需要一个三方程序Dnsmasq来实现DHCP服务器的功能，Dnsmasq写在系统日志，在这个日志里面你可以看到DHCP的请求的回复：</p>
+<div class="highlight"><pre><span></span>Apr 23 15:53:46 c100-1 dhcpd: DHCPDISCOVER from 08:00:27:b9:88:74 via eth2
+Apr 23 15:53:46 c100-1 dhcpd: DHCPOFFER on 10.10.0.112 to 08:00:27:b9:88:74 via eth2
+Apr 23 15:53:48 c100-1 dhcpd: DHCPREQUEST for 10.10.0.112 (10.10.0.131) from 08:00:27:b9:88:74 via eth2
+Apr 23 15:53:48 c100-1 dhcpd: DHCPACK on 10.10.0.112 to 08:00:27:b9:88:74 via eth2
+</pre></div>
+
+
+<p>实际OpenStack环境中，当虚拟机网络不可达时，我们可以通过检查这个日志来查看虚拟机在DHCP协议获取网络地址的哪个步骤有问题。</p>
+<p><strong>IP</strong></p>
+<p>网际协议IP指定了连接在不同局域网上的主机如何路由数据包。IP依赖的是路由器或者说是网关。一个路由器可以被认为是至少连接了两个局域网的主机，可以将一个局域网中的IP数据包转发到另一个局域网上。路由器有多个IP地址：每个IP地址用于一个网络连接。</p>
+<p>在网络协议的OSI模型中，IP在第三层，也被称为网络层。说到IP，我们也常听到三层，L3和网络层这样的词语。</p>
+<p>主机发送一个数据包给IP地址询问它的路由表来决定这个数据包应该被发送到局域网的哪个主机，路由表中保存了与主机直接相连的局域网之间的映射。</p>
+<p>在linux机器上，下面的任何一个命令都可以显示路由表：</p>
+<div class="highlight"><pre><span></span><span class="c1"># ip route show</span>
+<span class="c1"># route -n</span>
+<span class="c1"># netstat -rn </span>
+</pre></div>
+
+
+<p><strong>TCP/UDP/ICMP</strong></p>
+<p>对于在IP层网络通信的网络软件应用程序来说，他们必须使用在IP层之上的协议，这些协议占据OSI模型的第四层，也被称为传输层或者L4。协议编号的web页面由互联网号码分配局（IANA）为IP层之上的层和与它们相关的编号在维护。</p>
+<p>传输控制协议TCP是在网络应用中最常被使用的四层协议，TCP是一个面向连接的协议：它使用客户端-服务器模型（即C/S模型），在这个模型中，客户端与服务器相连接，服务器指的是可以接收连接的应用。典型基于TCP协议的应用的交互过程如下：</p>
+<ol>
+<li>客户端与服务器相连接</li>
+<li>客户端与服务器交换数据</li>
+<li>客户端或者服务器释放连接</li>
+</ol>
+<p>因为一个网络主机可能有多个基于TCP协议的应用在运行，所以TCP协议使用端口来唯一的标识这些基于TCP的应用程序。一个TCP端口与1-65535范围内的一个数字相对应，在同一时刻，一个TCP端口只能与一个主机上的一个应用程序相关联，这一规则由操作系统在严格控制。 
+TCP服务器在端口上被监听，比如，SSH服务器在22号端口被监听。对一个想与使用TCP协议的服务器连接的客户端来说，客户端必须知道服务器的IP地址和TCP端口号。</p>
+<p>TCP客户端应用程序所在的操作系统会自动的为其分配一个端口号，客户端在TCP连接释放前会一直拥有这个端口号，之后操作系统会对这个被释放的端口号进行回收，这些端口号被认为是临时端口号。</p>
+<p>互联网号码分配局（IANA）保存了大多数基于TCP服务和在端口上应用其他四层协议服务的注册端口号。注册一个端口号并不是硬性要求，但是这对避免与其他服务冲突非常的有用。欲知在OpenStack部署中被各种服务所使用的默认TCP端口号请阅读OpenStack配置参考书之Appendix B. Firewalls and default ports。</p>
+<p>编写基于TCP应用的API被称为伯克利套接字，也被称为BSD套接字，或者简称为套接字。套接字API公开面向流接口来编写TCP应用：从一个程序员的角度来看，在建立的TCP连接之上发送数据与写字节流到文件情况类似。操作系统的TCP/IP协议负责将数据流分解成IP包，操作系统同时还负责转播被丢弃的数据包，分发控制流来确保发出的数据不会超过发送方的数据缓冲区，接收方的数据缓冲区以及网络容量。最后，它还负责以正确的顺序重组数据包到接收方的数据流。因为TCP可以侦查和重发丢失的数据包，所以被称为可靠地协议。</p>
+<p>用户数据包协议（UDP）是另一种四层协议，是其他著名网络协议的基础。UDP是无连接的协议：两个基于UDP通信的应用程序在交换信息之前不用建立连接。UDP也是一种不可靠的协议，操作系统不会试图去重发或者去侦查丢失的UDP数据包，也不会保证接收端的应用程序接收UDP数据的顺序和发送的顺序相同。</p>
+<p>UDP和TCP一样，使用端口来区分在同一个系统上的不同应用程序。但是请注意，操作系统对UDP端口和TCP端口是分开处理的。比如，有一个与16543号TCP端口相关联的应用程序和有另一个独立的与16543号的UDP端口相关联的应用程序是可以实现的。</p>
+<p>和TCP一样，套接字API是编写基于UDP应用最常用的API。套接字API提供了编写UDP应用程序的面向信息的接口：程序员通过发送固定大小的消息在UDP上发送数据。如果应用程序需要重发丢失的数据包或者重新定义接收数据包的顺序，程序员就要负责在应用程序的代码中实现这个功能。</p>
+<p>动态主机控制协议（DHCP），域名解析系统（DNS），网络同步协议（NTP）和VXLAN都是在OpenStack环境中被使用的基于UDP的协议。</p>
+<p>UDP也支持一对多的通信：发送一个数据包到多个主机。应用程序可以通过设置接收端IP为广播地址255:255:255:255来广播一个UDP数据包到同一网络上的所有主机，还可以使用IP多播来发送一个UDP数据报到多个接收端。只要欲接收数据包的应用程序通过绑定一个UDP套接字到一个特殊的IP地址来加入一个多播组，而这个IP地址是合法多播组地址的其中一个。接收信息的主机可以不用在同一个局域网上作为发送方，但是介于中间的路由必须被配置成支持IP多播路由。VXLAN就是一个基于UDP协议使用IP多播的例子。</p>
+<p>网络控制报文协议（ICMP）是在IP层网络之上被用来发送控制信息的协议。比如，如果路由器的路由表中没有与目的地址相关的路由（1号ICMP，目的主机不可达），或者说如果IP数据包对路由器处理来说太（4号ICMP，需要分片但是被设置成了不分片），接收IP数据包的路由器就会发回一个ICMP差错报告报文。</p>
+<p>ping和mtr是使用ICMP的两个很实用的Linux命令行工具。</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

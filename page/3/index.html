@@ -98,7 +98,7 @@
 
 <article>
   <header>
-    <h2><a href="https://andiaq.github.io/posts/2017/ha-az.html#ha-az">Availability Zones 及 Host Aggregate</a></h2>
+    <h2><a href="https://andiaq.github.io/posts/2017/03/13/ha-az.html#ha-az">Availability Zones 及 Host Aggregate</a></h2>
     <p>
           Posted on 2017-03-13 18:30 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
 
@@ -113,14 +113,14 @@
 <p>一般对于规模较大的集群比如跨数据中心，可以根据地理位置来定义az。比如：bj，sh。或是同一数据中心的不同机房，或是在同一机房的几个相邻的机架，同样可以通过位置来定义，从而保证不同az之间具有某些特性上的冗余性，比如供电系统、网络设备等。而不影响其他的 Availability Zones 上节点运行的虚拟机，通过这种划分来提高 OpenStack 的可用性。</p>
 <p><code>Host Aggregates</code> 是在 <code>Availability Zones</code> 的基础上更进一步地进行逻辑的分组和隔离。例如我们可以根据不同的 computes 节点的物理硬件配置将具有相同共性的物理资源规划在同一 <code>Host Aggregate</code> 之下，或者根据用户的具体需求将几个 computes …</p>
         <br>
-        <a class="btn" href="https://andiaq.github.io/posts/2017/ha-az.html#ha-az">    Continue reading
+        <a class="btn" href="https://andiaq.github.io/posts/2017/03/13/ha-az.html#ha-az">    Continue reading
 </a>
   </div>
   <hr />
 </article>
 <article>
   <header>
-    <h2><a href="https://andiaq.github.io/posts/2017/linux-cpu-architecture.html#linux-cpu-architecture">linux 服务器架构</a></h2>
+    <h2><a href="https://andiaq.github.io/posts/2017/03/13/linux-cpu-architecture.html#linux-cpu-architecture">linux 服务器架构</a></h2>
     <p>
           Posted on 2017-03-13 18:00 in <a href="https://andiaq.github.io/category/linux.html">Linux</a>
 
@@ -139,14 +139,14 @@
 <h2>NUMA</h2>
 <p>NUMA即<code>Non-Uniform Memory Access …</code></p>
         <br>
-        <a class="btn" href="https://andiaq.github.io/posts/2017/linux-cpu-architecture.html#linux-cpu-architecture">    Continue reading
+        <a class="btn" href="https://andiaq.github.io/posts/2017/03/13/linux-cpu-architecture.html#linux-cpu-architecture">    Continue reading
 </a>
   </div>
   <hr />
 </article>
 <article>
   <header>
-    <h2><a href="https://andiaq.github.io/posts/2016/git-usage.html#git-usage">Git常用操作</a></h2>
+    <h2><a href="https://andiaq.github.io/posts/2016/12/11/git-usage.html#git-usage">Git常用操作</a></h2>
     <p>
           Posted on 2016-12-11 20:24 in <a href="https://andiaq.github.io/category/tools.html">Tools</a>
 
@@ -206,14 +206,14 @@
 %h  提交对象的简短哈希字串
 %T  树对象（tree）的完整哈希字串 …</pre></div>
         <br>
-        <a class="btn" href="https://andiaq.github.io/posts/2016/git-usage.html#git-usage">    Continue reading
+        <a class="btn" href="https://andiaq.github.io/posts/2016/12/11/git-usage.html#git-usage">    Continue reading
 </a>
   </div>
   <hr />
 </article>
 <article>
   <header>
-    <h2><a href="https://andiaq.github.io/posts/2016/networking-guide.html#networking-guide">OpenStack Networking Guide</a></h2>
+    <h2><a href="https://andiaq.github.io/posts/2016/12/11/networking-guide.html#networking-guide">OpenStack Networking Guide</a></h2>
     <p>
           Posted on 2016-12-11 20:24 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
 
@@ -228,14 +228,14 @@
 <p>OpenStack 网络是由 neutron-server 组件，持久化存储的数据库，以及很多 plugin,agent 组成的。这些 agent 提供了一些其他的服务，比如与原生的 linux 网络机制，外部设备，或者 SDN controller 进行交互等等。</p>
 <p>OpenStack 网络是完全独立的服务 …</p>
         <br>
-        <a class="btn" href="https://andiaq.github.io/posts/2016/networking-guide.html#networking-guide">    Continue reading
+        <a class="btn" href="https://andiaq.github.io/posts/2016/12/11/networking-guide.html#networking-guide">    Continue reading
 </a>
   </div>
   <hr />
 </article>
 <article>
   <header>
-    <h2><a href="https://andiaq.github.io/posts/2016/python-eventlet.html#python-eventlet">python eventlet及其在OpenStack中的应用</a></h2>
+    <h2><a href="https://andiaq.github.io/posts/2016/11/16/python-eventlet.html#python-eventlet">python eventlet及其在OpenStack中的应用</a></h2>
     <p>
           Posted on 2016-11-16 17:34 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
 
@@ -250,7 +250,7 @@
 <p>协程是一种运行在线程中的执行单位，同一个线程中可以同时运行多个协程，注意：该同时运行并不是真正意义上的并行，同时拥有CPU时间片的只有一个当前协程，其它的协程处于挂起状态。不要觉得这样”协程”就没有意义，因为有另一类协程，当前需要的不是CPU而是IO。众所周知，CPU是很快的，而IO很慢，所以当一些协程都在挂起等待IO的时候，一些协程则在用CPU，在同一个线程中跑多个协程的就可以更充分地利用硬件资源，极大的提高服务的响应能力。不同于线程和进程由内核来调度并分配时间片，协程需要在代码层显式地控制与转换。</p>
 <p>eventlet又将协程称为绿色线程(GreenThread)。所谓的并发，就是创建多个greenthread,并对其进行管理，以实现非阻塞式的I/O …</p>
         <br>
-        <a class="btn" href="https://andiaq.github.io/posts/2016/python-eventlet.html#python-eventlet">    Continue reading
+        <a class="btn" href="https://andiaq.github.io/posts/2016/11/16/python-eventlet.html#python-eventlet">    Continue reading
 </a>
   </div>
 </article>

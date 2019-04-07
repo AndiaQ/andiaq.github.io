@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Andia</title><link href="https://andiaq.github.io/" rel="alternate"></link><link href="https://andiaq.github.io/feeds/atom.xml" rel="self"></link><id>https://andiaq.github.io/</id><updated>2018-10-24T13:51:00+08:00</updated><subtitle>拒绝熊猫眼。</subtitle><entry><title>博文推荐</title><link href="https://andiaq.github.io/posts/2018/article-links.html" rel="alternate"></link><published>2018-10-24T13:51:00+08:00</published><updated>2018-10-24T13:51:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-10-24:/posts/2018/article-links.html</id><summary type="html">&lt;ol&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Andia</title><link href="https://andiaq.github.io/" rel="alternate"></link><link href="https://andiaq.github.io/feeds/atom.xml" rel="self"></link><id>https://andiaq.github.io/</id><updated>2018-10-24T13:51:00+08:00</updated><subtitle>拒绝熊猫眼。</subtitle><entry><title>博文推荐</title><link href="https://andiaq.github.io/posts/2018/10/24/article-links.html" rel="alternate"></link><published>2018-10-24T13:51:00+08:00</published><updated>2018-10-24T13:51:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-10-24:/posts/2018/10/24/article-links.html</id><summary type="html">&lt;ol&gt;
 &lt;li&gt;https://forum.huawei.com/enterprise/zh/thread-334207.html&lt;/li&gt;
 &lt;li&gt;https://wenku.baidu.com/view/39a6d8c1844769eae109ed46.html&lt;/li&gt;
 &lt;li&gt;https://wenku.baidu.com/view/5faaed31941ea76e59fa0419.html&lt;/li&gt;
@@ -16,7 +16,7 @@
 &lt;li&gt;https://zhuanlan.zhihu.com/p/29881248&lt;/li&gt;
 &lt;li&gt;https://zhuanlan.zhihu.com/p/29975418&lt;/li&gt;
 &lt;li&gt;https://zhuanlan.zhihu.com/p/30119950&lt;/li&gt;
-&lt;/ol&gt;</content></entry><entry><title>OVS 和 Openflow</title><link href="https://andiaq.github.io/posts/2018/ovs-openflow.html" rel="alternate"></link><published>2018-09-29T18:27:00+08:00</published><updated>2018-09-29T18:27:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-29:/posts/2018/ovs-openflow.html</id><summary type="html">&lt;p&gt;本篇文章主要介绍 OVS 以及 Openflow 在 OVS 中的应用。在理解 OVS 原理的基础上，再去学习 Openflow 能更好的掌握二者的实现机制和使用方法。&lt;/p&gt;
+&lt;/ol&gt;</content></entry><entry><title>OVS 和 Openflow</title><link href="https://andiaq.github.io/posts/2018/09/29/ovs-openflow.html" rel="alternate"></link><published>2018-09-29T18:27:00+08:00</published><updated>2018-09-29T18:27:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-29:/posts/2018/09/29/ovs-openflow.html</id><summary type="html">&lt;p&gt;本篇文章主要介绍 OVS 以及 Openflow 在 OVS 中的应用。在理解 OVS 原理的基础上，再去学习 Openflow 能更好的掌握二者的实现机制和使用方法。&lt;/p&gt;
 &lt;h3&gt;一、介绍 OpenvSwitch&lt;/h3&gt;
 &lt;p&gt;在介绍 ovs 之前先说一下另外一个虚拟交换机，即 linux kernel 中的 linux bridge。linux bridge 是一个工作在内核的二层虚拟交换机，添加到 linuxbridge 上的设备 (比如虚拟机的 tap 设备) 被设置为只接受二层数据帧并且转发所有收到的数据包到 linuxbridge 的内核模块中，在 linuxbridge 内核模块中会进行一个类似物理交换机的查 MAC 端口映射表，转发，更新 MAC 端口映射表这样的处理逻辑，从而数据包可以被转发到另一个接口或者被丢弃/广播/发往上层协议栈，由此 …&lt;/p&gt;</summary><content type="html">&lt;p&gt;本篇文章主要介绍 OVS 以及 Openflow 在 OVS 中的应用。在理解 OVS 原理的基础上，再去学习 Openflow 能更好的掌握二者的实现机制和使用方法。&lt;/p&gt;
 &lt;h3&gt;一、介绍 OpenvSwitch&lt;/h3&gt;
@@ -24,7 +24,7 @@
 &lt;p&gt;与 linuxbridge 不同的是，ovs 能支持一些高级特性比如 OpenFlow 协议, VLAN tag, QOS, ACL ,Flow 等，是一个高质量的多层虚拟交换机，具备三层交换功能，相比来说更适合 SDN，但是也因此不如 linuxbridge 简单高效易理解。&lt;/p&gt;
 &lt;p&gt;OVS 支持 OpenFlow 协议，我们就可以使用任何支持 OpenFlow 协议的控制器来对 OVS 进行远程管理，但这并不意味着 OVS 必须要有一个控制器才能工作。在不连接外部控制器情况下，OVS 作为一个二层虚拟交换机，自身也可以依靠 MAC 地址学习实现二层数据包转发功能，就像 Linuxbridge。&lt;/p&gt;
 &lt;h4&gt;1.1 OVS 核心组件及其关联关系&lt;/h4&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-openflow.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-openflow.png"&gt;&lt;/p&gt;
 &lt;p&gt;ovs 在实现中分为用户空间和内核空间两部分，用户空间主要负责实现数据交换和 Openflow 流表功能，以及一些管理工具。内核空间主要负责流表查找的快速通道。&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -308,7 +308,7 @@ listening on tap-vm3, link-type EN10MB (Ethernet), capture size 262144 bytes
 &lt;li&gt;https://opengers.github.io/openstack/openstack-base-use-openvswitch/&lt;/li&gt;
 &lt;li&gt;https://opengers.github.io/openstack/openstack-base-virtual-network-devices-bridge-and-vlan/&lt;/li&gt;
 &lt;li&gt;https://www.ibm.com/developerworks/cn/cloud/library/1401_zhaoyi_openswitch/index.html&lt;/li&gt;
-&lt;/ol&gt;</content></entry><entry><title>OpenvSwitch + VxLAN 实现</title><link href="https://andiaq.github.io/posts/2018/openvswitch-vxlan.html" rel="alternate"></link><published>2018-09-25T10:12:00+08:00</published><updated>2018-09-25T10:12:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-25:/posts/2018/openvswitch-vxlan.html</id><summary type="html">&lt;p&gt;本实验基于 OVS 构建 Overlay 的 VxLAN 网络。在实验过程中，建立对 VXLAN 的基本认识，以及了解如何建立并进行配置 VxLAN 隧道网络，从而实现相同网段和不同网段之间的通信。&lt;/p&gt;
+&lt;/ol&gt;</content></entry><entry><title>OpenvSwitch + VxLAN 实现</title><link href="https://andiaq.github.io/posts/2018/09/25/openvswitch-vxlan.html" rel="alternate"></link><published>2018-09-25T10:12:00+08:00</published><updated>2018-09-25T10:12:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-25:/posts/2018/09/25/openvswitch-vxlan.html</id><summary type="html">&lt;p&gt;本实验基于 OVS 构建 Overlay 的 VxLAN 网络。在实验过程中，建立对 VXLAN 的基本认识，以及了解如何建立并进行配置 VxLAN 隧道网络，从而实现相同网段和不同网段之间的通信。&lt;/p&gt;
 &lt;h3&gt;一、对  VxLAN 的认识&lt;/h3&gt;
 &lt;p&gt;VXLAN ( Virtual eXtensible Local Area Network ) 一种网络虚拟化技术，通过将 VM 或物理服务器发出的数据包封装在 UDP 中，并使用物理网络的 IP/MAC 作为报文头进行封装，然后在 IP 网络上传输，到达目的地后由隧道终结点解封装并将数据发送给目标虚拟机或物理服务器。&lt;/p&gt;
 &lt;h4&gt;1.1 VxLAN 封装和包格式&lt;/h4&gt;
@@ -322,7 +322,7 @@ VxLAN 是一种在现有物理网络设施中支持大规模多租户网络环�
 在原始的 Layer 2 网络包前加上 VxLAN header，然后放到 UDP 和 IP 包中。
 通过 MAC-in-UDP 封装，VxLAN 能够在 Layer 3 网络上建立起了一条 Layer 2 的隧道。&lt;/p&gt;
 &lt;p&gt;VxLAN 包的格式如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-vxlan-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-vxlan-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;如上图所示，VxLAN 引入了 8-byte VxLAN header，其中 VNI 占 24-bit。
 VxLAN 和原始的 L2 frame 被封装到 UDP 包中。&lt;/p&gt;
 &lt;p&gt;这 24-bit 的 VNI 用于标示不同的二层网段，能够支持 16777216 个 LAN。不同 VxLAN 段的虚拟机不能直接二层相互通信。&lt;/p&gt;
@@ -353,7 +353,7 @@ VxLAN 数据包是根据外层的 IP header 路由的，该 header 将两端的 
 &lt;p&gt;对于相同 VNI 的 VxLAN，属于同一个二层网络段。对于同网段主机的通信而言，报文通过查询 MAC 表进行二层转发。
 以下实验的二层网关即 tep0。&lt;/p&gt;
 &lt;p&gt;相同 VNI vm 之间互访拓扑图如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-vxlan-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-vxlan-2.png"&gt;&lt;/p&gt;
 &lt;p&gt;在两个物理机上分别配置 VNI 为1000，配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;host1 配置:
 &lt;span class="c1"&gt;# ovs-vsctl add-br br0&lt;/span&gt;
@@ -414,13 +414,13 @@ host2 配置：
 
 
 &lt;p&gt;对 vm1 (12.12.12.14) ping vm2 (12.12.12.12) 进行抓包分析，结果如下。可以清楚的看到配置的 VNI 值，以及 overlay 和 underlay ip 地址信息。&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-vxlan-3.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-vxlan-3.png"&gt;&lt;/p&gt;
 &lt;p&gt;选择使用 VxLAN 网络模式时，每个租户网络使用一个 VNI，处于一个租户下的 vm 之间可以二层互访。不同租户之间即不同 VxLAN 段不能直接二层通信，也就是说通过 VNI ID 实现租户隔离。VNI 数量和 VLAN ID 数量远远不能相比，所以使用 VxLAN 大大解决了租户 vlan 的数量限制。&lt;/p&gt;
 &lt;p&gt;实现租户隔离之后，如果再想实现租户内网络二层隔离，这时候可以再结合使用 VLAN tag，从而实现本地隔离。&lt;/p&gt;
 &lt;h4&gt;2.2 不同 VNI VM 之间的通信&lt;/h4&gt;
 &lt;p&gt;实现不同 VNI 下的跨网访问，需要配置三层网关。以下实验通过增加路由虚拟机，将配置子网网关地址到路由虚拟机上，从而实现跨网访问。&lt;/p&gt;
 &lt;p&gt;不同子网拓扑图实现如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-vxlan-4.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-vxlan-4.png"&gt;&lt;/p&gt;
 &lt;p&gt;如图所示，vm1 和 vm2 分别属于 10.10.10.0/24 网段和 12.12.12.0/24 网段，且分别属于 VNI 1000 和 VNI 2000。vm1 和 vm2 对应的三层网关分别是 vrouter 上 NIC_0 和 NIC_1 的 IP 地址。vrouter上存在到 10.10.10.0/24 网段和 12.12.12.0/24 网段的路由。此时，vm1 想与 vm2 进行通信。&lt;/p&gt;
 &lt;p&gt;host1 配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# ovs-vsctl add-port br1 vx1 -- set interface vx1 type=vxlan options:remote_ip=192.168.0.20 options:key=1000 options:dst_port=4789&lt;/span&gt;
@@ -530,7 +530,7 @@ rtt min/avg/max/mdev &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="m"&gt;
 &lt;li&gt;使用 namespace 实现&lt;/li&gt;
 &lt;li&gt;使用虚拟机，比如 vyos 或者 6wind 等自带路由，DHCP 等功能的 vrouter&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;这里如果使用虚拟机实现 vrouter, 那么绑定 floating ip 到路由器也意味着绑定 floating ip 到虚拟机。过程及原理和上述绑定 floating ip 到虚拟机类似。&lt;/p&gt;</content></entry><entry><title>OVS-DPDK QoS 实现</title><link href="https://andiaq.github.io/posts/2018/ovs-dpdk-qos.html" rel="alternate"></link><published>2018-09-04T15:16:00+08:00</published><updated>2018-09-04T15:16:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-04:/posts/2018/ovs-dpdk-qos.html</id><summary type="html">&lt;p&gt;在使用 DPDK datapath 时，可以同时设置入口流量限制和出口流量限制。这些分别称为 QoS 和速率限制。&lt;/p&gt;
+&lt;p&gt;这里如果使用虚拟机实现 vrouter, 那么绑定 floating ip 到路由器也意味着绑定 floating ip 到虚拟机。过程及原理和上述绑定 floating ip 到虚拟机类似。&lt;/p&gt;</content></entry><entry><title>OVS-DPDK QoS 实现</title><link href="https://andiaq.github.io/posts/2018/09/04/ovs-dpdk-qos.html" rel="alternate"></link><published>2018-09-04T15:16:00+08:00</published><updated>2018-09-04T15:16:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-09-04:/posts/2018/09/04/ovs-dpdk-qos.html</id><summary type="html">&lt;p&gt;在使用 DPDK datapath 时，可以同时设置入口流量限制和出口流量限制。这些分别称为 QoS 和速率限制。&lt;/p&gt;
 &lt;h3&gt;一、QoS (Egress Policing)&lt;/h3&gt;
 &lt;p&gt;在 OVS-DPDK 环境中配置 QoS，仅在从 vSwitch 上的端口发送的出口流量上进行限制。&lt;/p&gt;
 &lt;p&gt;使用如下命令查看 OVS port 支持的 QoS 类型。目前 ovs-dpdk 只支持 egress-policer，随着版本更新可能会支持其他的 QoS 类型。&lt;/p&gt;
@@ -593,13 +593,13 @@ QoS type: egress-policer
 
 &lt;h4&gt;2.1 实验结果&lt;/h4&gt;
 &lt;p&gt;&lt;strong&gt;未限速之前：&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-qos-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-qos-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;设置限速到 4Mbps，即 rate 设置为 4000kbps.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ovs-vsctl set interface dpdkvhostuserclient2 ingress_policing_rate=4000 ingress_policing_burst=1000
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-qos-2.png"&gt;&lt;/p&gt;</content></entry><entry><title>OpenvSwitch + DPDK 实现</title><link href="https://andiaq.github.io/posts/2018/openvswitch-dpdk.html" rel="alternate"></link><published>2018-08-29T09:36:00+08:00</published><updated>2018-08-29T09:36:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-29:/posts/2018/openvswitch-dpdk.html</id><summary type="html">&lt;p&gt;本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-qos-2.png"&gt;&lt;/p&gt;</content></entry><entry><title>OpenvSwitch + DPDK 实现</title><link href="https://andiaq.github.io/posts/2018/08/29/openvswitch-dpdk.html" rel="alternate"></link><published>2018-08-29T09:36:00+08:00</published><updated>2018-08-29T09:36:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-29:/posts/2018/08/29/openvswitch-dpdk.html</id><summary type="html">&lt;p&gt;本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。&lt;/p&gt;
 &lt;p&gt;使用了 DPDK 库的 OVS 运行在用户空间，可以直接将用户态的数据，不经过内核直接转发到网卡，从而实现加速目的。&lt;/p&gt;
 &lt;h3&gt;一、OVS + DPDK 编译部署&lt;/h3&gt;
 &lt;p&gt;在部署过程中，各个组件版本之间有一些依赖，版本不对很有可能会出现安装失败或者虚拟机无法开机，推荐使用以下版本。&lt;/p&gt;
@@ -885,7 +885,7 @@ f4bb4728-d9d6-43e9-be9a-cc8b2cdb10b1
 &lt;h3&gt;三、测试过程&lt;/h3&gt;
 &lt;h4&gt;3.1 测试拓扑&lt;/h4&gt;
 &lt;p&gt;测试使用的拓扑图如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;使用 dpdkgen 的 p0 作为发包端口，p1 作为收包端口。&lt;/p&gt;
 &lt;p&gt;配置 6wind:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;eth0&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;10.0&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;
@@ -912,11 +912,11 @@ Pktgen&amp;gt; start &lt;span class="m"&gt;0&lt;/span&gt;
 &lt;ol&gt;
 &lt;li&gt;将发包字节设置为64字节，发包速率设置10%时，几乎不存在丢包现象。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-2.png"&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;将p0发包速率设置20%时，存在丢包现象。将p1发包速率设置为15%，收发数据差不多。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/ovs-dpdk-3.png"&gt;&lt;/p&gt;</content></entry><entry><title>Pktgen-DPDK 网络性能测试</title><link href="https://andiaq.github.io/posts/2018/pktgen-dpdk.html" rel="alternate"></link><published>2018-08-20T09:51:00+08:00</published><updated>2018-08-20T09:51:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-20:/posts/2018/pktgen-dpdk.html</id><summary type="html">&lt;p&gt;在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/ovs-dpdk-3.png"&gt;&lt;/p&gt;</content></entry><entry><title>Pktgen-DPDK 网络性能测试</title><link href="https://andiaq.github.io/posts/2018/08/20/pktgen-dpdk.html" rel="alternate"></link><published>2018-08-20T09:51:00+08:00</published><updated>2018-08-20T09:51:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-20:/posts/2018/08/20/pktgen-dpdk.html</id><summary type="html">&lt;p&gt;在未使用该工具之前，一直使用的是 iperf 在 10G 网卡场景下进行 64 字节小包性能测试。若要将 64 字节小包流量发到限速，要么一直增加 iperf 客户端，或者在一个高配 iperf 客户端虚拟机中不断的增加 iperf 进程。即使是这样，将发包达到网卡上限，却依然无法利用好 6wind 的性能。所以考虑使用 DPDK-pktgen 发包工具。该工具基于 DPDK 快速报文处里框架开发，以内核模块的形式存在于系统。&lt;/p&gt;
 &lt;h2&gt;一、环境部署&lt;/h2&gt;
 &lt;h3&gt;1.1 安装DPDK&lt;/h3&gt;
 &lt;p&gt;DPDK 可以将用户态的数据不经过内核直接转发到网卡，同样网卡数据也不经过内核直接映射到用户态内存实现加速目的。&lt;/p&gt;
@@ -999,7 +999,7 @@ Pktgen&amp;gt; start &lt;span class="m"&gt;0&lt;/span&gt;
 &lt;ol&gt;
 &lt;li&gt;执行结果&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/pktgen-dpdk-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/pktgen-dpdk-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;以上结果符合预期，Port 0 进行发包，Port 1 进行收包。这两个网卡属于同一块物理网卡的 VF ，所以万兆网卡带宽进行了均分。&lt;/p&gt;
 &lt;h4&gt;2.2. 虚拟机与 NAT 网关互打流量&lt;/h4&gt;
 &lt;p&gt;&lt;strong&gt;环境说明：&lt;/strong&gt;&lt;/p&gt;
@@ -1020,7 +1020,7 @@ Address                  HWtype  HWaddress           Flags Mask            Iface
 
 
 &lt;p&gt;测试拓扑图：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;测试脚本&lt;/li&gt;
 &lt;/ol&gt;
@@ -1051,8 +1051,8 @@ average cycles/packets received from NIC: 209 (458989044/2186254)
 
 
 &lt;p&gt;dpdkgen结果如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
-&lt;p&gt;从以上结果可以看到，在使用 6wind 一个 core 情况下，64 字节线速发包能力为 9914Mbps ，包转发性能为 14Mpps，接近物理网卡极限。&lt;/p&gt;</content></entry><entry><title>6wind 配置 SRIOV</title><link href="https://andiaq.github.io/posts/2018/6wind-sriov.html" rel="alternate"></link><published>2018-08-14T09:34:00+08:00</published><updated>2018-08-14T09:34:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-14:/posts/2018/6wind-sriov.html</id><summary type="html">&lt;p&gt;本文主要是介绍 6wind 配置 SRIOV 相关过程，在测试过程中进行学习，先产生感性认识，后期更深入了解原理后补充。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/pktgen-dpdk-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;从以上结果可以看到，在使用 6wind 一个 core 情况下，64 字节线速发包能力为 9914Mbps ，包转发性能为 14Mpps，接近物理网卡极限。&lt;/p&gt;</content></entry><entry><title>6wind 配置 SRIOV</title><link href="https://andiaq.github.io/posts/2018/08/14/6wind-sriov.html" rel="alternate"></link><published>2018-08-14T09:34:00+08:00</published><updated>2018-08-14T09:34:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-14:/posts/2018/08/14/6wind-sriov.html</id><summary type="html">&lt;p&gt;本文主要是介绍 6wind 配置 SRIOV 相关过程，在测试过程中进行学习，先产生感性认识，后期更深入了解原理后补充。&lt;/p&gt;
 &lt;h3&gt;一、前置条件&lt;/h3&gt;
 &lt;p&gt;SRIOV 功能需宿主机开启 VT-d 和 IOMMU 功能。&lt;/p&gt;
 &lt;ol&gt;
@@ -1240,7 +1240,7 @@ Hugepagesize:       &lt;span class="m"&gt;2048&lt;/span&gt; kB
 
 
 &lt;h3&gt;四、测试&lt;/h3&gt;
-&lt;p&gt;测试过程见：Pktgen-DPDK 网络性能测试&lt;/p&gt;</content></entry><entry><title>6wind NFV 实现</title><link href="https://andiaq.github.io/posts/2018/6wind-nfv.html" rel="alternate"></link><published>2018-08-06T11:29:00+08:00</published><updated>2018-08-06T11:29:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-06:/posts/2018/6wind-nfv.html</id><summary type="html">&lt;h3&gt;一、简介&lt;/h3&gt;
+&lt;p&gt;测试过程见：Pktgen-DPDK 网络性能测试&lt;/p&gt;</content></entry><entry><title>6wind NFV 实现</title><link href="https://andiaq.github.io/posts/2018/08/06/6wind-nfv.html" rel="alternate"></link><published>2018-08-06T11:29:00+08:00</published><updated>2018-08-06T11:29:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-08-06:/posts/2018/08/06/6wind-nfv.html</id><summary type="html">&lt;h3&gt;一、简介&lt;/h3&gt;
 &lt;p&gt;NFV，即网络功能虚拟化，Network Function Virtualization。即通过使用 x86 的服务器作为物理设备，进而实现基于软件的网络功能。NFV 的实现有效地降低了网络组网中昂贵的路由器和交换机成本。通过分离硬件和软件的功能和抽象的方式，网络设备功能不再依赖于专用硬件资源，可成为新的云中的网络服务部署模式，虚拟网络元件之间的网络，基于实际业务需求自动部署，提供了灵活扩展性，故障隔离和自我愈合。&lt;/p&gt;
 &lt;p&gt;NFV 的网络功能虚拟化就是将原本是物理设备的路由器，交换机，测试仪器，变成软件的形式，作为一个镜像启动，而其功能不变。在云计算的基础设施平台上，部署基于 NFV 可编程网元，这些网元不受物理设备兼容性的限制，在云计算的基础上部署虚拟网元，使得云平台的资源利用率更加充分，但同时也对组网技术提出了更高的要求。&lt;/p&gt;
 &lt;p&gt;本文以 6wind 作为 NFV 虚拟网元设备，将其与基于 linuxbridge 和 vlan 实现的现有网络云平台进行结合，使用 NFV 网元实现云环境中 NAT 和安全组功能 …&lt;/p&gt;</summary><content type="html">&lt;h3&gt;一、简介&lt;/h3&gt;
@@ -1249,7 +1249,7 @@ Hugepagesize:       &lt;span class="m"&gt;2048&lt;/span&gt; kB
 &lt;p&gt;本文以 6wind 作为 NFV 虚拟网元设备，将其与基于 linuxbridge 和 vlan 实现的现有网络云平台进行结合，使用 NFV 网元实现云环境中 NAT 和安全组功能。以及进行网络性能测试。&lt;/p&gt;
 &lt;h3&gt;二、NFV 连接不同网络之间通信&lt;/h3&gt;
 &lt;p&gt;在我们现有网络环境中，不同网络之间通过 vlan 进行隔离，是无法互通的。我们知道在传统网络中，如果要和一个网络通信，只要和其网关相通就可以了。假设现在有两个不同 vlan 的网络 private1 和 private2，若要使两个网络中的虚拟主机进行通信，我们使 NFV 网元作为 Instance 启动，将 NFV 虚拟路由器连接这两个子网，并将分配给它的两个网络接口的 IP 地址配置成两个网络的网关，从而使流量通过 NFV 虚拟网元，实现子网之间的流量通过这个 NFV 虚拟路由器进行转发。&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
 &lt;p&gt;下面在测试环境进行配置，以实际例子进行说明。首先配置以下三个网络，一个作为外网，两个作为内网。&lt;/p&gt;
 &lt;p&gt;外网：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;vlan&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;3967&lt;/span&gt;
@@ -1295,7 +1295,7 @@ Hugepagesize:       &lt;span class="m"&gt;2048&lt;/span&gt; kB
 &lt;ol&gt;
 &lt;li&gt;整体网络流量走向图如下所示：&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/network/6wind-nfv-1.png"&gt;&lt;/p&gt;
 &lt;h4&gt;2.2 开启 filter 功能&lt;/h4&gt;
 &lt;ol&gt;
 &lt;li&gt;打开 vrouter filter 功能，不配置任何规则，则从任何地方都无法访问路由器中所有的 ip 地址，故而虚拟机无法 ping 通自己的网关地址， 虚拟机之间也不能互通。验证结果如下，符合预期。&lt;/li&gt;
@@ -1662,7 +1662,7 @@ router&lt;span class="o"&gt;{&lt;/span&gt;conf:init_turo-fil&lt;span class="o"&g
     &lt;span class="c1"&gt;# RPF RULES&lt;/span&gt;
     &lt;span class="c1"&gt;# FILTER STATEMENT&lt;/span&gt;
       filter &lt;span class="nb"&gt;enable&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>6wind 配置 PCI Passthrough</title><link href="https://andiaq.github.io/posts/2018/6wind-pci-passthrough.html" rel="alternate"></link><published>2018-07-25T15:14:00+08:00</published><updated>2018-07-25T15:14:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-07-25:/posts/2018/6wind-pci-passthrough.html</id><summary type="html">&lt;h3&gt;一、前置条件&lt;/h3&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>6wind 配置 PCI Passthrough</title><link href="https://andiaq.github.io/posts/2018/07/25/6wind-pci-passthrough.html" rel="alternate"></link><published>2018-07-25T15:14:00+08:00</published><updated>2018-07-25T15:14:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2018-07-25:/posts/2018/07/25/6wind-pci-passthrough.html</id><summary type="html">&lt;h3&gt;一、前置条件&lt;/h3&gt;
 &lt;p&gt;libvirt pci passthrough 功能需宿主机开启 VT-d 和 IOMMU 功能。&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。&lt;/li&gt;
@@ -1967,7 +1967,7 @@ client2 &lt;span class="c1"&gt;# iperf3 -c 18.23.120.65 -l 1518 -t 20 -P 10 -i 2
 &lt;p&gt;lan to wan:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;client1# iperf3 -c &lt;span class="m"&gt;18&lt;/span&gt;.23.120.88 -l &lt;span class="m"&gt;1518&lt;/span&gt; -t &lt;span class="m"&gt;20&lt;/span&gt; -P &lt;span class="m"&gt;10&lt;/span&gt; -i &lt;span class="m"&gt;20&lt;/span&gt; -f m
 client2# iperf3 -s
-&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>OpenStack环境虚拟机打快照分析</title><link href="https://andiaq.github.io/posts/2017/create-snapshots.html" rel="alternate"></link><published>2017-03-17T10:29:00+08:00</published><updated>2017-03-17T10:29:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2017-03-17:/posts/2017/create-snapshots.html</id><summary type="html">&lt;p&gt;本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。&lt;/p&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>OpenStack环境虚拟机打快照分析</title><link href="https://andiaq.github.io/posts/2017/03/17/create-snapshots.html" rel="alternate"></link><published>2017-03-17T10:29:00+08:00</published><updated>2017-03-17T10:29:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2017-03-17:/posts/2017/03/17/create-snapshots.html</id><summary type="html">&lt;p&gt;本文主要分析OpenStack N版本中给虚拟机打快照的具体实现方式。&lt;/p&gt;
 &lt;p&gt;用法：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;usage: nova image-create &lt;span class="o"&gt;[&lt;/span&gt;--metadata &amp;lt;&lt;span class="nv"&gt;key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;value&amp;gt;&lt;span class="o"&gt;]&lt;/span&gt;
                          &lt;span class="o"&gt;[&lt;/span&gt;--show&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;--poll&lt;span class="o"&gt;]&lt;/span&gt;
@@ -2202,7 +2202,7 @@ rbd image &lt;span class="s1"&gt;&amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&a
 &lt;p&gt;会调用cinder对所有的volume卷（根磁盘和所有数据盘）打快照。
 源虚拟机也是可以删除的。rebuild操作会获取快照中的block_device_mapping信息，重新创建虚拟机并挂载数据盘。&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ul&gt;</content></entry><entry><title>Availability Zones 及 Host Aggregate</title><link href="https://andiaq.github.io/posts/2017/ha-az.html" rel="alternate"></link><published>2017-03-13T18:30:00+08:00</published><updated>2017-03-13T18:30:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2017-03-13:/posts/2017/ha-az.html</id><summary type="html">&lt;h2&gt;Availability zones&lt;/h2&gt;
+&lt;/ul&gt;</content></entry><entry><title>Availability Zones 及 Host Aggregate</title><link href="https://andiaq.github.io/posts/2017/03/13/ha-az.html" rel="alternate"></link><published>2017-03-13T18:30:00+08:00</published><updated>2017-03-13T18:30:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2017-03-13:/posts/2017/03/13/ha-az.html</id><summary type="html">&lt;h2&gt;Availability zones&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;Availability zones&lt;/code&gt;和&lt;code&gt;host aggregates&lt;/code&gt;是在region和cell基础上提出的进一步的划分（segregation）概念。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;Availability zone&lt;/code&gt;致力于通过逻辑划分提供某种形式上的物理隔离。也就是说，通过位置可用性来将服务器进行逻辑上的分组。用户可以某些可用性上的区别来指定az，从而选择所起虚拟机的“位置”。&lt;/p&gt;
 &lt;p&gt;一般对于规模较大的集群比如跨数据中心，可以根据地理位置来定义az。比如：bj，sh。或是同一数据中心的不同机房，或是在同一机房的几个相邻的机架，同样可以通过位置来定义，从而保证不同az之间具有某些特性上的冗余性，比如供电系统、网络设备等。而不影响其他的 Availability Zones 上节点运行的虚拟机，通过这种划分来提高 OpenStack 的可用性。&lt;/p&gt;
@@ -2212,7 +2212,7 @@ rbd image &lt;span class="s1"&gt;&amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&a
 &lt;p&gt;一般对于规模较大的集群比如跨数据中心，可以根据地理位置来定义az。比如：bj，sh。或是同一数据中心的不同机房，或是在同一机房的几个相邻的机架，同样可以通过位置来定义，从而保证不同az之间具有某些特性上的冗余性，比如供电系统、网络设备等。而不影响其他的 Availability Zones 上节点运行的虚拟机，通过这种划分来提高 OpenStack 的可用性。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;Host Aggregates&lt;/code&gt; 是在 &lt;code&gt;Availability Zones&lt;/code&gt; 的基础上更进一步地进行逻辑的分组和隔离。例如我们可以根据不同的 computes 节点的物理硬件配置将具有相同共性的物理资源规划在同一 &lt;code&gt;Host Aggregate&lt;/code&gt; 之下，或者根据用户的具体需求将几个 computes 节点规划在具有相同用途的同一 &lt;code&gt;Host Aggregate&lt;/code&gt; 之下，通过这样的划分有利于提高 OpenStack 资源的使用效率。&lt;code&gt;Host Aggregates&lt;/code&gt; 可以通过 nova client 或 API 来创建和配置。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;图 1.Availability Zones 与 Host Aggregates 的关系&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/hz_az.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/hz_az.png"&gt;&lt;/p&gt;
 &lt;h2&gt;配置&lt;/h2&gt;
 &lt;p&gt;我们可以通过对 nova.conf 文件的配置来定义不同的 Availability zones。相关配置项为：&lt;/p&gt;
 &lt;ul&gt;
@@ -2243,7 +2243,7 @@ rbd image &lt;span class="s1"&gt;&amp;#39;3c4b3058-0f58-483c-b7e2-20274df984d9&a
 
 
 &lt;p&gt;&lt;strong&gt;面板方式：&lt;/strong&gt;
-&lt;img alt="image" src="../images/az2.png"&gt;&lt;/p&gt;
+&lt;img alt="image" src="images/az2.png"&gt;&lt;/p&gt;
 &lt;h2&gt;Host Aggregate&lt;/h2&gt;
 &lt;p&gt;从具体实现上来看，&lt;code&gt;Host aggregate&lt;/code&gt;指一组拥有关联metadata的计算节点，metadata中描述了该组计算节点所拥有的特性，比如高速网卡、GPU、SSD存储、属于特定租户、Qos等。也就是说，Host Aggregate被设计用于按能力对服务器进行分组。这些能力，通过metadata自定义。&lt;code&gt;nova-scheduler&lt;/code&gt;能够过滤不满足某些特性的主机，从而只选择只具备某些特性的主机，比如只选择配置ssd的主机或者只选择具有GPU加速的主机等。&lt;/p&gt;
 &lt;p&gt;所有的&lt;code&gt;nova availability zones&lt;/code&gt;的部署都是基于&lt;code&gt;host aggregate&lt;/code&gt;实现的（尽管不是所有的宿主机聚合都叫可用区域）。&lt;/p&gt;
@@ -2454,7 +2454,7 @@ Host compute-bj-1-withlvm.novalocal has been successfully added &lt;span class="
 &lt;ol&gt;
 &lt;li&gt;https://www.ibm.com/developerworks/cn/cloud/library/1604-openstack-host-aggregate/&lt;/li&gt;
 &lt;li&gt;https://www.mirantis.com/blog/the-first-and-final-word-on-openstack-availability-zones/&lt;/li&gt;
-&lt;/ol&gt;</content></entry><entry><title>linux 服务器架构</title><link href="https://andiaq.github.io/posts/2017/linux-cpu-architecture.html" rel="alternate"></link><published>2017-03-13T18:00:00+08:00</published><updated>2017-03-13T18:00:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2017-03-13:/posts/2017/linux-cpu-architecture.html</id><summary type="html">&lt;p&gt;&lt;strong&gt;商用服务器的系统架构大致可以分为三类：&lt;/strong&gt;
+&lt;/ol&gt;</content></entry><entry><title>linux 服务器架构</title><link href="https://andiaq.github.io/posts/2017/03/13/linux-cpu-architecture.html" rel="alternate"></link><published>2017-03-13T18:00:00+08:00</published><updated>2017-03-13T18:00:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2017-03-13:/posts/2017/03/13/linux-cpu-architecture.html</id><summary type="html">&lt;p&gt;&lt;strong&gt;商用服务器的系统架构大致可以分为三类：&lt;/strong&gt;
 &lt;code&gt;SMP&lt;/code&gt; &lt;code&gt;NUMA&lt;/code&gt; &lt;code&gt;MMP&lt;/code&gt;&lt;/p&gt;
 &lt;h2&gt;SMP&lt;/h2&gt;
 &lt;p&gt;SMP即&lt;code&gt;Symmetric Multi-Processor&lt;/code&gt;，对称多处理器架构。
@@ -2472,7 +2472,7 @@ Host compute-bj-1-withlvm.novalocal has been successfully added &lt;span class="
 &lt;h2&gt;NUMA&lt;/h2&gt;
 &lt;p&gt;NUMA即&lt;code&gt;Non-Uniform Memory Access&lt;/code&gt;，非一致性内存架构。
 NUMA架构产生的原因之一，就是为了解决SMP在扩展能力上的限制。利用NUMA技术，可以把几十个CPU(甚至上百个CPU)组合在一个服务器内。其CPU模块结构如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/numa_cpu.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/numa_cpu.png"&gt;&lt;/p&gt;
 &lt;p&gt;NUMA服务器的基本特征是具有多个CPU模块，每个CPU模块由多个CPU(如4个)组成，并且具有独立的本地内存、I/O槽口等。由于其节点之间可以通过互联模块(如称为Crossbar Switch)进行连接和信息交互，因此每个CPU可以访问整个系统的内存(这是NUMA系统与MPP系统的重要差别)。显然，访问本地内存的速度将远远高于访问远地内存(系统内其它节点的内存)的速度，这也是非一致存储访问NUMA的由来。由于这个特点，为了更好地发挥系统性能，开发应用程序时需要尽量减少不同CPU模块之间的信息交互。利用NUMA技术，可以较好地解决原来SMP系统的扩展问题，在一个物理服务器内可以支持上百个CPU。比较典型的NUMA服务器的例子包括HP的Superdome、SUN15K、IBMp690等。&lt;/p&gt;
 &lt;p&gt;但NUMA技术同样有一定缺陷，由于访问远地内存的延时远远超过本地内存，因此当CPU数量增加时，系统性能无法线性增加。如HP公司发布Superdome服务器时，曾公布了它与HP其它UNIX服务器的相对性能值，结果发现，64路CPU的Superdome(NUMA结构)的相对性能值是20，而8路N4000(共享的SMP结构)的相对性能值是6.3。从这个结果可以看到，8倍数量的CPU换来的只是3倍性能的提升。 &lt;/p&gt;
 &lt;h2&gt;MPP&lt;/h2&gt;
@@ -2489,7 +2489,7 @@ NUMA架构产生的原因之一，就是为了解决SMP在扩展能力上的限�
 &lt;p&gt;从NUMA架构来看，它可以在一个物理服务器内集成许多CPU，使系统具有较高的事务处理能力，由于远地内存访问时延远长于本地内存访问，因此需要尽量减少不同CPU模块之间的数据交互。显然，NUMA架构更适用于OLTP事务处理环境，当用于数据仓库环境时，由于大量复杂的数据处理必然导致大量的数据交互，将使CPU的利用率大大降低。&lt;/p&gt;
 &lt;p&gt;相对而言，MPP服务器架构的并行处理能力更优越，更适合于复杂的数据综合分析与处理环境。当然，它需要借助于支持MPP技术的关系数据库系统来屏蔽节点之间负载平衡与调度的复杂性。另外，这种并行处理能力也与节点互联网络有很大的关系。显然，适应于数据仓库环境的MPP服务器，其节点互联网络的I/O性能应该非常突出，才能充分发挥整个系统的性能。&lt;/p&gt;
 &lt;h2&gt;参考资料&lt;/h2&gt;
-&lt;p&gt;1.http://blog.csdn.net/chengleisheng/article/details/43454515&lt;/p&gt;</content></entry><entry><title>Git常用操作</title><link href="https://andiaq.github.io/posts/2016/git-usage.html" rel="alternate"></link><published>2016-12-11T20:24:00+08:00</published><updated>2016-12-11T20:24:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-12-11:/posts/2016/git-usage.html</id><summary type="html">&lt;p&gt;对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。&lt;/p&gt;
+&lt;p&gt;1.http://blog.csdn.net/chengleisheng/article/details/43454515&lt;/p&gt;</content></entry><entry><title>Git常用操作</title><link href="https://andiaq.github.io/posts/2016/12/11/git-usage.html" rel="alternate"></link><published>2016-12-11T20:24:00+08:00</published><updated>2016-12-11T20:24:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-12-11:/posts/2016/12/11/git-usage.html</id><summary type="html">&lt;p&gt;对于开源项目的开发来说，熟练使用git的应该算是必备技能。本篇博客记录了平时工作中较常用的git操作。&lt;/p&gt;
 &lt;h2&gt;git log&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;显示所有历史记录&lt;/li&gt;
@@ -2872,7 +2872,7 @@ Deleted tag &amp;#39;2012.1.2&amp;#39; (was 7a7c8f8)
 
 
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# git show-ref --tag | awk &amp;#39;/2012/ {print &amp;quot;:&amp;quot;$2}&amp;#39; | xargs git push origin
-&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>OpenStack Networking Guide</title><link href="https://andiaq.github.io/posts/2016/networking-guide.html" rel="alternate"></link><published>2016-12-11T20:24:00+08:00</published><updated>2016-12-11T20:24:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-12-11:/posts/2016/networking-guide.html</id><summary type="html">&lt;p&gt;该系列文章基本翻译于社区的Networking Guide，个人理解，原创翻译，仅供学习参考。&lt;/p&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>OpenStack Networking Guide</title><link href="https://andiaq.github.io/posts/2016/12/11/networking-guide.html" rel="alternate"></link><published>2016-12-11T20:24:00+08:00</published><updated>2016-12-11T20:24:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-12-11:/posts/2016/12/11/networking-guide.html</id><summary type="html">&lt;p&gt;该系列文章基本翻译于社区的Networking Guide，个人理解，原创翻译，仅供学习参考。&lt;/p&gt;
 &lt;h3&gt;一、网络绪论&lt;/h3&gt;
 &lt;p&gt;OpenStack 网络服务提供了 API 接口，用户可以建立和自定义网络的拓扑结构并且访问云网络。这个网络服务的项目代码是 Neutron，OpenStack 网络服务操作着虚拟网络设施的创建和管理，这些虚拟网络设施包括网络，交换机，子网，以及为 openstack 计算服务（nova）所管理的设备提供的路由，还包括一些高级服务比如防火墙，虚拟专用网络 VPN 等等。&lt;/p&gt;
 &lt;p&gt;OpenStack 网络是由 neutron-server 组件，持久化存储的数据库，以及很多 plugin,agent 组成的。这些 agent 提供了一些其他的服务，比如与原生的 linux 网络机制，外部设备，或者 SDN controller 进行交互等等。&lt;/p&gt;
@@ -2987,7 +2987,7 @@ TCP服务器在端口上被监听，比如，SSH服务器在22号端口被监听
 &lt;p&gt;动态主机控制协议（DHCP），域名解析系统（DNS），网络同步协议（NTP）和VXLAN都是在OpenStack环境中被使用的基于UDP的协议。&lt;/p&gt;
 &lt;p&gt;UDP也支持一对多的通信：发送一个数据包到多个主机。应用程序可以通过设置接收端IP为广播地址255:255:255:255来广播一个UDP数据包到同一网络上的所有主机，还可以使用IP多播来发送一个UDP数据报到多个接收端。只要欲接收数据包的应用程序通过绑定一个UDP套接字到一个特殊的IP地址来加入一个多播组，而这个IP地址是合法多播组地址的其中一个。接收信息的主机可以不用在同一个局域网上作为发送方，但是介于中间的路由必须被配置成支持IP多播路由。VXLAN就是一个基于UDP协议使用IP多播的例子。&lt;/p&gt;
 &lt;p&gt;网络控制报文协议（ICMP）是在IP层网络之上被用来发送控制信息的协议。比如，如果路由器的路由表中没有与目的地址相关的路由（1号ICMP，目的主机不可达），或者说如果IP数据包对路由器处理来说太（4号ICMP，需要分片但是被设置成了不分片），接收IP数据包的路由器就会发回一个ICMP差错报告报文。&lt;/p&gt;
-&lt;p&gt;ping和mtr是使用ICMP的两个很实用的Linux命令行工具。&lt;/p&gt;</content></entry><entry><title>python eventlet及其在OpenStack中的应用</title><link href="https://andiaq.github.io/posts/2016/python-eventlet.html" rel="alternate"></link><published>2016-11-16T17:34:00+08:00</published><updated>2016-11-16T17:34:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-11-16:/posts/2016/python-eventlet.html</id><summary type="html">&lt;p&gt;一直迷糊于操作系统的进程线程协程等概念及其切换，本文从基础开始梳理，旨在学习python的eventlet,及其在OpenStack中的应用。&lt;/p&gt;
+&lt;p&gt;ping和mtr是使用ICMP的两个很实用的Linux命令行工具。&lt;/p&gt;</content></entry><entry><title>python eventlet及其在OpenStack中的应用</title><link href="https://andiaq.github.io/posts/2016/11/16/python-eventlet.html" rel="alternate"></link><published>2016-11-16T17:34:00+08:00</published><updated>2016-11-16T17:34:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-11-16:/posts/2016/11/16/python-eventlet.html</id><summary type="html">&lt;p&gt;一直迷糊于操作系统的进程线程协程等概念及其切换，本文从基础开始梳理，旨在学习python的eventlet,及其在OpenStack中的应用。&lt;/p&gt;
 &lt;h3&gt;一、简介&lt;/h3&gt;
 &lt;p&gt;eventlet是一个python的并发网络库，采用&lt;code&gt;epoll/pool/select&lt;/code&gt;等异步 IO，并结合 greenlet 协程库实现并发。简单来说，eventlet是帮助实现并发的python库，不一定并行，但是也可以并行；在讲究高并发与分布式的今天，同步和阻塞就慢，异步和非阻塞就快。&lt;/p&gt;
 &lt;p&gt;协程是一种运行在线程中的执行单位，同一个线程中可以同时运行多个协程，注意：该同时运行并不是真正意义上的并行，同时拥有CPU时间片的只有一个当前协程，其它的协程处于挂起状态。不要觉得这样”协程”就没有意义，因为有另一类协程，当前需要的不是CPU而是IO。众所周知，CPU是很快的，而IO很慢，所以当一些协程都在挂起等待IO的时候，一些协程则在用CPU，在同一个线程中跑多个协程的就可以更充分地利用硬件资源，极大的提高服务的响应能力。不同于线程和进程由内核来调度并分配时间片，协程需要在代码层显式地控制与转换。&lt;/p&gt;
@@ -3065,7 +3065,7 @@ TCP服务器在端口上被监听，比如，SSH服务器在22号端口被监听
 &lt;li&gt;http://wsfdl.com/openstack/2014/09/29/Nova%E4%B8%AD%E7%9A%84%E5%8D%8F%E7%A8%8Bmonkey_patch.html&lt;/li&gt;
 &lt;li&gt;https://specs.openstack.org/openstack/openstack-specs/specs/eventlet-best-practices.html&lt;/li&gt;
 &lt;li&gt;http://eventlet.net/doc/patching.html#monkeypatching-the-standard-library&lt;/li&gt;
-&lt;/ol&gt;</content></entry><entry><title>Nova中定时任务解析</title><link href="https://andiaq.github.io/posts/2016/periodic-task.html" rel="alternate"></link><published>2016-11-02T23:00:00+08:00</published><updated>2016-11-02T23:00:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-11-02:/posts/2016/periodic-task.html</id><summary type="html">&lt;h3&gt;一、periodic_task&lt;/h3&gt;
+&lt;/ol&gt;</content></entry><entry><title>Nova中定时任务解析</title><link href="https://andiaq.github.io/posts/2016/11/02/periodic-task.html" rel="alternate"></link><published>2016-11-02T23:00:00+08:00</published><updated>2016-11-02T23:00:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-11-02:/posts/2016/11/02/periodic-task.html</id><summary type="html">&lt;h3&gt;一、periodic_task&lt;/h3&gt;
 &lt;h4&gt;1.1 what is periodic_task&lt;/h4&gt;
 &lt;p&gt;在Nova中，nova-compute, nova-scheduler, nova-cell, network都有自己的周期性任务，通过nova的代码结构可以发现，它们都统一由各自模块下的manager.py中periodic_task管理。其中，periodic_task首先实现了一个装饰器，所有的周期性任务都是通过添加该装饰器实现，而周期性任务的启动伴随着每个服务的start也同步开始。&lt;/p&gt;
 &lt;p&gt;首先装饰器实现如下(&lt;code&gt;oslo_service/periodic_task.py&lt;/code&gt;)，我们阅读后会发现，该方法主要定义了周期性任务（为True），以及周期性任务的名称，间隔时间（默认间隔时间是60s），运行方式等。实际上，此方法也只是定义了上述内容，添加了几个属性，并没有做其他的什么操作。由这些参数作为周期性任务的标记，保存到kwargs。&lt;/p&gt;
@@ -3234,7 +3234,7 @@ TCP服务器在端口上被监听，比如，SSH服务器在22号端口被监听
         &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sleep&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
     &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;idle_for&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>rabbitmq code snippets</title><link href="https://andiaq.github.io/posts/2016/rabbitmq-code-snippets.html" rel="alternate"></link><published>2016-10-11T12:00:00+08:00</published><updated>2016-10-11T12:00:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-10-11:/posts/2016/rabbitmq-code-snippets.html</id><summary type="html">&lt;p&gt;RabbitMQ是一个支持多种通信协议的消息通信中间件，其核心原理即：接收和发送消息，是AMQP的典型应用。以下分模块列出与之相关的demo。&lt;/p&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>rabbitmq code snippets</title><link href="https://andiaq.github.io/posts/2016/10/11/rabbitmq-code-snippets.html" rel="alternate"></link><published>2016-10-11T12:00:00+08:00</published><updated>2016-10-11T12:00:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-10-11:/posts/2016/10/11/rabbitmq-code-snippets.html</id><summary type="html">&lt;p&gt;RabbitMQ是一个支持多种通信协议的消息通信中间件，其核心原理即：接收和发送消息，是AMQP的典型应用。以下分模块列出与之相关的demo。&lt;/p&gt;
 &lt;h3&gt;一、Hello World&lt;/h3&gt;
 &lt;p&gt;以下实例实现了发送消息到一个已知队列中，并从该队列中接收消息。 send.py会发送一个消息到队列中，但是首先需要建立到RabbitMQ服务器的连接。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env python&lt;/span&gt;
@@ -3345,7 +3345,7 @@ TCP服务器在端口上被监听，比如，SSH服务器在22号端口被监听
 &lt;p&gt;注意：当所有的worker处于繁忙状态时，消息队列会被填满，此时可以添加更多的worker或采用其他方式解决。&lt;/p&gt;
 &lt;h3&gt;三、发布/订阅&lt;/h3&gt;
 &lt;p&gt;前两部分都是将一个message发送给一个consumer，现在我们尝试将一个message发送给多个consumer（即broadcast）。每个consumer收到消息后都可以做不同的处理。例如接下来我们要做一个简单的logging system，productor发送一个log，一个receiver负责存在硬盘里，一个receiver负责显示在屏幕上。工作模型如下：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/publish.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/publish.png"&gt;&lt;/p&gt;
 &lt;p&gt;send.py:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env python&lt;/span&gt;
 &lt;span class="c1"&gt;# -*- coding=utf-8 -*-&lt;/span&gt;
@@ -3407,7 +3407,7 @@ python receive.py
 
 &lt;h3&gt;四、路由（直接匹配）&lt;/h3&gt;
 &lt;p&gt;第三部分实现了exchange给与它绑定的所有queue广播消息，这里实现发送端指定接收的queue。原理很简单,将一个queue和一个exchange绑定时，可以指定一个路由键(binding key)。发送端发送消息时，设定相应的路由键(routing key)，这样，当message到达exchange时，就根据路由键，将message发送给相应的queue。这里继上一篇，发送端指定info、warning、error三种级别的信息，由exchange发送到不同的接收端。工作模型如下:&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/direct-exchange.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/direct-exchange.png"&gt;&lt;/p&gt;
 &lt;h4&gt;4.1 绑定时指定路由键&lt;/h4&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;channel.queue_bind(exchange=exchange_name,
                    queue=queue_name,
@@ -3430,7 +3430,7 @@ python receive.py
 
 &lt;h4&gt;4.3 多重绑定&lt;/h4&gt;
 &lt;p&gt;多个queue与exchange绑定时，可以有相同的binding key，这样，当一个routing key与这个binding key相同时，message会发送给相应的多个queue，实现类似组播的功能。效果如图:&lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/direct-exchange-multiple.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/direct-exchange-multiple.png"&gt;&lt;/p&gt;
 &lt;p&gt;具体实现&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env python&lt;/span&gt;
 &lt;span class="c1"&gt;# -*- coding=utf-8 -*-&lt;/span&gt;
@@ -3492,7 +3492,7 @@ python receive.py
 2. 从命令行接收binding key参数，从而在绑定时使用&lt;/p&gt;
 &lt;h3&gt;五、主题交换机（模糊匹配）&lt;/h3&gt;
 &lt;p&gt;由上可以看出，直连交换机可以有选择性的接收日志，但是无法基于多个标准执行路由操作。主题交换机的作用就是为了该目的来实现，大大提高了灵活性。 主题交换机的路由键是一个由.分隔开的词语列表，比如“a.b.c”, "a.d.e", "e.z.c"。 以下用图来说明： &lt;/p&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/topic_exchange.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/topic_exchange.png"&gt;&lt;/p&gt;
 &lt;p&gt;这三个绑定键被可以总结为： Q1 对所有的桔黄色动物都感兴趣。 Q2 则是对所有的兔子和所有懒惰的动物感兴趣。 两个通配符： '': 匹配前一个字符一次或多次 '#': 匹配前一个字符0次或多次 例： a. ，匹配的有a., a.b等等 a.#，匹配的有a,a., a.b....&lt;/p&gt;
 &lt;p&gt;emit_log_topic.py:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="ch"&gt;#!/usr/bin/env python&lt;/span&gt;
@@ -3640,14 +3640,14 @@ shell4 $ ./receive_logs_topic.py &amp;quot;*.error&amp;quot;                    
 
 
 &lt;h3&gt;七、总结&lt;/h3&gt;
-&lt;p&gt;&lt;img alt="image" src="../images/rpc.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="images/rpc.png"&gt;&lt;/p&gt;
 &lt;p&gt;RPC的工作机制如下： &lt;/p&gt;
 &lt;p&gt;客户端启动时，会创建一个匿名独享的回调队列； 在RPC请求中，客户端通过basic_publish发送带有两个属性的消息：一个是设置回调队列的 reply_to属性，另一个是设置唯一值的 correlation_id 属性； 以上请求会发送到rpc_queue队列中； RPC服务器端会等待请求发送到这个队列中。当请求出现时，服务器端执行他的工作并将带有执行结果的消息发送给reply_to字段指定的队列； 客户端等待回调队列里的数据，当消息出现时，它会检查correlation_id属性，若此属性值与请求匹配，就将其返回给应用。&lt;/p&gt;
 &lt;h3&gt;八、参考文档&lt;/h3&gt;
 &lt;ol&gt;
 &lt;li&gt;http://www.rabbitmq.com/tutorials/tutorial-one-python.html&lt;/li&gt;
 &lt;li&gt;http://rabbitmq.mr-ping.com/&lt;/li&gt;
-&lt;/ol&gt;</content></entry><entry><title>qemu-guest-agent</title><link href="https://andiaq.github.io/posts/2016/qemu-guest-agent.html" rel="alternate"></link><published>2016-10-09T14:14:00+08:00</published><updated>2016-10-09T14:14:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-10-09:/posts/2016/qemu-guest-agent.html</id><summary type="html">&lt;h3&gt;一、背景&lt;/h3&gt;
+&lt;/ol&gt;</content></entry><entry><title>qemu-guest-agent</title><link href="https://andiaq.github.io/posts/2016/10/09/qemu-guest-agent.html" rel="alternate"></link><published>2016-10-09T14:14:00+08:00</published><updated>2016-10-09T14:14:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-10-09:/posts/2016/10/09/qemu-guest-agent.html</id><summary type="html">&lt;h3&gt;一、背景&lt;/h3&gt;
 &lt;p&gt;最近在OpenStack环境中分析给虚拟机打快照的过程。发现OpenStack默认打快照的方式是cold snapshot，在打快照的过程中，要么会把虚拟机关机（save状态），要么会将实例的文件系统静默。具体的情况下次解析。此文主要分析rbd做后端存储时使用qemu-guest-agent来静默文件系统。&lt;/p&gt;
 &lt;h3&gt;二、简介&lt;/h3&gt;
 &lt;p&gt;在KVM系统中，qemu-guest-agent（即qga）是一个运行在虚拟机内部的常驻进程。其功能类似vmware-tools，即实现宿主机和虚拟机的通信，这种方式不依赖于网络，而是依赖于virtio-serial（默认首选方式）或者isa-serial。OpenStack中，QEMU则提供了串口设备的模拟及数据交换的channel，最终呈现出来的是一个虚拟机内部的串口设备和宿主机上对应该虚拟机的unix socket文件。qga则通过读写串口设备和socket进行通信，通信协议为QMP（QEMU Machine Protocol）。QMP是一种基于json格式的传输协议，我们能利用它与从外部控制QEMU虚拟机实例，例如查询，更改虚拟机的状态，获取设备信息等等。&lt;/p&gt;
@@ -3768,7 +3768,7 @@ shell4 $ ./receive_logs_topic.py &amp;quot;*.error&amp;quot;                    
 &lt;li&gt;http://docs.ceph.org.cn/rbd/rbd-snapshot/&lt;/li&gt;
 &lt;li&gt;http://wiki.libvirt.org/page/Qemu_guest_agent&lt;/li&gt;
 &lt;li&gt;http://www.wtoutiao.com/p/186Gewv.html&lt;/li&gt;
-&lt;/ol&gt;</content></entry><entry><title>make rpm package</title><link href="https://andiaq.github.io/posts/2016/make-rpm-package.html" rel="alternate"></link><published>2016-10-07T14:48:00+08:00</published><updated>2016-10-07T14:48:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-10-07:/posts/2016/make-rpm-package.html</id><summary type="html">&lt;p&gt;近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。&lt;/p&gt;
+&lt;/ol&gt;</content></entry><entry><title>make rpm package</title><link href="https://andiaq.github.io/posts/2016/10/07/make-rpm-package.html" rel="alternate"></link><published>2016-10-07T14:48:00+08:00</published><updated>2016-10-07T14:48:00+08:00</updated><author><name>Yuwei Wang</name></author><id>tag:andiaq.github.io,2016-10-07:/posts/2016/10/07/make-rpm-package.html</id><summary type="html">&lt;p&gt;近一个两月和同事们一起开发了一个关于虚拟机HA的项目rock。目前正在着手将该项目由Puppet管理，所以需要将rock打包成rpm格式。以下记录了RPM打包的过程。&lt;/p&gt;
 &lt;h3&gt;一、简介&lt;/h3&gt;
 &lt;p&gt;RPM(RedHat Package Manager)是RedHat的软件包管理器。通过rpm可以在软件安装的过程中就把相关的依赖一起部署完毕，此外，rpm还有数据库协助软件升级、文件校验等，结合yum升级方式，选择rpm打包是很好的一种方法。&lt;/p&gt;
 &lt;h3&gt;二、RPM常用命令&lt;/h3&gt;

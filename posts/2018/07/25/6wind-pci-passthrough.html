@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="一、前置条件 libvirt pci passthrough 功能需宿主机开启 VT-d 和 IOMMU 功能。 VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。 # grep &#34;vmx&#34; /proc/cpuinfo # kvm-ok 开启 IOMMU，配置验证如下： # vim /etc/default/grub ... GRUB_CMDLINE_LINUX=&#34;crashkernel=auto rhgb quiet intel_iommu …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="6wind 配置 PCI Passthrough"/>
+<meta property="og:description" content="一、前置条件 libvirt pci passthrough 功能需宿主机开启 VT-d 和 IOMMU 功能。 VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。 # grep &#34;vmx&#34; /proc/cpuinfo # kvm-ok 开启 IOMMU，配置验证如下： # vim /etc/default/grub ... GRUB_CMDLINE_LINUX=&#34;crashkernel=auto rhgb quiet intel_iommu …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/posts/2018/07/25/6wind-pci-passthrough.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2018-07-25 15:14:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="network"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; 6wind 配置 PCI Passthrough</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="6wind-pci-passthrough">6wind 配置 PCI Passthrough</h1>
+    <p>
+          Posted on 2018-07-25 15:14 in <a href="https://andiaq.github.io/category/network.html">network</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <h3>一、前置条件</h3>
+<p>libvirt pci passthrough 功能需宿主机开启 VT-d 和 IOMMU 功能。</p>
+<ol>
+<li>VT-d 验证。判断 CPU 是否支持 vt 功能，对于 intel CPU，验证方式如下，如果有结果，则支持。判断 VT 功能是否开启，可以执行 kvm-ok 命令或者查看 /dev/kvm 是否存在。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="c1"># grep &quot;vmx&quot; /proc/cpuinfo</span>
+<span class="c1"># kvm-ok</span>
+</pre></div>
+
+
+<ol>
+<li>开启 IOMMU，配置验证如下：</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="c1"># vim /etc/default/grub </span>
+...
+<span class="nv">GRUB_CMDLINE_LINUX</span><span class="o">=</span><span class="s2">&quot;crashkernel=auto rhgb quiet intel_iommu=on&quot;</span>    <span class="c1"># 添加intel_iommu=on</span>
+...
+<span class="c1"># grub2-mkconfig -o /boot/grub2/grub.cfg 更新内核参数</span>
+<span class="c1"># reboot 重启使更改的参数生效</span>
+</pre></div>
+
+
+<h3>二、宿主机配置</h3>
+<ol>
+<li>在物理机上选择需要直通的网卡，使用如下命令查看与网卡相关的 pci 设备及详细信息。这里我们选择使用直通 01:00.0 pci 设备。后续均以此 pci 设备为例进行介绍。</li>
+</ol>
+<div class="highlight"><pre><span></span>[root@localhost ~]# lspci | grep Eth
+01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+01:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+03:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+03:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+</pre></div>
+
+
+<ol>
+<li>使用 virsh 查看详细信息，同样我们选取 <code>pci_0000_03_00_0</code> ,查看 bus, slot,和 function 值。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="c1"># virsh nodedev-list --tree</span>
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># virsh nodedev-list --tree </span>
+computer
+  <span class="p">|</span>
+  +- net_lo_00_00_00_00_00_00
+  +- pci_0000_00_00_0
+  +- pci_0000_00_01_0
+  <span class="p">|</span>   <span class="p">|</span>
+  <span class="p">|</span>   +- pci_0000_01_00_0
+  <span class="p">|</span>   <span class="p">|</span>   <span class="p">|</span>
+  <span class="p">|</span>   <span class="p">|</span>   +- net_ens20f0_d8_c4_97_0a_39_57
+  <span class="p">|</span>   <span class="p">|</span>     
+  <span class="p">|</span>   +- pci_0000_01_00_1
+  <span class="p">|</span>       <span class="p">|</span>
+  <span class="p">|</span>       +- net_ens20f1_d8_c4_97_0a_39_58
+  <span class="p">|</span>         
+  +- pci_0000_00_02_0
+  <span class="p">|</span>   <span class="p">|</span>
+  <span class="p">|</span>   +- pci_0000_03_00_0
+  <span class="p">|</span>   <span class="p">|</span>   <span class="p">|</span>
+  <span class="p">|</span>   <span class="p">|</span>   +- net_ens10f0_90_e2_ba_f7_53_10
+  <span class="p">|</span>   <span class="p">|</span>     
+  <span class="p">|</span>   +- pci_0000_03_00_1
+  <span class="p">|</span>       <span class="p">|</span>
+  <span class="p">|</span>       +- net_ens10f1_90_e2_ba_f7_53_11
+
+...
+<span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># virsh nodedev-dumpxml pci_0000_03_00_0</span>
+&lt;device&gt;
+  &lt;name&gt;pci_0000_03_00_0&lt;/name&gt;
+  &lt;path&gt;/sys/devices/pci0000:00/0000:00:02.0/0000:03:00.0&lt;/path&gt;
+  &lt;parent&gt;pci_0000_00_02_0&lt;/parent&gt;
+  &lt;driver&gt;
+    &lt;name&gt;ixgbe&lt;/name&gt;
+  &lt;/driver&gt;
+  &lt;capability <span class="nv">type</span><span class="o">=</span><span class="s1">&#39;pci&#39;</span>&gt;
+    &lt;domain&gt;0&lt;/domain&gt;
+    &lt;bus&gt;3&lt;/bus&gt;
+    &lt;slot&gt;0&lt;/slot&gt;
+    &lt;<span class="k">function</span>&gt;0&lt;/function&gt;
+    &lt;product <span class="nv">id</span><span class="o">=</span><span class="s1">&#39;0x10fb&#39;</span>&gt;82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection&lt;/product&gt;
+    &lt;vendor <span class="nv">id</span><span class="o">=</span><span class="s1">&#39;0x8086&#39;</span>&gt;Intel Corporation&lt;/vendor&gt;
+    &lt;capability <span class="nv">type</span><span class="o">=</span><span class="s1">&#39;virt_functions&#39;</span> <span class="nv">maxCount</span><span class="o">=</span><span class="s1">&#39;63&#39;</span>/&gt;
+    &lt;iommuGroup <span class="nv">number</span><span class="o">=</span><span class="s1">&#39;44&#39;</span>&gt;
+      &lt;address <span class="nv">domain</span><span class="o">=</span><span class="s1">&#39;0x0000&#39;</span> <span class="nv">bus</span><span class="o">=</span><span class="s1">&#39;0x03&#39;</span> <span class="nv">slot</span><span class="o">=</span><span class="s1">&#39;0x00&#39;</span> <span class="k">function</span><span class="o">=</span><span class="s1">&#39;0x0&#39;</span>/&gt;
+    &lt;/iommuGroup&gt;
+    &lt;numa <span class="nv">node</span><span class="o">=</span><span class="s1">&#39;0&#39;</span>/&gt;
+    &lt;pci-express&gt;
+      &lt;link <span class="nv">validity</span><span class="o">=</span><span class="s1">&#39;cap&#39;</span> <span class="nv">port</span><span class="o">=</span><span class="s1">&#39;0&#39;</span> <span class="nv">speed</span><span class="o">=</span><span class="s1">&#39;5&#39;</span> <span class="nv">width</span><span class="o">=</span><span class="s1">&#39;8&#39;</span>/&gt;
+      &lt;link <span class="nv">validity</span><span class="o">=</span><span class="s1">&#39;sta&#39;</span> <span class="nv">speed</span><span class="o">=</span><span class="s1">&#39;5&#39;</span> <span class="nv">width</span><span class="o">=</span><span class="s1">&#39;8&#39;</span>/&gt;
+    &lt;/pci-express&gt;
+  &lt;/capability&gt;
+&lt;/device&gt;
+</pre></div>
+
+
+<ol>
+<li>将以上选取的enp6s0网卡从物理机上解除绑定，并更换驱动为pci-stub。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="c1">#lspci -nn | grep 06:00.0，查看vendor_id以及product_id，这里分别是 1137 和 0043</span>
+<span class="m">06</span>:00.0 Ethernet controller <span class="o">[</span><span class="m">0200</span><span class="o">]</span>: Cisco Systems Inc VIC Ethernet NIC <span class="o">[</span><span class="m">1137</span>:0043<span class="o">]</span> <span class="o">(</span>rev a2<span class="o">)</span>
+
+<span class="c1"># 将vendor_id以及product_id写入到driver中</span>
+<span class="c1"># echo &quot;1137 0043&quot; &gt; /sys/bus/pci/drivers/pci-stub/new_id</span>
+<span class="c1"># echo 0000:03:00.0 &gt; /sys/bus/pci/devices/0000\:03\:00.0/driver/unbind</span>
+<span class="c1"># echo 0000:03:00.0 &gt; /sys/bus/pci/drivers/pci-stub/bind</span>
+</pre></div>
+
+
+<p>配置完可以看到网卡驱动已经换成pci-stub.</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@localhost ~<span class="o">]</span><span class="c1"># lspci -v -s 03:00.0</span>
+<span class="m">03</span>:00.0 Ethernet controller: Intel Corporation 82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+    Subsystem: Intel Corporation Ethernet Server Adapter X520-2
+    Physical Slot: <span class="m">10</span>
+    Flags: fast devsel, IRQ <span class="m">26</span>, NUMA node <span class="m">0</span>
+    Memory at c7180000 <span class="o">(</span><span class="m">64</span>-bit, non-prefetchable<span class="o">)</span> <span class="o">[</span><span class="nv">size</span><span class="o">=</span>512K<span class="o">]</span>
+    I/O ports at <span class="m">5020</span> <span class="o">[</span><span class="nv">size</span><span class="o">=</span><span class="m">32</span><span class="o">]</span>
+    Memory at c7604000 <span class="o">(</span><span class="m">64</span>-bit, non-prefetchable<span class="o">)</span> <span class="o">[</span><span class="nv">size</span><span class="o">=</span>16K<span class="o">]</span>
+    Capabilities: <span class="o">[</span><span class="m">40</span><span class="o">]</span> Power Management version <span class="m">3</span>
+    Capabilities: <span class="o">[</span><span class="m">50</span><span class="o">]</span> MSI: Enable- <span class="nv">Count</span><span class="o">=</span><span class="m">1</span>/1 Maskable+ 64bit+
+    Capabilities: <span class="o">[</span><span class="m">70</span><span class="o">]</span> MSI-X: Enable- <span class="nv">Count</span><span class="o">=</span><span class="m">64</span> Masked-
+    Capabilities: <span class="o">[</span>a0<span class="o">]</span> Express Endpoint, MSI <span class="m">00</span>
+    Capabilities: <span class="o">[</span><span class="m">100</span><span class="o">]</span> Advanced Error Reporting
+    Capabilities: <span class="o">[</span><span class="m">140</span><span class="o">]</span> Device Serial Number <span class="m">90</span>-e2-ba-ff-ff-f7-53-10
+    Capabilities: <span class="o">[</span><span class="m">150</span><span class="o">]</span> Alternative Routing-ID Interpretation <span class="o">(</span>ARI<span class="o">)</span>
+    Capabilities: <span class="o">[</span><span class="m">160</span><span class="o">]</span> Single Root I/O Virtualization <span class="o">(</span>SR-IOV<span class="o">)</span>
+    Kernel driver in use: pci-stub
+    Kernel modules: ixgbe
+</pre></div>
+
+
+<ol>
+<li>将 <code>0000:06:00.0</code> 设备直通给虚拟机，虚拟机 xml 配置添加信息如下，其中 bus, slot, function 值为从上面查看到的值的 16 进制：</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="nt">&lt;hostdev</span> <span class="na">mode=</span><span class="s">&#39;subsystem&#39;</span> <span class="na">type=</span><span class="s">&#39;pci&#39;</span> <span class="na">managed=</span><span class="s">&#39;yes&#39;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;source&gt;</span>
+    <span class="nt">&lt;address</span> <span class="na">domain=</span><span class="s">&#39;0x0000&#39;</span> <span class="na">bus=</span><span class="s">&#39;0x03&#39;</span> <span class="na">slot=</span><span class="s">&#39;0x00&#39;</span> <span class="na">function=</span><span class="s">&#39;0x0&#39;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/source&gt;</span>
+<span class="nt">&lt;/hostdev&gt;</span>
+</pre></div>
+
+
+<ol>
+<li>开启虚拟机。</li>
+</ol>
+<h3>三、直通功能验证</h3>
+<ol>
+<li>进入虚拟机后，查看 pci 设备信息，可以看到所直通的物理网卡设备，如下 00:03:0：</li>
+</ol>
+<div class="highlight"><pre><span></span>root@localhost:~# lspci
+<span class="m">00</span>:00.0 Host bridge: Intel Corporation 440FX - 82441FX PMC <span class="o">[</span>Natoma<span class="o">]</span> <span class="o">(</span>rev <span class="m">02</span><span class="o">)</span>
+<span class="m">00</span>:01.0 ISA bridge: Intel Corporation 82371SB PIIX3 ISA <span class="o">[</span>Natoma/Triton II<span class="o">]</span>
+<span class="m">00</span>:01.1 IDE interface: Intel Corporation 82371SB PIIX3 IDE <span class="o">[</span>Natoma/Triton II<span class="o">]</span>
+<span class="m">00</span>:01.2 USB controller: Intel Corporation 82371SB PIIX3 USB <span class="o">[</span>Natoma/Triton II<span class="o">]</span> <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+<span class="m">00</span>:01.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI <span class="o">(</span>rev <span class="m">03</span><span class="o">)</span>
+<span class="m">00</span>:02.0 VGA compatible controller: Cirrus Logic GD <span class="m">5446</span>
+<span class="m">00</span>:03.0 Ethernet controller: Intel Corporation 82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+<span class="m">00</span>:04.0 SCSI storage controller: Red Hat, Inc Virtio SCSI
+<span class="m">00</span>:05.0 Communication controller: Red Hat, Inc Virtio console
+<span class="m">00</span>:06.0 Unclassified device <span class="o">[</span>00ff<span class="o">]</span>: Red Hat, Inc Virtio memory balloon
+
+root@localhost:~# lspci -mm <span class="p">|</span> grep <span class="m">00</span>:03.0
+<span class="m">00</span>:03.0 <span class="s2">&quot;Ethernet controller&quot;</span> <span class="s2">&quot;Intel Corporation&quot;</span> <span class="s2">&quot;82599ES 10-Gigabit SFI/SFP+ Network Connection&quot;</span> -r01 <span class="s2">&quot;Intel Corporation&quot;</span> <span class="s2">&quot;Ethernet Server Adapter X520-2&quot;</span>
+</pre></div>
+
+
+<ol>
+<li>脚本请移步：https://github.com/DPDK/dpdk/blob/v1.8.0/tools/dpdk_nic_bind.py</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@router</span><span class="p">:</span><span class="o">~</span><span class="c1"># python dpdk_nic_bind.py --status</span>
+
+<span class="n">Network</span> <span class="n">devices</span> <span class="n">using</span> <span class="n">DPDK</span><span class="o">-</span><span class="n">compatible</span> <span class="n">driver</span>
+<span class="o">============================================</span>
+<span class="mo">0000</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mf">03.0</span> <span class="s1">&#39;82599ES 10-Gigabit SFI/SFP+ Network Connection&#39;</span> <span class="n">drv</span><span class="o">=</span><span class="n">igb_uio</span> <span class="n">unused</span><span class="o">=</span><span class="n">ixgbe</span>
+<span class="mo">0000</span><span class="p">:</span><span class="mo">00</span><span class="p">:</span><span class="mf">07.0</span> <span class="s1">&#39;82599ES 10-Gigabit SFI/SFP+ Network Connection&#39;</span> <span class="n">drv</span><span class="o">=</span><span class="n">igb_uio</span> <span class="n">unused</span><span class="o">=</span><span class="n">ixgbe</span>
+
+<span class="n">Network</span> <span class="n">devices</span> <span class="n">using</span> <span class="n">kernel</span> <span class="n">driver</span>
+<span class="o">===================================</span>
+<span class="o">&lt;</span><span class="n">none</span><span class="o">&gt;</span>
+
+<span class="n">Other</span> <span class="n">network</span> <span class="n">devices</span>
+<span class="o">=====================</span>
+<span class="o">&lt;</span><span class="n">none</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>另外补充内容，查看网卡是否支持DPDK，可以进行如下验证：</p>
+<div class="highlight"><pre><span></span><span class="c1"># 查看网卡的设备id</span>
+<span class="c1"># cat /sys/bus/pci/devices/0000\:03\:00.0/device </span>
+0x0043
+</pre></div>
+
+
+<p>使用以上输出内容进入<a href="http://doc.dpdk.org/api-2.2/rte__pci__dev__ids_8h_source.html">rte_pci_dev_ids.h</a>文章中找。如果能找到，说明网卡支持 DPDK。</p>
+<h3>四、6wind 配置及 nat 验证</h3>
+<ol>
+<li>ip 配置</li>
+</ol>
+<p>这里测试使用了两张网卡进行直通。</p>
+<div class="highlight"><pre><span></span>root@router:~# lspci <span class="p">|</span> grep Eth
+<span class="m">00</span>:03.0 Ethernet controller: Intel Corporation 82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+<span class="m">00</span>:07.0 Ethernet controller: Intel Corporation 82599ES <span class="m">10</span>-Gigabit SFI/SFP+ Network Connection <span class="o">(</span>rev <span class="m">01</span><span class="o">)</span>
+</pre></div>
+
+
+<p>创建vlan接口，并配置ip地址：</p>
+<div class="highlight"><pre><span></span>root@router:~# ip a
+<span class="m">1</span>: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span class="m">65536</span> qdisc noqueue state UNKNOWN group default qlen <span class="m">1</span>
+    link/loopback <span class="m">00</span>:00:00:00:00:00 brd <span class="m">00</span>:00:00:00:00:00
+    inet <span class="m">127</span>.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+<span class="m">4</span>: fpn0: &lt;BROADCAST,MULTICAST,NOARP,UP,LOWER_UP&gt; mtu <span class="m">65536</span> qdisc noqueue state UNKNOWN group default qlen <span class="m">1</span>
+    link/ether <span class="m">00</span>:00:46:50:4e:00 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::200:46ff:fe50:4e00/64 scope link 
+       valid_lft forever preferred_lft forever
+<span class="m">5</span>: ens3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc mq state UP group default qlen <span class="m">1000</span>
+    link/ether <span class="m">90</span>:e2:ba:f7:53:10 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::92e2:baff:fef7:5310/64 scope link 
+       valid_lft forever preferred_lft forever
+<span class="m">6</span>: ens7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc mq state UP group default qlen <span class="m">1000</span>
+    link/ether <span class="m">90</span>:e2:ba:f7:53:11 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::92e2:baff:fef7:5311/64 scope link 
+       valid_lft forever preferred_lft forever
+<span class="m">7</span>: vlan401@ens3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc noqueue state UP group default qlen <span class="m">1000</span>
+    link/ether <span class="m">02</span>:09:c0:9e:47:f8 brd ff:ff:ff:ff:ff:ff
+    inet <span class="m">10</span>.128.120.65/22 brd <span class="m">10</span>.128.123.255 scope global vlan401
+       valid_lft forever preferred_lft forever
+    inet6 fe80::9:c0ff:fe9e:47f8/64 scope link 
+       valid_lft forever preferred_lft forever
+<span class="m">8</span>: vlan2388@ens7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc noqueue state UP group default qlen <span class="m">1000</span>
+    link/ether <span class="m">02</span>:09:c0:8b:ec:90 brd ff:ff:ff:ff:ff:ff
+    inet <span class="m">18</span>.23.120.65/8 brd <span class="m">18</span>.255.255.255 scope global vlan2388
+       valid_lft forever preferred_lft forever
+    inet6 fe80::9:c0ff:fe8b:ec90/64 scope link 
+       valid_lft forever preferred_lft forever
+</pre></div>
+
+
+<p>ip 信息配置如下：</p>
+<div class="highlight"><pre><span></span><span class="n">router</span><span class="o">:</span>
+    <span class="n">ens3</span><span class="o">:</span> <span class="mf">18.23</span><span class="o">.</span><span class="mf">120.65</span>
+    <span class="n">ens4</span><span class="o">:</span> <span class="mf">10.128</span><span class="o">.</span><span class="mf">120.65</span>
+    <span class="n">gateway</span><span class="o">:</span> <span class="mf">18.23</span><span class="o">.</span><span class="mf">120.10</span>
+
+<span class="n">client1</span><span class="o">:</span> 
+    <span class="n">eth0</span><span class="o">:</span> <span class="mf">10.128</span><span class="o">.</span><span class="mf">120.77</span>
+    <span class="n">gateway</span><span class="o">:</span> <span class="mf">10.128</span><span class="o">.</span><span class="mf">120.65</span>
+
+<span class="n">client2</span><span class="o">:</span>
+    <span class="n">eth0</span><span class="o">:</span> <span class="mf">18.23</span><span class="o">.</span><span class="mf">120.88</span>
+    <span class="n">gateway</span><span class="o">:</span> <span class="mf">18.23</span><span class="o">.</span><span class="mf">120.10</span>
+</pre></div>
+
+
+<ol>
+<li>nat 配置</li>
+</ol>
+<div class="highlight"><pre><span></span>router<span class="o">{</span>conf:init_turbo-nat<span class="o">}</span>display 
+    <span class="c1"># NAT STATEMENTS</span>
+
+    <span class="c1"># NAT PUBLIC INTERFACES</span>
+      public interface vlan2388
+        nat <span class="nb">enable</span>
+
+      <span class="c1"># DYNAMIC MAPPINGS</span>
+        dynamic <span class="m">100</span> <span class="m">10</span>.128.120.77/8 to <span class="m">18</span>.23.120.65
+
+      <span class="c1"># STATIC MAPPINGS</span>
+        static <span class="m">100</span> protocol tcp public <span class="m">18</span>.23.120.65:2222 private <span class="m">10</span>.128.120.77:22
+        static <span class="m">200</span> protocol tcp public <span class="m">18</span>.23.120.65:5201 private <span class="m">10</span>.128.120.77:5201
+
+       <span class="nb">exit</span>
+
+    <span class="c1"># NAT timeouts</span>
+
+    <span class="c1"># LOG</span>
+</pre></div>
+
+
+<ol>
+<li>测试验证</li>
+</ol>
+<p>wan to lan:</p>
+<div class="highlight"><pre><span></span>client1 <span class="c1"># iperf3 -s</span>
+client2 <span class="c1"># iperf3 -c 18.23.120.65 -l 1518 -t 20 -P 10 -i 20 -f m</span>
+</pre></div>
+
+
+<p>lan to wan:</p>
+<div class="highlight"><pre><span></span>client1# iperf3 -c <span class="m">18</span>.23.120.88 -l <span class="m">1518</span> -t <span class="m">20</span> -P <span class="m">10</span> -i <span class="m">20</span> -f m
+client2# iperf3 -s
+</pre></div>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

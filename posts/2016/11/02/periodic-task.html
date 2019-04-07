@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="一、periodic_task 1.1 what is periodic_task 在Nova中，nova-compute, nova-scheduler, nova-cell, network都有自己的周期性任务，通过nova的代码结构可以发现，它们都统一由各自模块下的manager.py中periodic_task管理。其中，periodic_task首先实现了一个装饰器，所有的周期性任务都是通过添加该装饰器实现，而周期性任务的启动伴随着每个服务的start也同步开始。 首先装饰器实现如下(oslo_service/periodic_task.py)，我们阅读后会发现，该方法主要定义了周期性任务（为True），以及周期性任务的名称，间隔时间（默认间隔时间是60s），运行方式等。实际上，此方法也只是定义了上述内容，添加了几个属性，并没有做其他的什么操作。由这些参数作为周期性任务的标记，保存到kwargs。 def periodic_task(*args, **kwargs): def decorator(f): # f为被装饰的函数 # Test for old style invocation if …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="Nova中定时任务解析"/>
+<meta property="og:description" content="一、periodic_task 1.1 what is periodic_task 在Nova中，nova-compute, nova-scheduler, nova-cell, network都有自己的周期性任务，通过nova的代码结构可以发现，它们都统一由各自模块下的manager.py中periodic_task管理。其中，periodic_task首先实现了一个装饰器，所有的周期性任务都是通过添加该装饰器实现，而周期性任务的启动伴随着每个服务的start也同步开始。 首先装饰器实现如下(oslo_service/periodic_task.py)，我们阅读后会发现，该方法主要定义了周期性任务（为True），以及周期性任务的名称，间隔时间（默认间隔时间是60s），运行方式等。实际上，此方法也只是定义了上述内容，添加了几个属性，并没有做其他的什么操作。由这些参数作为周期性任务的标记，保存到kwargs。 def periodic_task(*args, **kwargs): def decorator(f): # f为被装饰的函数 # Test for old style invocation if …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/posts/2016/11/02/periodic-task.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-11-02 23:00:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="OpenStack"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; Nova中定时任务解析</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="periodic-task">Nova中定时任务解析</h1>
+    <p>
+          Posted on 2016-11-02 23:00 in <a href="https://andiaq.github.io/category/openstack.html">OpenStack</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <h3>一、periodic_task</h3>
+<h4>1.1 what is periodic_task</h4>
+<p>在Nova中，nova-compute, nova-scheduler, nova-cell, network都有自己的周期性任务，通过nova的代码结构可以发现，它们都统一由各自模块下的manager.py中periodic_task管理。其中，periodic_task首先实现了一个装饰器，所有的周期性任务都是通过添加该装饰器实现，而周期性任务的启动伴随着每个服务的start也同步开始。</p>
+<p>首先装饰器实现如下(<code>oslo_service/periodic_task.py</code>)，我们阅读后会发现，该方法主要定义了周期性任务（为True），以及周期性任务的名称，间隔时间（默认间隔时间是60s），运行方式等。实际上，此方法也只是定义了上述内容，添加了几个属性，并没有做其他的什么操作。由这些参数作为周期性任务的标记，保存到kwargs。</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">periodic_task</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>          <span class="c1"># f为被装饰的函数</span>
+        <span class="c1"># Test for old style invocation</span>
+        <span class="k">if</span> <span class="s1">&#39;ticks_between_runs&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidPeriodicTaskArg</span><span class="p">(</span><span class="n">arg</span><span class="o">=</span><span class="s1">&#39;ticks_between_runs&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Control if run at all</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">_periodic_task</span> <span class="o">=</span> <span class="bp">True</span>     
+        <span class="n">f</span><span class="o">.</span><span class="n">_periodic_external_ok</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;external_process_ok&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">_periodic_enabled</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">_periodic_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="c1"># Control frequency</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">_periodic_spacing</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;spacing&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># 定义间隔时间</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">_periodic_immediate</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;run_immediately&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span> <span class="c1"># 定义运行方式</span>
+        <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">_periodic_immediate</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">_periodic_last_run</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">_periodic_last_run</span> <span class="o">=</span> <span class="n">now</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">f</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">decorator</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">decorator</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+
+<h4>1.2 why use periodic_task</h4>
+<p>在创建虚拟机时，时常会出现虚拟机一直处于创建过程中的某一个状态，比如在rebuild状态时，通过设置定时机制，可以设置超时时间，不至于一直处于某一个状态。另外，合理利用定时机制还可以实现资源在周期时间内被回收，同步电源状态，循环更新宿主机可用资源，循环删除迁移失败的虚机等等。在Nova中，周期性任务的实现大大增强了openstack虚拟机生命周期管理的可用性。</p>
+<h4>1.3 how to use periodic_task</h4>
+<p>周期性任务的真正实现首先由nova/service.py的start方法中被触发：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">......</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tg</span><span class="o">.</span><span class="n">add_dynamic_timer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodic_tasks</span><span class="p">,</span>
+                                  <span class="n">initial_delay</span><span class="o">=</span><span class="n">initial_delay</span><span class="p">,</span>     
+                                  <span class="n">periodic_interval_max</span><span class="o">=</span>           
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">periodic_interval_max</span><span class="p">)</span>
+</pre></div>
+
+
+<p>其中，self.periodic_tasks调用了nova/manager.py的periodic_tasks方法:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">periodic_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">raise_on_error</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tasks to be run at a periodic interval.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_periodic_tasks</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">raise_on_error</span><span class="o">=</span><span class="n">raise_on_error</span><span class="p">)</span> 
+</pre></div>
+
+
+<p><code>run_periodic_tasks()</code>来自<code>oslo_service/periodic_task.py</code>中的<code>PeriodicTasks</code>类，该类的实现方式比较复杂，由<code>@six.add_metaclass(_PeriodicTasksMeta)</code>装饰，即使用了 Python 中的 metaclass，即元类。这里简要说明下，我们可以把元类想象成一个类中类，或者是一个类，而它的实例也是一个类。也可以理解成，metaclass 的实例是类，而 class 的实例是一个类对象。metaclass 详解移步<a href="http://jianpx.iteye.com/blog/908121">这里</a>。</p>
+<p>下面分析该元类:</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">_PeriodicTasksMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dict_</span><span class="p">):</span>
+        <span class="c1"># cls为将要被创建的类，names为类名，bases为基类，dict_为类的属性，是一个字典，保存类的方法</span>
+        <span class="sd">&quot;&quot;&quot;Metaclass that allows us to collect decorated periodic tasks.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_PeriodicTasksMeta</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dict_</span><span class="p">)</span>
+
+        <span class="c1"># 为类添加_periodic_tasks和_periodic_spacing两个类变量</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_periodic_tasks</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_periodic_tasks</span><span class="p">[:]</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_periodic_tasks</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_periodic_spacing</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_periodic_spacing</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_periodic_spacing</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># 访问类的各个函数成员，如果成员中_periodic_task变量并且等于true，</span>
+        <span class="c1"># 则将该函数成员收集到类的_periodic_tasks列表中，在for循环结束后，</span>
+        <span class="c1"># 所有的周期性任务都会在该列表里面</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;_periodic_task&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_add_periodic_task</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+
+
+<p>添加周期性任务到_periodic_tasks中的方法实现如下：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_add_periodic_task</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a periodic task to the list of periodic tasks.</span>
+
+<span class="sd">    The task should already be decorated by @periodic_task.</span>
+
+<span class="sd">    :return: whether task was actually enabled</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">_periodic_name</span>
+
+    <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">_periodic_spacing</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s1">&#39;Skipping periodic task </span><span class="si">%(task)s</span><span class="s1"> because &#39;</span>
+                     <span class="s1">&#39;its interval is negative&#39;</span><span class="p">),</span>
+                 <span class="p">{</span><span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">_periodic_enabled</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">_LI</span><span class="p">(</span><span class="s1">&#39;Skipping periodic task </span><span class="si">%(task)s</span><span class="s1"> because &#39;</span>
+                     <span class="s1">&#39;it is disabled&#39;</span><span class="p">),</span>
+                 <span class="p">{</span><span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="c1"># A periodic spacing of zero indicates that this task should</span>
+    <span class="c1"># be run on the default interval to avoid running too</span>
+    <span class="c1"># frequently.</span>
+    <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">_periodic_spacing</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">_periodic_spacing</span> <span class="o">=</span> <span class="n">DEFAULT_INTERVAL</span>
+
+    <span class="bp">cls</span><span class="o">.</span><span class="n">_periodic_tasks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">task</span><span class="p">))</span>
+    <span class="bp">cls</span><span class="o">.</span><span class="n">_periodic_spacing</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">_periodic_spacing</span>
+    <span class="k">return</span> <span class="bp">True</span>
+</pre></div>
+
+
+<p>由以上程序，便完成了所有周期性任务的收集，接着等待任务被调度。现在我们继续说<code>add_dynamic_timer</code>方法(<code>oslo_service/loopingcall.py</code>)。 其中<code>tg</code>是线程组<code>threadgroup.ThreadGroup(threads)</code> 的实例，主要用来管理定时器<code>Timer</code>和<code>greenthreads</code>。然后实例化了一个<code>DynamicLoopingCall</code>对象<code>timer</code>,循环调用<code>callback</code>,此处的传入的<code>callback</code>为<code>periodic_tasks.DynamicLoopingCall</code>与普通的<code>LoopingCall</code>不同之处在于，它在循环调用<code>callback</code>时，两次调用之间的等待时间是动态决定的。 接着timer调用start方法，该方法会创建一个绿色线程，定时触发周期性任务被调度。</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_dynamic_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">initial_delay</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                      <span class="n">periodic_interval_max</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">timer</span> <span class="o">=</span> <span class="n">loopingcall</span><span class="o">.</span><span class="n">DynamicLoopingCall</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">timer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">initial_delay</span><span class="o">=</span><span class="n">initial_delay</span><span class="p">,</span>
+                <span class="n">periodic_interval_max</span><span class="o">=</span><span class="n">periodic_interval_max</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">timers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">timer</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">timer</span>
+</pre></div>
+
+
+<p>现在我们回到manager.py,执行run_periodic_tasks方法：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_periodic_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">raise_on_error</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tasks to be run at a periodic interval.&quot;&quot;&quot;</span>
+    <span class="n">idle_for</span> <span class="o">=</span> <span class="n">DEFAULT_INTERVAL</span>
+    <span class="c1"># 这里开始循环执行在上述元类_PeriodicTasksMeta中收集到的</span>
+    <span class="c1"># 所有被deriodic_task装饰过的函数</span>
+    <span class="k">for</span> <span class="n">task_name</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_periodic_tasks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">_periodic_external_ok</span> <span class="ow">and</span> <span class="ow">not</span> 
+           <span class="bp">self</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">run_external_periodic_tasks</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">cls_name</span> <span class="o">=</span> <span class="n">reflection</span><span class="o">.</span><span class="n">get_class_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fully_qualified</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">full_task_name</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">cls_name</span><span class="p">,</span> <span class="n">task_name</span><span class="p">])</span>
+
+        <span class="n">spacing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_periodic_spacing</span><span class="p">[</span><span class="n">task_name</span><span class="p">]</span>
+        <span class="n">last_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_periodic_last_run</span><span class="p">[</span><span class="n">task_name</span><span class="p">]</span>
+
+        <span class="c1"># Check if due, if not skip</span>
+        <span class="n">idle_for</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">idle_for</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">last_run</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">last_run</span> <span class="o">+</span> <span class="n">spacing</span> <span class="o">-</span> <span class="n">now</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">idle_for</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">idle_for</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Running periodic task </span><span class="si">%(full_task_name)s</span><span class="s2">&quot;</span><span class="p">,</span>
+                  <span class="p">{</span><span class="s2">&quot;full_task_name&quot;</span><span class="p">:</span> <span class="n">full_task_name</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_periodic_last_run</span><span class="p">[</span><span class="n">task_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_nearest_boundary</span><span class="p">(</span>
+            <span class="n">last_run</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>       <span class="c1"># 执行被装饰的函数</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raise_on_error</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">_LE</span><span class="p">(</span><span class="s2">&quot;Error during </span><span class="si">%(full_task_name)s</span><span class="s2">&quot;</span><span class="p">),</span>
+                          <span class="p">{</span><span class="s2">&quot;full_task_name&quot;</span><span class="p">:</span> <span class="n">full_task_name</span><span class="p">})</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">idle_for</span>
+</pre></div>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

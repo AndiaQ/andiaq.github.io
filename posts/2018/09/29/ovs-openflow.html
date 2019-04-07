@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="本篇文章主要介绍 OVS 以及 Openflow 在 OVS 中的应用。在理解 OVS 原理的基础上，再去学习 Openflow 能更好的掌握二者的实现机制和使用方法。 一、介绍 OpenvSwitch 在介绍 ovs 之前先说一下另外一个虚拟交换机，即 linux kernel 中的 linux bridge。linux bridge 是一个工作在内核的二层虚拟交换机，添加到 linuxbridge 上的设备 (比如虚拟机的 tap 设备) 被设置为只接受二层数据帧并且转发所有收到的数据包到 linuxbridge 的内核模块中，在 linuxbridge 内核模块中会进行一个类似物理交换机的查 MAC 端口映射表，转发，更新 MAC 端口映射表这样的处理逻辑，从而数据包可以被转发到另一个接口或者被丢弃/广播/发往上层协议栈，由此 …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="OVS 和 Openflow"/>
+<meta property="og:description" content="本篇文章主要介绍 OVS 以及 Openflow 在 OVS 中的应用。在理解 OVS 原理的基础上，再去学习 Openflow 能更好的掌握二者的实现机制和使用方法。 一、介绍 OpenvSwitch 在介绍 ovs 之前先说一下另外一个虚拟交换机，即 linux kernel 中的 linux bridge。linux bridge 是一个工作在内核的二层虚拟交换机，添加到 linuxbridge 上的设备 (比如虚拟机的 tap 设备) 被设置为只接受二层数据帧并且转发所有收到的数据包到 linuxbridge 的内核模块中，在 linuxbridge 内核模块中会进行一个类似物理交换机的查 MAC 端口映射表，转发，更新 MAC 端口映射表这样的处理逻辑，从而数据包可以被转发到另一个接口或者被丢弃/广播/发往上层协议栈，由此 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/posts/2018/09/29/ovs-openflow.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2018-09-29 18:27:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="network"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; OVS 和 Openflow</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="ovs-openflow">OVS 和 Openflow</h1>
+    <p>
+          Posted on 2018-09-29 18:27 in <a href="https://andiaq.github.io/category/network.html">network</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>本篇文章主要介绍 OVS 以及 Openflow 在 OVS 中的应用。在理解 OVS 原理的基础上，再去学习 Openflow 能更好的掌握二者的实现机制和使用方法。</p>
+<h3>一、介绍 OpenvSwitch</h3>
+<p>在介绍 ovs 之前先说一下另外一个虚拟交换机，即 linux kernel 中的 linux bridge。linux bridge 是一个工作在内核的二层虚拟交换机，添加到 linuxbridge 上的设备 (比如虚拟机的 tap 设备) 被设置为只接受二层数据帧并且转发所有收到的数据包到 linuxbridge 的内核模块中，在 linuxbridge 内核模块中会进行一个类似物理交换机的查 MAC 端口映射表，转发，更新 MAC 端口映射表这样的处理逻辑，从而数据包可以被转发到另一个接口或者被丢弃/广播/发往上层协议栈，由此 linuxbridge 实现了数据转发的功能。</p>
+<p>与 linuxbridge 不同的是，ovs 能支持一些高级特性比如 OpenFlow 协议, VLAN tag, QOS, ACL ,Flow 等，是一个高质量的多层虚拟交换机，具备三层交换功能，相比来说更适合 SDN，但是也因此不如 linuxbridge 简单高效易理解。</p>
+<p>OVS 支持 OpenFlow 协议，我们就可以使用任何支持 OpenFlow 协议的控制器来对 OVS 进行远程管理，但这并不意味着 OVS 必须要有一个控制器才能工作。在不连接外部控制器情况下，OVS 作为一个二层虚拟交换机，自身也可以依靠 MAC 地址学习实现二层数据包转发功能，就像 Linuxbridge。</p>
+<h4>1.1 OVS 核心组件及其关联关系</h4>
+<p><img alt="image" src="images/network/ovs-openflow.png"></p>
+<p>ovs 在实现中分为用户空间和内核空间两部分，用户空间主要负责实现数据交换和 Openflow 流表功能，以及一些管理工具。内核空间主要负责流表查找的快速通道。</p>
+<ol>
+<li>
+<p>ovs-vswitchd: 实现 OpenFlow 交换机的核心功能，通过 Netlink 协议直接和 OVS 内部模块进行通信。另外，通过 UNIX socket 通信机制和 ovs-server 进行通信，将虚拟交换机的配置、流表、统计信息等保存在数据库 ovsdb 中，当 ovsdb 中的配置信息改变时 (例如使用 ovs-vsctl 工具) ，ovs-vswitchd 也会自动更新其配置以保持与数据库同步。也可以直接使用 ovsdb-tool 直接对 ovsdb 数据库进行操作。</p>
+</li>
+<li>
+<p>openvswitch.ko：内核空间的快速通路，主要包括 datapath 模块，datapath 负责执行报文的快速转发，把从接受端口接收到的数据包在流表中进行匹配，并执行匹配到的动作，实现快速转发能力。</p>
+</li>
+</ol>
+<p>OVS 数据流的大致转发流程如下：</p>
+<ol>
+<li>OVS 的 datapath 收到来自物理网卡或者虚拟网卡发来的数据包，获取其中的 IP/MAC/Port 等相关信息</li>
+<li>在内核态查看流表（ datapath flows ），如果有匹配 flow 则按照 action 执行相应的操作进行快速转发，否则将数据包送到用户空间由 ovs-vswitchd 处理。</li>
+<li>ovs-vswitchd 查找用户态流表，如果还找不到，在有 sdn 控制器接入情况下，通过 openflow 协议告知控制器，由控制器处理。</li>
+<li>如果 ovs-vswitchd 找到匹配的 flow，则将匹配的 actions 返回给 datapath 并设置一条 datapath flows 到 datapath 中，这样后续进入的同类型的数据包因为缓存匹配会被 datapath 直接处理，不用再次进入用户空间。</li>
+<li>datapath 重新发起选路，查询其流表，匹配然后进行数据转发。</li>
+</ol>
+<h4>1.2 原生 OVS 源码安装配置</h4>
+<ol>
+<li>下载 ovs 源码，安装 2.9.0 版本。</li>
+</ol>
+<div class="highlight"><pre><span></span># git clone https://github.com/openvswitch/ovs.git
+# git checkout -b v2.9.0 v2.9.0
+</pre></div>
+
+
+<ol>
+<li>进行源码安装配置。</li>
+</ol>
+<div class="highlight"><pre><span></span># mkdir /usr/local/ovs
+# cd ovs
+# ./boot.sh
+# ./configure --prefix=/usr/local/ovs --with-linux=/lib/modules/`uname -r`/build
+# make &amp;&amp; make install
+</pre></div>
+
+
+<ol>
+<li>验证。可以看到 ovs 2.9.0 版本原生支持 openflow 1.5 版本。</li>
+</ol>
+<div class="highlight"><pre><span></span>[root@POD23-CLU02-H006 ~]# ovs-ofctl --version
+ovs-ofctl (Open vSwitch) 2.9.0
+OpenFlow versions 0x1:0x5
+</pre></div>
+
+
+<h3>二、介绍 OpenFlow</h3>
+<p>Openflow 核心思想很简单，就是将原本完全由交换机/路由器控制的数据包转发过程，转化为由 OpenFlow 交换机 ( OpenFlow Switch ) 和 OpenFlow 控制器 (Controller) 分别完成的独立过程。转变背后进行的实际上是控制权的更迭：传统网络中数据包的流向是人为指定的，虽然交换机、路由器拥有控制权，却没有数据流的概念，只进行数据包级别的交换；而在 OpenFlow 网络中，统一的控制器取代路由，决定了所有数据包在网络中传输路径。</p>
+<p>OpenFlow 交换机会在本地维护一份从控制器获取的流表 (Flow Table) ,如果要转发的数据包在本地流表中有对应项，则直接进行快速转发，若流表中没有此项，数据包就会被发送到控制器进行传输路径的确认，再根据下发结果进行转发。</p>
+<p>现在应该能明白网上关于 OpenFlow 资料经常提到的一句话 OpenFlow 协议实现了控制层面和转发层面的分离，控制层面就是指 OpenFlow 控制器，分离就是说控制器负责控制转发规则，交换机只负责执行转发工作，他们可以通过 IP 网络使用 OpenFlow 协议连接，不需要位于同一台主机上。</p>
+<h4>2.1 OVS 中的 Openflow</h4>
+<p>OVS 是 Openflow 的一个具体实现，ovs-ofctl 是 ovs 原生支持的配置 openflow 流表的工具，在没有 Controller 的接入下，依然可以使用 ovs-ofctl 命令通过 Openflow 协议去连接 OVS，并对 OVS 流表进行操作。本篇文章目的是进行学习测试，通过将 OVS 作为普通 MAC 地址学习交换机并手动添加流表的方式，掌握相关内容。</p>
+<p>在没有连接控制器时，使用 OVS 创建的网桥默认是一个二层虚拟交换机，和 linuxbridge 一样使用简单的 MAC 地址学习方式转发数据包。当流表项指定 action 为 normal，表示匹配此条流表项的数据包脱离 OpenFlow 的控制，由 OVS 根据 MAC 地址学习方式完成后续转发，后面数据包如何被处理就跟 flow 没关系了。如下所示：</p>
+<div class="highlight"><pre><span></span>[root@POD23-CLU02-H006 ~]# ovs-vsctl add-br br2
+[root@POD23-CLU02-H006 ~]# ovs-ofctl dump-flows br2
+ cookie=0x0, duration=19.727s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
+</pre></div>
+
+
+<p>若 OVS 连接有 OpenFlow 控制器或 OVS 中配置有流表，则此时 OVS 数据转发策略就完全由流表来决定。</p>
+<p>下面介绍 openflow 中 flow 的基本语法。</p>
+<h4>2.2 flow 语法</h4>
+<p>在 OVS 中，流表项作为 ovs-ofctl 的参数，采用如下的格式：字段=值。如果有多个字段，可以用逗号或者空格分开。一些常用的字段列举如下：</p>
+<table>
+<thead>
+<tr>
+<th>匹配字段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>in_port=port</td>
+<td>int 类型，数据包进入的 openflow 端口号，<code>ovs-ofctl show br0</code>可以查看 port number</td>
+</tr>
+<tr>
+<td>dl_vlan=vlan</td>
+<td>0-4095, 或0xffff，数据包的 VLAN Tag，0xffff 表示此数据包不带 VLAN Tag</td>
+</tr>
+<tr>
+<td>dl_src=xx:xx:xx:xx:xx:xx</td>
+<td>数据包源 MAC (eg. 00:0A:E4:25:6B:B0)</td>
+</tr>
+<tr>
+<td>dl_dst=xx:xx:xx:xx:xx:xx</td>
+<td>数据包目的 MAC (eg. 00:0A:E4:25:6B:B0)</td>
+</tr>
+<tr>
+<td>01:00:00:00:00:00/01:00:00:00:00:00</td>
+<td>匹配所有多播或广播数据包</td>
+</tr>
+<tr>
+<td>00:00:00:00:00:00/01:00:00:00:00:00</td>
+<td>匹配所有单播数据包</td>
+</tr>
+<tr>
+<td>dl_type=ethertype</td>
+<td>0 到 65535 的长整数或者 16 进制表示，匹配以太网数据包类型，EX：0x0800 ( IPv4 数据包) 0x0806 ( arp 数据包)</td>
+</tr>
+<tr>
+<td>nw_src=ip[/netmask] nw_dst=ip[/netmask]</td>
+<td>dl_type 字段为 0x0800 时就匹配源或目的 ip 地址，为 0x0806 就匹配 ar_spa 或 ar_tpa ，若 dl_type 字段为通配符，这两个参数会被忽略</td>
+</tr>
+<tr>
+<td>tcp_src=port tcp_dst=port udp_src=port udp_dst=port</td>
+<td>匹配 TCP 或 UDP 的源或目的端口，当然，若 dl_type 字段为通配符或者未明确协议类型时，这些字段会忽略</td>
+</tr>
+</tbody>
+</table>
+<p>关于当前 OVS 版本支持的更多匹配字段以及详细说明和用法，可以通过 <code>man ovs-ofctl</code> 查看。</p>
+<p>上面提到 flow 支持通配符，添加流表项时只能指定有限的几个字段，对于未指定的字段则默认为通配符，因此若某条添加 flow 命令中所有匹配字段都为通配符，那么这条 flow 将匹配所有数据包，下面新建一个网桥 br-test 测试一下。</p>
+<div class="highlight"><pre><span></span>[root@POD23-CLU02-H006 ~]# ovs-vsctl add-br br-test
+[root@POD23-CLU02-H006 ~]# ovs-ofctl dump-flows br-test
+ cookie=0x0, duration=4.866s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
+</pre></div>
+
+
+<p>可以看到新创建的br-test中默认只有一条flow，也未连接任何控制器，而且此flow中没有匹配字段(priority不是)，因此这条默认添加的flow将匹配所有进入br-test的数据包，而其动作NORMAL表明数据包完全按照MAC地址学习方式完成转发。</p>
+<h4>2.3 flow action 语法</h4>
+<p>action 字段语法为 actions=[action][,action...]，多个 action 用逗号隔开，指定匹配某条流表项的数据包要执行的指令集，要注意的是，若未指定任何 action，数据包会被 DROP。</p>
+<table>
+<thead>
+<tr>
+<th>action 指令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>output:PORT</td>
+<td>数据包从端口 PORT 发出，PORT 为 openflow 端口号，若 PORT 为数据包进入端口，则不执行此 action</td>
+</tr>
+<tr>
+<td>normal</td>
+<td>数据包交由 OVS 自身的转发规则完成转发，不再匹配任何 openflow flow</td>
+</tr>
+<tr>
+<td>all</td>
+<td>数据包从网桥上所有端口发出，除了其进入端口</td>
+</tr>
+<tr>
+<td>drop</td>
+<td>丢弃数据包，当然，drop 之后不能再跟其它 action</td>
+</tr>
+<tr>
+<td>mod_vlan_vid:vlan_vid</td>
+<td>添加或修改数据包中的 VLAN tag 为此处指定的 tag</td>
+</tr>
+<tr>
+<td>strip_vlan</td>
+<td>移除数据包中的VLAN tag，如果有的话</td>
+</tr>
+<tr>
+<td>mod_dl_src:mac /mod_dl_dst:mac</td>
+<td>修改源或目的 MAC 地址</td>
+</tr>
+<tr>
+<td>mod_nw_src:ip / mod_nw_dst:ip</td>
+<td>修改源或者目的 ip 地址</td>
+</tr>
+<tr>
+<td>mod_tp_src:port / mod_tp_dst:port</td>
+<td>修改 TCP 或 UDP 数据包的源或目的端口号(注意不是 openflow 端口号)</td>
+</tr>
+<tr>
+<td>resubmit([port],[table])</td>
+<td>若 port 指定,替换数据包 in_port 字段,并重新匹配；若 table 指定，提交数据包到指定 table，并匹配</td>
+</tr>
+</tbody>
+</table>
+<h4>2.4 实践操作 OpenFlow 命令</h4>
+<p>在本例中, 我们会创建一个不连接到任何控制器的 OVS 交换机，并演示如何使用 ovs-ofctl 命令操作 OpenFlow 流表。</p>
+<ol>
+<li>创建一个新的 OVS 交换机</li>
+</ol>
+<div class="highlight"><pre><span></span># ovs-vsctl add-br br1
+</pre></div>
+
+
+<ol>
+<li>创建三台虚拟机，指定 bridge 为 br1，当虚拟机启动时会自动按照 xml 中配置的 tap 设备名称创建一个 port 并挂载到 ovs 网桥上。OVS 会为 interface 自动生成一个 OpenFlow 端口编号。这个端口编号也可以自己配置。配置 openflow 端口编号如下：</li>
+</ol>
+<div class="highlight"><pre><span></span># ovs-vsctl set interface tap-vm1 ofport_request=100
+# ovs-vsctl set interface tap-vm2 ofport_request=101
+# ovs-vsctl set interface tap-vm3 ofport_request=102
+</pre></div>
+
+
+<p>配置完成后，两台虚拟机信息：</p>
+<table>
+<thead>
+<tr>
+<th>虚拟机</th>
+<th>interface</th>
+<th>OpenFlow 端口号</th>
+<th>vlan tag</th>
+<th>IP 地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>wangyuwei-1</td>
+<td>tap-vm1</td>
+<td>100</td>
+<td>100</td>
+<td>11.11.11.12</td>
+</tr>
+<tr>
+<td>wangyuwei-2</td>
+<td>tap-vm2</td>
+<td>101</td>
+<td>100</td>
+<td>11.11.11.13</td>
+</tr>
+<tr>
+<td>wangyuwei-3</td>
+<td>tap-vm3</td>
+<td>102</td>
+<td>100</td>
+<td>11.11.11.14</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>屏蔽数据包</li>
+</ol>
+<p>屏蔽所有进入 OVS 网桥 br1 的以太网数据包</p>
+<div class="highlight"><pre><span></span># ovs-ofctl add-flow br1 &quot;table=0, dl_src=01:00:00:00:00:00/01:00:00:00:00:00, actions=drop&quot;
+</pre></div>
+
+
+<ol>
+<li>修改数据包</li>
+</ol>
+<p>添加新的 OpenFlow 条目，修改从端口 tap-vm1 收到的数据包的源地址为 12.12.12.12</p>
+<div class="highlight"><pre><span></span># ovs-ofctl add-flow br1 &quot;priority=1 idle_timeout=0,in_port=100,actions=mod_nw_src:12.12.12.12,normal&quot;
+</pre></div>
+
+
+<p>从 wangyuwei-1 (11.11.11.12) ping wangyuwei-2 (11.11.11.13)，并对 tap-vm2 进行抓包，可以看到地址成功被替换成 12.12.12.12，符合预期。</p>
+<div class="highlight"><pre><span></span>[root@POD23-CLU02-H006 ~]# tcpdump -i tap-vm2 icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on tap-vm2, link-type EN10MB (Ethernet), capture size 262144 bytes
+18:04:03.382171 IP 12.12.12.12 &gt; 11.11.11.13: ICMP echo request, id 15694, seq 28, length 64
+18:04:04.382254 IP 12.12.12.12 &gt; 11.11.11.13: ICMP echo request, id 15694, seq 29, length 64
+</pre></div>
+
+
+<ol>
+<li>重定向数据包</li>
+</ol>
+<p>添加新的 OpenFlow 条目，重定向来自 tap-vm1 的所有 ICMP 数据包到端口 tap-vm3。</p>
+<div class="highlight"><pre><span></span># ovs-ofctl add-flow br1 idle_timeout=0,dl_type=0x0800,nw_proto=1,nw_src=&quot;11.11.11.12&quot;,actions=output:102
+</pre></div>
+
+
+<p>分别从 wangyuwei-1 (11.11.11.12) ping wangyuwei-2 (11.11.11.13)，wangyuwei-3 (11.11.11.14) 并对 tap-vm3 进行抓包，可以看到对 tap-vm2 的访问也由 tap-vm3 接收到了，符合预期。</p>
+<div class="highlight"><pre><span></span>[root@POD23-CLU02-H006 ~]# tcpdump -i tap-vm3 icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on tap-vm3, link-type EN10MB (Ethernet), capture size 262144 bytes
+18:16:09.137650 IP 11.11.11.12 &gt; 11.11.11.13: ICMP echo request, id 15705, seq 5, length 64
+18:16:10.137738 IP 11.11.11.12 &gt; 11.11.11.13: ICMP echo request, id 15705, seq 6, length 64
+18:16:14.571260 IP 11.11.11.12 &gt; 11.11.11.14: ICMP echo request, id 15706, seq 1, length 64
+18:16:14.571433 IP 11.11.11.14 &gt; 11.11.11.12: ICMP echo reply, id 15706, seq 1, length 64
+</pre></div>
+
+
+<ol>
+<li>修改数据包的 VLAN Tag</li>
+</ol>
+<p>除了使用 <code>ping</code>、<code>tcpdump</code> 和 <code>iperf</code> 等 Linux 命令以外，我们也可以使用 OVS 提供的 <code>ovs-appctl ofproto/trace</code> 工具来测试 OVS 对数据包的转发状况。<code>ovs-appctl ofproto/trace</code> 可以用来生成测试用的模拟数据包，并一步步的展示 OVS 对数据包的流处理过程。在以下的例子中，我们演示一下如何使用这个命令：</p>
+<p>修改端口 tap-vm1 的 VLAN tag 为 101:</p>
+<div class="highlight"><pre><span></span># ovs-vsctl set port tap-vm1 tag=101
+</pre></div>
+
+
+<p>现在由于端口 tap-vm1 和 tap-vm2 属于不同的 VLAN，它们之间无法进行数据交换。我们使用tap-vm1 ping tap-vm2，我们使用 ovs-appctl ofproto/trace 生成一个从端口 t 发送到端口 p1 的数据包，这个数据包不包含任何 VLAN tag，并观察 OVS 的处理过程</p>
+<h3>三、参考文档</h3>
+<ol>
+<li>https://opengers.github.io/openstack/openstack-base-openflow-in-openvswitch/</li>
+<li>https://opengers.github.io/openstack/openstack-base-use-openvswitch/</li>
+<li>https://opengers.github.io/openstack/openstack-base-virtual-network-devices-bridge-and-vlan/</li>
+<li>https://www.ibm.com/developerworks/cn/cloud/library/1401_zhaoyi_openswitch/index.html</li>
+</ol>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>

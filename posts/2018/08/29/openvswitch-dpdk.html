@@ -1,0 +1,458 @@
+
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="https://andiaq.github.io/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="https://andiaq.github.io/theme/font-awesome/css/solid.css">
+
+    <link href="https://andiaq.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="/images/fav.ico" type="image/x-icon">
+    <link rel="icon" href="/images/fav.ico" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+<meta name="author" content="Yuwei Wang" />
+<meta name="description" content="本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。 使用了 DPDK 库的 OVS 运行在用户空间，可以直接将用户态的数据，不经过内核直接转发到网卡，从而实现加速目的。 一、OVS + DPDK 编译部署 在部署过程中，各个组件版本之间有一些依赖，版本不对很有可能会出现安装失败或者虚拟机无法开机，推荐使用以下版本。 [root@pod23-clu02-h005 ~]# ovs-vswitchd --version ovs-vswitchd (Open vSwitch) 2.9.0 DPDK 17.11.3 [root@pod23-clu02-h005 ~]# libvirtd --version libvirtd (libvirt) 4.0 …" />
+<meta name="keywords" content="">
+
+<meta property="og:site_name" content="Andia"/>
+<meta property="og:title" content="OpenvSwitch + DPDK 实现"/>
+<meta property="og:description" content="本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。 使用了 DPDK 库的 OVS 运行在用户空间，可以直接将用户态的数据，不经过内核直接转发到网卡，从而实现加速目的。 一、OVS + DPDK 编译部署 在部署过程中，各个组件版本之间有一些依赖，版本不对很有可能会出现安装失败或者虚拟机无法开机，推荐使用以下版本。 [root@pod23-clu02-h005 ~]# ovs-vswitchd --version ovs-vswitchd (Open vSwitch) 2.9.0 DPDK 17.11.3 [root@pod23-clu02-h005 ~]# libvirtd --version libvirtd (libvirt) 4.0 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="https://andiaq.github.io/posts/2018/08/29/openvswitch-dpdk.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2018-08-29 09:36:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://andiaq.github.io/author/yuwei-wang.html">
+<meta property="article:section" content="network"/>
+<meta property="og:image" content="/images/head.jpg">
+
+  <title>Andia &ndash; OpenvSwitch + DPDK 实现</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://andiaq.github.io">
+        <img src="/images/head.jpg" alt="" title="">
+      </a>
+      <h1><a href="https://andiaq.github.io"></a></h1>
+
+<p>拒绝熊猫眼。</p>
+      <nav>
+        <ul class="list">
+          <li><a href="https://andiaq.github.io/pages/about-me.html#about-me">About Me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/AndiaQ" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-mail" href="yuweifree@gmail.com" target="_blank">
+            <i class="fab fa-mail">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://andiaq.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+      
+    <h1 id="openvswitch-dpdk">OpenvSwitch + DPDK 实现</h1>
+    <p>
+          Posted on 2018-08-29 09:36 in <a href="https://andiaq.github.io/category/network.html">network</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>本文主要介绍如何使用 DPDK datapath 编译并安装 Open vSwitch，以及在 OVS-DPDK 基础上，进行 6wind 包转发性能测试实验。</p>
+<p>使用了 DPDK 库的 OVS 运行在用户空间，可以直接将用户态的数据，不经过内核直接转发到网卡，从而实现加速目的。</p>
+<h3>一、OVS + DPDK 编译部署</h3>
+<p>在部署过程中，各个组件版本之间有一些依赖，版本不对很有可能会出现安装失败或者虚拟机无法开机，推荐使用以下版本。</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@pod23-clu02-h005 ~<span class="o">]</span><span class="c1"># ovs-vswitchd --version</span>
+ovs-vswitchd <span class="o">(</span>Open vSwitch<span class="o">)</span> <span class="m">2</span>.9.0
+DPDK <span class="m">17</span>.11.3
+
+<span class="o">[</span>root@pod23-clu02-h005 ~<span class="o">]</span><span class="c1"># libvirtd --version</span>
+libvirtd <span class="o">(</span>libvirt<span class="o">)</span> <span class="m">4</span>.0.0
+</pre></div>
+
+
+<ol>
+<li>下载 DPDK</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="c1"># wget http://fast.dpdk.org/rel/dpdk-17.11.3.tar.xz</span>
+</pre></div>
+
+
+<ol>
+<li>添加相关环境变量并安装依赖组件</li>
+</ol>
+<div class="highlight"><pre><span></span>export DPDK_DIR=&lt;DPDK_DIR&gt;        # dpdk-17.11.3安装目录
+export DPDK_TARGET=x86_64-native-linuxapp-gcc
+export DPDK_BUILD=$DPDK_DIR/$DPDK_TARGET
+export LD_LIBRARY_PATH=$DPDK_DIR/x86_64-native-linuxapp-gcc/lib
+export PATH=$PATH:/usr/local/ovs/share/openvswitch/scripts
+export DB_SOCK=/usr/local/ovs/var/run/openvswitch/db.sock
+
+# yum install autoconf automake libtool numactl numactl-devel
+</pre></div>
+
+
+<ol>
+<li>编译 DPDK </li>
+</ol>
+<div class="highlight"><pre><span></span># cd dpdk-17.11.3
+# make install T=$DPDK_TARGET DESTDIR=install
+</pre></div>
+
+
+<ol>
+<li>下载 ovs，这里使用的版本是2.9.0</li>
+</ol>
+<div class="highlight"><pre><span></span># git clone https://github.com/openvswitch/ovs.git
+# git checkout -b v2.9.0 v2.9.0
+</pre></div>
+
+
+<ol>
+<li>编译 ovs-dpdk</li>
+</ol>
+<div class="highlight"><pre><span></span># cd ovs
+# ./boot.sh
+# ./configure --prefix=/usr/local/ovs --with-dpdk=$DPDK_BUILD
+# make &amp;&amp; make install
+</pre></div>
+
+
+<ol>
+<li>配置 hugepages</li>
+</ol>
+<div class="highlight"><pre><span></span># cat /etc/sysctl.d/hugepages.conf
+# vm.nr_hugepages=8192
+# sysctl -p /etc/sysctl.d/hugepages.conf
+# mount -t hugetlbfs none /dev/hugepages
+</pre></div>
+
+
+<ol>
+<li>加载驱动模块，配置 dpdk 网卡</li>
+</ol>
+<div class="highlight"><pre><span></span>modprobe vfio-pci
+lsmod | grep vfio
+/usr/bin/chmod a+x /dev/vfio
+/usr/bin/chmod 0666 /dev/vfio/*
+dpdk-devbind.py -b vfio-pci ens10f1
+</pre></div>
+
+
+<ol>
+<li>启动 ovsdb-server</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="c1"># mkdir -p /usr/local/ovs/var/run/openvswitch</span>
+<span class="c1"># /usr/local/ovs/bin/ovsdb-tool create /usr/local/ovs/etc/openvswitch/conf.db /usr/local/ovs/share/openvswitch/vswitch.ovsschema</span>
+<span class="c1"># /usr/local/ovs/sbin/ovsdb-server --remote=punix:/usr/local/ovs/var/run/openvswitch/db.sock --remote=db:Open_vSwitch,Open_vSwitch,manager_options --pidfile --detach --monitor</span>
+
+<span class="c1"># 增加 dpdk 相关配置参数</span>
+<span class="c1"># ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true</span>
+<span class="c1"># ovs-vsctl --no-wait set Open_vSwitch . other_config:vhost-iommu-support=true</span>
+<span class="c1"># ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem=&quot;1024,1024&quot;</span>
+</pre></div>
+
+
+<ol>
+<li>ovs 进程核绑定，提升性能。</li>
+</ol>
+<div class="highlight"><pre><span></span>查看cpu_layout:
+[root@pod23-clu02-h005 ~]# ./dpdk-stable-17.11.3/usertools/cpu_layout.py 
+======================================================================
+Core and Socket Information (as reported by &#39;/sys/devices/system/cpu&#39;)
+======================================================================
+
+cores =  [0, 1, 2, 3, 4, 8, 9, 10, 11, 16, 17, 18, 19, 20, 24, 25, 26, 27]
+sockets =  [0, 1]
+
+        Socket 0        Socket 1       
+        --------        --------       
+Core 0  [0, 36]         [18, 54]       
+Core 1  [1, 37]         [19, 55]       
+Core 2  [2, 38]         [20, 56]        =&gt; OVS 主进程
+Core 3  [3, 39]         [21, 57]        =&gt; OVS-PMD 收发包线程
+Core 4  [4, 40]         [22, 58]        
+Core 8  [5, 41]         [23, 59]       
+Core 9  [6, 42]         [24, 60]       
+Core 10 [7, 43]         [25, 61]       
+Core 11 [8, 44]         [26, 62]       
+Core 16 [9, 45]         [27, 63]       
+Core 17 [10, 46]        [28, 64]       
+Core 18 [11, 47]        [29, 65]       
+Core 19 [12, 48]        [30, 66]       
+Core 20 [13, 49]        [31, 67]       
+Core 24 [14, 50]        [32, 68]       
+Core 25 [15, 51]        [33, 69]       
+Core 26 [16, 52]        [34, 70]       
+Core 27 [17, 53]        [35, 71]      
+
+# ovs-vswitchd 绑定 2号物理核
+# python -c &quot;print &#39;%x&#39; %((1&lt;&lt;2)|(1&lt;&lt;38)|(1&lt;&lt;20)|(1&lt;&lt;56))&quot;
+100004000100004
+# ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-lcore-mask=0x100004000100004
+
+# OVS-PMD 绑定 3号物理核
+# python -c &quot;print &#39;%x&#39; %((1&lt;&lt;3)|(1&lt;&lt;39)|(1&lt;&lt;21)|(1&lt;&lt;57))&quot;
+200008000200008
+# ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=0x200008000200008
+
+# 查看 ovs 配置
+# ovs-vsctl list open_vswitch
+_uuid               : f4bb4728-d9d6-43e9-be9a-cc8b2cdb10b1
+bridges             : [7acc5f7b-3e73-4cb8-81c4-37b2a11bc0bf, e3a74062-4b05-44be-b248-09e26e5c1f24]
+cur_cfg             : 65
+datapath_types      : [netdev, system]
+db_version          : []
+external_ids        : {}
+iface_types         : [dpdk, dpdkr, dpdkvhostuser, dpdkvhostuserclient, geneve, gre, internal, lisp, patch, stt, system, tap, vxlan]
+manager_options     : []
+next_cfg            : 65
+other_config        : {dpdk-init=&quot;true&quot;, dpdk-lcore-mask=&quot;0x100004000100004&quot;, dpdk-socket-mem=&quot;1024,1024&quot;, pmd-cpu-mask=&quot;0x200008000200008&quot;, vhost-iommu-support=&quot;true&quot;}
+ovs_version         : []
+ssl                 : []
+statistics          : {}
+system_type         : []
+system_version      : []
+</pre></div>
+
+
+<ol>
+<li>启动 ovs-vswitchd</li>
+</ol>
+<div class="highlight"><pre><span></span>ovs-vswitchd unix:/usr/local/ovs/var/run/openvswitch/db.sock --pidfile --detach --log-file<span class="o">=</span>/var/log/openvswitch/ovs-vswitchd.log
+</pre></div>
+
+
+<h3>二、搭建实验环境</h3>
+<p>Open vSwitch 提供了两种类型的 vhostuser 端口：</p>
+<ol>
+<li>vhost-user (dpdkvhostuser)</li>
+<li>vhost-user-client (dpdkvhostuserclient)</li>
+</ol>
+<p>vhostuser 使用 C/S 模型。其中服务端负责创建/管理/销毁 vhostuser socket. 客户端和服务端相连接。ovs 通过配置 dpdkvhostuser 或者 dpdkvhostuserclient 来确定使用的模型。</p>
+<ul>
+<li>使用 vhostuser，OVS 作为服务端，qemu 作为客户端。这意味着如果 OVS 进程发生重启或者挂掉，则 guest vm 必须重启；</li>
+<li>使用 vhostuserclient，OVS 作为客户端，qemu 作为服务端，这就意味着 OVS 可以毫无问题地挂掉或者重启。该功能需要满足 QEMU&gt;=2.7.0。</li>
+</ul>
+<p>推荐使用 vhostuserclient。以下实践也会以 vhostuserclient 为例。使用该功能 ovs 需要做如下配置才会支持：</p>
+<div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Open_vSwitch . other_config:vhost-iommu-support=true</span>
+</pre></div>
+
+
+<h4>2.1. 创建 OVS 网桥和端口</h4>
+<div class="highlight"><pre><span></span>ovs-vsctl add-br br0 -- <span class="nb">set</span> bridge br0 <span class="nv">datapath_type</span><span class="o">=</span>netdev    <span class="c1"># 使用 ovs-dpdk 必须指定datapath_type类型为netdev</span>
+ovs-vsctl add-br br1 -- <span class="nb">set</span> bridge br1 <span class="nv">datapath_type</span><span class="o">=</span>netdev
+ovs-vsctl add-port br0 dpdkvhostuserclient0  -- <span class="nb">set</span> Interface dpdkvhostuserclient0 <span class="nv">type</span><span class="o">=</span>dpdkvhostuserclient options:vhost-server-path<span class="o">=</span>/tmp/vhostuserclient0.sock
+ovs-vsctl add-port br0 dpdkvhostuserclient1  -- <span class="nb">set</span> Interface dpdkvhostuserclient1 <span class="nv">type</span><span class="o">=</span>dpdkvhostuserclient options:vhost-server-path<span class="o">=</span>/tmp/vhostuserclient1.sock
+ovs-vsctl add-port br0 dpdk0 -- <span class="nb">set</span> interface dpdk0 <span class="nv">type</span><span class="o">=</span>dpdk options:dpdk-devargs<span class="o">=</span><span class="m">0000</span>:03:00.0
+ovs-vsctl add-port br1 dpdk1 -- <span class="nb">set</span> interface dpdk1 <span class="nv">type</span><span class="o">=</span>dpdk options:dpdk-devargs<span class="o">=</span><span class="m">0000</span>:03:00.1
+ovs-vsctl <span class="nb">set</span> Interface dpdkvhostuserclient0 options:n_rxq<span class="o">=</span><span class="m">2</span>
+ovs-vsctl <span class="nb">set</span> Interface dpdkvhostuserclient1 options:n_rxq<span class="o">=</span><span class="m">2</span>
+vs-vsctl <span class="nb">set</span> Interface dpdk0 options:n_rxq<span class="o">=</span><span class="m">2</span>
+vs-vsctl <span class="nb">set</span> Interface dpdk1 options:n_rxq<span class="o">=</span><span class="m">2</span>
+</pre></div>
+
+
+<p>查看以上配置：</p>
+<div class="highlight"><pre><span></span><span class="o">[</span>root@pod23-clu02-h005 ~<span class="o">]</span><span class="c1"># ovs-vsctl show</span>
+f4bb4728-d9d6-43e9-be9a-cc8b2cdb10b1
+    Bridge <span class="s2">&quot;br0&quot;</span>
+        Port <span class="s2">&quot;br0&quot;</span>
+            Interface <span class="s2">&quot;br0&quot;</span>
+                type: internal
+        Port <span class="s2">&quot;dpdkvhostuserclient0&quot;</span>
+            Interface <span class="s2">&quot;dpdkvhostuserclient0&quot;</span>
+                type: dpdkvhostuserclient
+                options: <span class="o">{</span><span class="nv">n_rxq</span><span class="o">=</span><span class="s2">&quot;2&quot;</span>, vhost-server-path<span class="o">=</span><span class="s2">&quot;/tmp/vhostuserclient0.sock&quot;</span><span class="o">}</span>
+        Port <span class="s2">&quot;dpdk0&quot;</span>
+            Interface <span class="s2">&quot;dpdk0&quot;</span>
+                type: dpdk
+                options: <span class="o">{</span>dpdk-devargs<span class="o">=</span><span class="s2">&quot;0000:03:00.0&quot;</span>, <span class="nv">n_rxq</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="o">}</span>
+    Bridge <span class="s2">&quot;br1&quot;</span>
+        Port <span class="s2">&quot;br1&quot;</span>
+            Interface <span class="s2">&quot;br1&quot;</span>
+                type: internal
+        Port <span class="s2">&quot;dpdk1&quot;</span>
+            Interface <span class="s2">&quot;dpdk1&quot;</span>
+                type: dpdk
+                options: <span class="o">{</span>dpdk-devargs<span class="o">=</span><span class="s2">&quot;0000:03:00.1&quot;</span>, <span class="nv">n_rxq</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="o">}</span>
+        Port <span class="s2">&quot;dpdkvhostuserclient1&quot;</span>
+            Interface <span class="s2">&quot;dpdkvhostuserclient1&quot;</span>
+                type: dpdkvhostuserclient
+                options: <span class="o">{</span><span class="nv">n_rxq</span><span class="o">=</span><span class="s2">&quot;2&quot;</span>, vhost-server-path<span class="o">=</span><span class="s2">&quot;/tmp/vhostuserclient1.sock&quot;</span><span class="o">}</span>
+</pre></div>
+
+
+<h4>2.2 创建虚拟机</h4>
+<p><strong>1. 配置共享内存</strong></p>
+<p>vhost-user 基于 vring 这套通用的共享内存通信方案，通过共享的虚拟队列来完成报文的传输和控制，因此大大降低了 vhost 和 virtio-net 之间的数据传输成本。使用该机制 QEMU 必须将 vm 的部分内存分配给 hugetlbfs， vhost-user 端口在访问 virtio-net 设备的 vring 和数据包缓冲区，会将 vm 的物理内存映射到 hugetlbfs 上。 要使 vhost-user 端口能够将 VM 的内存映射到其进程地址空间，我们需要配置共享内存和大页内存。否则会造成网络不通，流量出不去也进不来。</p>
+<p>以上配置在 libvirt xml 中体现如下：</p>
+<div class="highlight"><pre><span></span>  <span class="nt">&lt;memoryBacking&gt;</span>
+    <span class="nt">&lt;hugepages&gt;</span>
+      <span class="nt">&lt;page</span> <span class="na">size=</span><span class="s">&#39;2048&#39;</span> <span class="na">unit=</span><span class="s">&#39;KiB&#39;</span> <span class="na">nodeset=</span><span class="s">&#39;0&#39;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/hugepages&gt;</span>
+  <span class="nt">&lt;/memoryBacking&gt;</span>
+  <span class="nt">&lt;cpu</span> <span class="na">mode=</span><span class="s">&#39;host-passthrough&#39;</span> <span class="na">check=</span><span class="s">&#39;none&#39;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;topology</span> <span class="na">sockets=</span><span class="s">&#39;1&#39;</span> <span class="na">cores=</span><span class="s">&#39;2&#39;</span> <span class="na">threads=</span><span class="s">&#39;2&#39;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;numa&gt;</span>
+      <span class="nt">&lt;cell</span> <span class="na">id=</span><span class="s">&#39;0&#39;</span> <span class="na">cpus=</span><span class="s">&#39;0-3&#39;</span> <span class="na">memory=</span><span class="s">&#39;6291456&#39;</span> <span class="na">unit=</span><span class="s">&#39;KiB&#39;</span> <span class="na">memAccess=</span><span class="s">&#39;shared&#39;</span><span class="nt">/&gt;</span> 
+    <span class="nt">&lt;/numa&gt;</span>
+  <span class="nt">&lt;/cpu&gt;</span>
+</pre></div>
+
+
+<p>在 qemu 进程中体现在 <code>mem-path=/dev/hugepages,share=on</code>， 如下：</p>
+<div class="highlight"><pre><span></span># /usr/libexec/qemu-kvm -name guest=wangyuwei-test -enable-kvm -m 4096 -smp 8,sockets=2,cores=2,threads=2 -chardev socket,id=char0,path=/usr/local/ovs/var/run/openvswitch/dpdkvhostuser0 -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,netdev=mynet1,mac=52:54:00:02:d9:05 -object memory-backend-file,id=mem,size=4096M,mem-path=/dev/hugepages,share=on -numa node,memdev=mem
+</pre></div>
+
+
+<p>指定 <code>hugepages</code> 意味着 qemu 会在 guest OS 的内存中创建一个文件，<code>memAccess='shared'</code> 选项允许其他进程访问这个文件，也就意味着能访问 guest OS 内存，达到共享内存的目的。</p>
+<p>当 qemu 启动之后，首先会进行 vring 的初始化，并通过 socket 建立 C/S 的共享内存区域和事件机制，然后 client 通过 eventfd 将 virtio kick 事件通知到 server 端，server 端同样通过 eventfd 进行响应，完成整个数据交互。</p>
+<p><strong>2. 配置 vhostuser 通信接口</strong></p>
+<p>在上面提到过，使用 vhostuserclient 时将 qemu 作为服务端，所以 xml 中配置 mode 时必须指定为<code>server</code>，否则无法建立连接。</p>
+<p>libvirt interface xml 体现如下：</p>
+<div class="highlight"><pre><span></span>    <span class="nt">&lt;interface</span> <span class="na">type=</span><span class="s">&#39;vhostuser&#39;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;mac</span> <span class="na">address=</span><span class="s">&#39;52:54:00:1f:9f:66&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;source</span> <span class="na">type=</span><span class="s">&#39;unix&#39;</span> <span class="na">path=</span><span class="s">&#39;/tmp/vhostuserclient0.sock&#39;</span> <span class="na">mode=</span><span class="s">&#39;server&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;model</span> <span class="na">type=</span><span class="s">&#39;virtio&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;driver</span> <span class="na">name=</span><span class="s">&#39;vhost&#39;</span> <span class="na">queues=</span><span class="s">&#39;2&#39;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;host</span> <span class="na">mrg_rxbuf=</span><span class="s">&#39;off&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/driver&gt;</span>
+      <span class="nt">&lt;address</span> <span class="na">type=</span><span class="s">&#39;pci&#39;</span> <span class="na">domain=</span><span class="s">&#39;0x0000&#39;</span> <span class="na">bus=</span><span class="s">&#39;0x00&#39;</span> <span class="na">slot=</span><span class="s">&#39;0x03&#39;</span> <span class="na">function=</span><span class="s">&#39;0x0&#39;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/interface&gt;</span>
+    <span class="nt">&lt;interface</span> <span class="na">type=</span><span class="s">&#39;vhostuser&#39;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;mac</span> <span class="na">address=</span><span class="s">&#39;52:54:00:1f:9f:67&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;source</span> <span class="na">type=</span><span class="s">&#39;unix&#39;</span> <span class="na">path=</span><span class="s">&#39;/tmp/vhostuserclient1.sock&#39;</span> <span class="na">mode=</span><span class="s">&#39;server&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;model</span> <span class="na">type=</span><span class="s">&#39;virtio&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;driver</span> <span class="na">name=</span><span class="s">&#39;vhost&#39;</span> <span class="na">queues=</span><span class="s">&#39;2&#39;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;host</span> <span class="na">mrg_rxbuf=</span><span class="s">&#39;off&#39;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/driver&gt;</span>
+      <span class="nt">&lt;address</span> <span class="na">type=</span><span class="s">&#39;pci&#39;</span> <span class="na">domain=</span><span class="s">&#39;0x0000&#39;</span> <span class="na">bus=</span><span class="s">&#39;0x00&#39;</span> <span class="na">slot=</span><span class="s">&#39;0x07&#39;</span> <span class="na">function=</span><span class="s">&#39;0x0&#39;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/interface&gt;</span>
+</pre></div>
+
+
+<h3>三、测试过程</h3>
+<h4>3.1 测试拓扑</h4>
+<p>测试使用的拓扑图如下：</p>
+<p><img alt="image" src="images/network/ovs-dpdk-1.png"></p>
+<p>使用 dpdkgen 的 p0 作为发包端口，p1 作为收包端口。</p>
+<p>配置 6wind:</p>
+<div class="highlight"><pre><span></span><span class="n">eth0</span><span class="o">:</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="o">/</span><span class="mi">24</span>
+<span class="n">eth1</span><span class="o">:</span> <span class="mf">20.0</span><span class="o">.</span><span class="mf">0.1</span><span class="o">/</span><span class="mi">24</span>
+<span class="kd">static</span> <span class="n">neighbor</span><span class="o">:</span> <span class="mf">20.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="o">-&gt;</span> <span class="n">p1</span> <span class="n">mac</span>
+</pre></div>
+
+
+<p>发包端口配置如下：</p>
+<div class="highlight"><pre><span></span>Pktgen&gt; <span class="nb">set</span> <span class="m">0</span> src ip <span class="m">10</span>.0.0.2/24            <span class="c1"># 配置 p0 源 ip 地址为 10.0.0.2/24 </span>
+Pktgen&gt; <span class="nb">set</span> <span class="m">0</span> src mac <span class="m">90</span>:e2:ba:f7:58:58     <span class="c1"># 配置 p0 源 mac 地址为 90:e2:ba:f7:58:58</span>
+Pktgen&gt; <span class="nb">set</span> <span class="m">0</span> dst ip <span class="m">20</span>.0.0.2               <span class="c1"># 配置 p0 目的 ip 地址为 20.0.0.2</span>
+Pktgen&gt; <span class="nb">set</span> <span class="m">0</span> dst mac <span class="m">52</span>:54:00:1f:9f:66     <span class="c1"># 配置 p0 目的 mac 地址为 6wind 的 eth0 的 mac 地址</span>
+Pktgen&gt; <span class="nb">set</span> <span class="m">0</span> size <span class="m">64</span>
+Pktgen&gt; <span class="nb">enable</span> <span class="m">0</span> range
+Pktgen&gt; range <span class="m">0</span> size max <span class="m">64</span>
+Pktgen&gt; <span class="nb">set</span> <span class="m">0</span> proto udp
+Pktgen&gt; <span class="nb">set</span> <span class="m">0</span> rate <span class="m">10</span>%
+Pktgen&gt; start <span class="m">0</span> 
+</pre></div>
+
+
+<h4>3.2 测试结果</h4>
+<ol>
+<li>将发包字节设置为64字节，发包速率设置10%时，几乎不存在丢包现象。</li>
+</ol>
+<p><img alt="image" src="images/network/ovs-dpdk-2.png"></p>
+<ol>
+<li>将p0发包速率设置20%时，存在丢包现象。将p1发包速率设置为15%，收发数据差不多。</li>
+</ol>
+<p><img alt="image" src="images/network/ovs-dpdk-3.png"></p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Andia ",
+  "url" : "https://andiaq.github.io",
+  "image": "/images/head.jpg",
+  "description": ""
+}
+</script>
+
+</body>
+</html>
